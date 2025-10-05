@@ -1,8 +1,13 @@
 import pgPromise from 'pg-promise';
+import dotenv from 'dotenv';
+
+// Configurar dotenv para cargar variables de entorno desde el directorio raíz
+dotenv.config();
 
 const pgp = pgPromise();
 
-const cn = 'postgres://postgres:1234@localhost:5432/GesThor';
+const cn = `postgres://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`;
+// const cn = 'postgres://postgres:1234@localhost:5432/GesThor';
 
 const dbConnection = pgp(cn);
 
