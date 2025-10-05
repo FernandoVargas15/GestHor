@@ -23,3 +23,18 @@ cd ../../backend/backapi && npm install
 # Notas
 Recuerda correr npm install después de clonar.
 El backend debe estar en ejecución para que el frontend pueda comunicarse con él.
+
+
+# EJECUTAR
+sudo apt install postgresql postgresql-contrib
+
+PARA INICIAR EL SERVICIO WEB
+sudo systemctl start postgresql
+
+ABRIR EN http://localhost/pgadmin4/
+
+PARA CERRARLO 
+sudo systemctl enable postgresql
+
+# BASE DE DATOS
+ejecutar el .sql dentro de 'Query tool' de pgAdmin4 web con el nombre de GesThor la BDTS 
