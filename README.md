@@ -38,3 +38,12 @@ sudo systemctl enable postgresql
 
 # BASE DE DATOS
 ejecutar el .sql dentro de 'Query tool' de pgAdmin4 web con el nombre de GesThor la BDTS 
+
+# env
+debe estar en la carpeta backend
+
+DB_USER=postgres
+DB_PASSWORD=1234
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=GesThor
