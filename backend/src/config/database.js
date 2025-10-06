@@ -11,24 +11,19 @@ const cn = `postgres://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${proce
 
 const dbConnection = pgp(cn);
 
-export async function query(texto, params = []) {
-    try {
-        const rows = await dbConnection.any(texto, params);
-        return { rows };
-    } catch (error) {
-        throw error;
-    }
-}
-
 async function pruebaConexion() {
     try {
         const fecha = await dbConnection.oneOrNone('SELECT NOW() AS fecha');
-        console.log('Prueba de conexión OK', fecha);
+        console.log('Prueba de conexión establecida', fecha);
+
     } catch (error) {
         console.error('Error de conexión a la base de datos:', error);
     }
 }
 
-pruebaConexion();
+async function name(params) {
+    
+}
 
-export default dbConnection;
+
+export default pruebaConexion;
