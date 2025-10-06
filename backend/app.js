@@ -1,6 +1,10 @@
 import express from "express";
-import pruebaConexion from "/home/jose/5M/GestHor/backend/src/config/database.js";
+import {
+  pruebaConexion,
+  users,
+} from "/home/jose/5M/GestHor/backend/src/config/database.js";
 import cors from "cors";
+import authRoutes from "./src/routes/authRout.js";
 
 const app = express();
 app.use(express.json());
@@ -8,21 +12,13 @@ app.use(cors());
 
 const PORT = process.env.PORT || 3000;
 
-app.post('/api/login', (req, res) => {
-  const { correo, contraseña, tipoUsuario} = req.body;
-  // console.log('Correo:', correo);
-  // console.log('Contraseña:', contraseña);  
-  // console.log ('Tipo de usuario:', tipoUsuario);  
-  console.log('Datos recibidos:', req.body);
-  res.json({ message: 'Login recibido correctamente' });
-
-});
+//ruta de autenticacion '/api/login'
+app.use("/api", authRoutes);
 
 app.get("/api", (req, res) => {
-   pruebaConexion();
-   res.json({ message: "Conexión a la base de datos exitosa" });
+  pruebaConexion();
+  res.json({ message: "Conexión a la base de datos exitosa" });
 });
-
 
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
