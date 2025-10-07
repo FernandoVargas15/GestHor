@@ -27,14 +27,17 @@ El backend debe estar en ejecuci√≥n para que el frontend pueda comunicarse con √
 
 # EJECUTAR
 sudo apt install postgresql postgresql-contrib
+sudo apt install apache2 -y
 
-PARA INICIAR EL SERVICIO WEB
-sudo systemctl start postgresql
+INICIAR SERVICIOS
+sudo systemctl start apache2      # Inicia pgAdmin4 (interfaz web)
+sudo systemctl start postgresql   # Inicia PostgreSQL (base de datos)
 
 ABRIR EN http://localhost/pgadmin4/
 
-PARA CERRARLO 
-sudo systemctl enable postgresql
+FINALIZAR SERVICIOS
+sudo systemctl stop apache2       # Detiene pgAdmin4 (interfaz web)
+sudo systemctl stop postgresql    # Detiene PostgreSQL (base de datos)
 
 # BASE DE DATOS
 ejecutar el .sql dentro de 'Query tool' de pgAdmin4 web con el nombre de GesThor la BDTS 
