@@ -1,53 +1,94 @@
-
-
 .loginBackground {
+  width: 100vw;
+  height: 100vh;
+  background: #298ce7;
   display: flex;
   justify-content: center;
   align-items: center;
-  
-  
+  font-family: Arial, sans-serif; 
+}
+
+.loginContent {
+  display: flex;
   width: 100vw;
-  height: 100vh; 
-  margin: 0;
-  
-  background-color: #88b4e7; 
-  box-sizing: border-box;
+  height: 100vh;
+  align-items: center;
 }
 
-
-.loginContainer {
-  width: 380px;
-  background-color: #ffffff;
-  padding: 40px 50px;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  text-align: center;
+.infoSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding-left: 7vw;
+  padding-right: 3vw;
+  color: #fff;
+  background: #298ce7;
 }
 
-.welcomeText {
-  font-size: 26px;
-  font-weight: 700;
-  color: #2274cc;
-  margin-bottom: 40px;
-  letter-spacing: 0.5px;
+.systemTitle {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 0.5em;
+}
+
+.systemSubtitle {
+  font-size: 1.2rem;
+  margin-bottom: 1.5em;
+}
+
+.infoText {
+  font-size: 1rem;
+  max-width: 400px;
+}
+
+.loginCardWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  height: 100vh;
+
+}
+
+.loginCard {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  padding: 40px 32px;
+  min-width: 370px;
+  max-width: 400px;
+  width: 100%;
+  margin-right: 7vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cardTitle {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 0.2em;
+  color: #2a2a2a;
+}
+
+.cardSubtitle {
+  font-size: 1rem;
+  color: #888;
+  margin-bottom: 1.5em;
 }
 
 .loginForm {
+  width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 18px;
 }
 
 .formGroup {
+  width: 100%;
   text-align: left;
-}
-
-.formGroup label {
-  display: block;
-  margin-bottom: 6px;
-  color: #333;
-  font-weight: 600;
-  font-size: 14px;
 }
 
 .inputField {
@@ -68,36 +109,25 @@
 }
 
 .loginButton {
-  background-color: #007bff;
+  background: linear-gradient(90deg, #298ce7 60%, #1a5fb4 100%);
   color: white;
-  padding: 14px 20px;
+  padding: 14px 0;
   border: none;
   border-radius: 6px;
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-  width: 100%;
   margin-top: 10px;
 }
 
-.loginButton:hover {
-  background-color: #0056b3;
-}
-
-.loginButton:active {
-  transform: scale(0.99);
-}
-
-
 .forgotPasswordLink {
   text-align: right;
-  font-size: 13px;
-  margin-top: 5px;
+  margin-bottom: 10px;
 }
 
 .forgotPasswordLink a {
-  color: #007bff;
+  color: #298ce7;
+  font-size: 0.95rem;
   text-decoration: none;
 }
 

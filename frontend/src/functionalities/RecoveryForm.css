@@ -1,0 +1,189 @@
+/* Variables para colores */
+:root {
+  --dark-blue: #298ce7; /* Azul Oscuro  */
+  --white: #ffffff;
+  --light-text: #f0f0f0;
+  --input-border: #cccccc;
+  --button-blue: #007bff; 
+}
+
+/* Estilo del Contenedor Principal  */
+.recovery-container {
+  display: flex;
+  height: 100vh;
+  background-color: var(--dark-blue);
+  color: var(--light-text);
+  font-family: Arial, sans-serif; 
+}
+
+/* --- Columna de Información  (Izquierda) --- */
+.info-column {
+  flex: 1; /* Ocupa el espacio restante */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0 5%; /* Ajusta el padding lateral */
+  max-width: 40%; /* Limita el ancho de la columna */
+}
+
+.system-title {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  line-height: 1.1;
+}
+
+.system-subtitle {
+  font-size: 1.2rem;
+  font-weight: 300;
+  margin-bottom: 2rem;
+}
+
+.recovery-info {
+  font-size: 1rem;
+  max-width: 80%;
+  line-height: 1.5;
+}
+
+/* --- Tarjeta del Formulario (Derecha) --- */
+.form-card-wrapper {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 5%; /* prueba*/
+
+}
+
+.form-card {
+  background-color: var(--white);
+  color: #333; /* Texto oscuro para la tarjeta blanca */
+  padding: 3rem;
+  border-radius: 12px; /* Esquinas redondeadas */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); /* Sombra sutil */
+  width: 100%;
+  max-width: 450px; /* Ancho máximo de la tarjeta */
+}
+
+.card-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.card-subtitle {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+/* --- Estilos del Formulario y Campos --- */
+.recovery-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.3rem;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  font-size: 1rem;
+  box-sizing: border-box; /* Incluye padding y border en el ancho/alto */
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #a0a0a0;
+}
+
+.form-group textarea {
+  resize: vertical; /* Permite redimensionar solo verticalmente */
+}
+
+/* Mensaje Importante (texto pequeño y gris) */
+.important-note {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.4;
+}
+
+/* Botón de Enviar Solicitud */
+.submit-button {
+  background-color: var(--button-blue);
+  color: var(--white);
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 100%; /* Ocupa todo el ancho */
+}
+
+.submit-button:hover {
+  background-color: #0056b3; /* Tono más oscuro al pasar el ratón */
+}
+
+/* Enlace de Volver */
+.back-link-container {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.back-link {
+  color: var(--button-blue);
+  font-size: 0.95rem;
+  text-decoration: none; 
+  transition: color 0.3s ease;
+}
+
+.back-link:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+
+@media (max-width: 768px) {
+  .recovery-container {
+    flex-direction: column;
+    height: auto; /* Permite que la altura se ajuste al contenido */
+  }
+
+  .info-column {
+    max-width: 100%;
+    padding: 3rem 10%;
+    text-align: center;
+    align-items: center;
+  }
+  
+  .recovery-info {
+      max-width: 100%;
+      text-align: center;
+  }
+
+  .form-card-wrapper {
+    padding: 2rem 10%;
+  }
+
+  .form-card {
+    max-width: 100%;
+  }
+}

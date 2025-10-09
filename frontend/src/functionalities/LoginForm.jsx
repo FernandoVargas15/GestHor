@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import styles from "./LoginForm.module.css";
 
 function LoginForm() {
@@ -34,10 +35,19 @@ function LoginForm() {
 
   return (
     <div className={styles.loginBackground}>
-      <div className={styles.loginContainer}>
-        <h2 className={styles.welcomeText}>INICIO DE SESIÓN</h2>
+      <div className={styles.loginContent}>
+        <div className={styles.infoSection}>
+          <h1 className={styles.systemTitle}>SISTEMA DE HORARIOS</h1>
+          <h3 className={styles.systemSubtitle}>Gestión escolar-UNACH</h3>
+          <p className={styles.infoText}>
+            Bienvenido al sistema para administrar y consultar los horarios de clase. Inicia sesión para continuar.
+          </p>
+        </div>
+        <div className={styles.loginCardwrapper}>
+        <div className={styles.loginCard}> 
+        <h2 className={styles.cardTitle}>INICIO DE SESIÓN</h2>
+        <p className={styles.cardSubtitle}>Por favor, ingresa tus datos para continuar</p>
         <form onSubmit={handleSubmit} className={styles.loginForm}>
-          
           <div className={styles.formGroup}>
             <label htmlFor="correo">Correo</label>
             <input
@@ -47,6 +57,7 @@ function LoginForm() {
               onChange={handleInputChange}
               required
               className={styles.inputField}
+              placeholder="Tucorreo@unach.mx"
             />
           </div>
 
@@ -59,7 +70,8 @@ function LoginForm() {
               onChange={handleInputChange}
               required
               className={styles.inputField}
-            />
+              placeholder="ingresa tu contraseña"
+            /> 
           </div>
 
           <div className={styles.formGroup}>
@@ -75,11 +87,10 @@ function LoginForm() {
               <option value="administrador">Administrador</option>
               <option value="profesor">Profesor</option>
             </select>
+          </div>
 
-            
-            <div className={styles.forgotPasswordLink}>
-              <a href="/recuperar-contraseña">¿Olvidaste tu contraseña?</a>
-            </div>
+          <div className={styles.forgotPasswordLink}>
+            <Link to="/recovery">¿Olvidaste tu contraseña?</Link>
           </div>
 
           <button type="submit" className={styles.loginButton}>
@@ -88,8 +99,9 @@ function LoginForm() {
         </form>
       </div>
     </div>
+    </div>
+    </div>
   );
 }
 
 export default LoginForm;
-
