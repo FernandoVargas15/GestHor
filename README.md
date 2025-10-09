@@ -50,3 +50,32 @@ DB_PASSWORD=1234
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=GesThor
+
+
+# Ejecutar para actualizar la tabla profesores en postgresql web
+CREATE SEQUENCE IF NOT EXISTS public.profesores_profesor_id_seq 
+    AS integer 
+    START WITH 1 
+    INCREMENT BY 1 
+    NO MINVALUE 
+    NO MAXVALUE 
+    CACHE 1;
+
+ALTER SEQUENCE public.profesores_profesor_id_seq 
+    OWNED BY public.profesores.profesor_id;
+
+ALTER TABLE public.profesores 
+    ALTER COLUMN profesor_id SET DEFAULT nextval('public.profesores_profesor_id_seq'::regclass);
+
+SELECT setval('public.profesores_profesor_id_seq', 
+    COALESCE((SELECT MAX(profesor_id) FROM public.profesores), 0) + 1, 
+    false);
+
+SELECT 
+    column_name, 
+    column_default 
+FROM information_schema.columns 
+WHERE table_name = 'profesores' 
+  AND column_name = 'profesor_id';
+
+

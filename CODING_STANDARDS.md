@@ -13,8 +13,8 @@ Se debe seguir la **Metodologia BEM** por ejemplo:
   <p class="tarjeta-usuario__nombre">Ana </p>
   <button class="tarjeta-usuario__boton">Contactar</button>
 </div>
-
-#<div class="tarjeta-usuario tarjeta-usuario--destacada"> **Modificador**
+I
+# <div class="tarjeta-usuario tarjeta-usuario--destacada"> **Modificador**
   <img class="tarjeta-usuario__imagen" >
   <p class="tarjeta-usuario__nombre">Carlos </p>
   <button class="tarjeta-usuario__boton tarjeta-usuario__boton--desactivado">Contactar</button>
