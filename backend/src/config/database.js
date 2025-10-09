@@ -42,4 +42,4 @@ async function users(email, password) {
 // });
 
 
-export { pruebaConexion, users };
+export { dbConnection, pruebaConexion, users };

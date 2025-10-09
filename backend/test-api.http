@@ -1,0 +1,32 @@
+POST http://localhost:4000/api/insertardocente
+Content-Type: application/json
+
+{
+    "nombres": "Jose Ruben",
+    "apellidos": "Clemente Corzo",
+    "matricula": "100020762",
+    "grado_academico": "Lic. En Ingenieria en Desarrollo de Software",
+    "numero_plaza": "123456789",
+    "numero_contrato": "123456789",
+    "direccion": "C. San Bernardino #261 Fraccionamiento Campanario",
+    "telefono": "9612215796"
+}
+
+###
+
+POST http://localhost:4000/api/insertardocente
+Content-Type: application/json
+
+{
+    "nombres": "Maria Fernanda",
+    "apellidos": "Gomez Lopez",
+    "matricula": "100035180",
+    "grado_academico": "Mtra. en Ciencias de la Computación",
+    "numero_plaza": "987654321",
+    "numero_contrato": "987654321",
+    "direccion": "Av. Central Sur #1500 Colonia Centro",
+    "telefono": "9613450123"
+}
+
+###
+
