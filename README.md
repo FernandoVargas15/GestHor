@@ -79,3 +79,30 @@ WHERE table_name = 'profesores'
   AND column_name = 'profesor_id';
 
 
+# Prueba para la base de datos (admin y profesor) / Insertar en pgweb
+-- ADMIN (email: admin@unach.mx / pass: 123456)
+INSERT INTO usuarios (email, password, rol_id)
+VALUES ('admin@unach.mx', '123456', 1);
+
+-- PROFESOR (email: profe@unach.mx / pass: 123456)
+WITH u AS (
+  INSERT INTO usuarios (email, password, rol_id)
+  VALUES ('profe@unach.mx', '123456', 2)
+  RETURNING usuario_id
+)
+INSERT INTO profesores (profesor_id, nombres, apellidos, matricula)
+SELECT usuario_id, 'Juan', 'Pérez', 'MAT-0001' FROM u;
+
+# Instalar lo siguiente en el la carpeta del backend
+npm install pg-promise cors dotenv
+
+# Correos y contraseñas de los usuarios para el login (prueba)
+Administrador
+Correo: admin@unach.mx
+Contraseña: 123456
+
+Profesor
+Correo: profe@unach.mx
+Contraseña: 123456
+
+# Recuerden levantar el backend primero y despues el frontend para probar el inicio de sesion

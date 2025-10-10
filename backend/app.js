@@ -1,28 +1,30 @@
 import express from "express";
-import {
-  pruebaConexion,
-  users,
-} from "/home/jose/5M/GestHor/backend/src/config/database.js";
 import cors from "cors";
+
+// cambio de rutas para que nos funcione a todos (creo)
+import { pruebaConexion } from "./src/config/database.js";
 import authRoutes from "./src/routes/authRout.js";
 import docenteRoutes from "./src/routes/docenteRoutes.js";
 
 const app = express();
-app.use(express.json());
-app.use(cors());
-
 const PORT = process.env.PORT || 3000;
 
-//ruta de autenticacion '/api/login'
+app.use(cors());
+app.use(express.json());
+
+// Rutas base:
+//  - POST /api/login              (desde authRout.js)
+//  - POST /api/insertardocente    (desde docenteRoutes.js)
 app.use("/api", authRoutes);
-//ruta de insercion de docentes '/api/insertardocente'
 app.use("/api", docenteRoutes);
 
-app.get("/api", (req, res) => {
-  pruebaConexion();
-  res.json({ message: "Conexión a la base de datos exitosa" });
+// Health-check simple y prueba de conexión
+app.get("/api", async (_req, res) => {
+  await pruebaConexion(); // mostrará el resultado en consola
+  res.json({ message: "Conexión a la base de datos: OK" });
 });
 
+// Levantar servidor
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
 });
