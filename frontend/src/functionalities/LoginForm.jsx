@@ -41,7 +41,18 @@ function LoginForm() {
       }
 
       // si todo esta bien, redirige según el rol
-      navigate(result.redirectTo);
+      const rol = result?.usuario?.rol;
+
+      // (opcional) guarda la sesión
+      //localStorage.setItem("usuario", JSON.stringify(result.usuario));
+
+      if (rol === "administrador") {
+        navigate("/admin/admin-dashboard");
+      } else if (rol === "profesor") {
+        navigate("/profesor/mi-horario");
+      } else {
+        navigate("/");
+      }
 
     } catch (err) {
       console.error("Error al conectar con el servidor:", err);
