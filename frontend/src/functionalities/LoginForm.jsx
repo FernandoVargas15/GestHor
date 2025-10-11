@@ -24,7 +24,7 @@ function LoginForm() {
 
     try {
       // enviar datos al backend
-      const response = await fetch("http://localhost:4000/api/login", {
+      const response = await fetch("http://localhost:3000/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         // se manda tambien tipoUsuario para validarlo en el backend
@@ -95,21 +95,6 @@ function LoginForm() {
                   className={styles.inputField}
                   placeholder="Ingresa tu contraseña"
                 />
-              </div>
-
-              <div className={styles.formGroup}>
-                <label htmlFor="tipoUsuario">Tipo de usuario</label>
-                <select
-                  id="tipoUsuario"
-                  value={tipoUsuario}
-                  onChange={handleInputChange}
-                  className={styles.inputField}
-                  required
-                >
-                  <option value="">Seleccione...</option>
-                  <option value="administrador">Administrador</option>
-                  <option value="profesor">Profesor</option>
-                </select>
               </div>
 
               <div className={styles.forgotPasswordLink}>
