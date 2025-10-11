@@ -1,4 +1,4 @@
-import { users } from "../config/database.js";
+import { users } from "../models/userModel.js";
 
 const normaliza = (s = "") => String(s).trim().toLowerCase();
 
