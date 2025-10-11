@@ -4,7 +4,7 @@ const normaliza = (s = "") => String(s).trim().toLowerCase();
 
 const login = async (req, res) => {
     try {
-        const { correo, contraseña, tipoUsuario } = req.body;
+        const { correo, contraseña} = req.body;
 
         if (!correo || !contraseña) {
             return res.status(400).json({ ok: false, message: "Falta correo o contraseña" });
@@ -15,15 +15,9 @@ const login = async (req, res) => {
             return res.status(401).json({ ok: false, message: "Credenciales inválidas" });
         }
 
-        // validación de rol se envia el tipoUsuario
-        if (tipoUsuario && normaliza(tipoUsuario) !== normaliza(user.nombre_rol)) {
-            return res.status(403).json({
-                ok: false,
-                message: `Por favor seleccione su rol correctamente.`
-            });
-        }
-
+        // aqui valida automaticamente el rol desde la base de datos
         const redirectTo = user.nombre_rol === "administrador" ? "/admin" : "/profesor";
+
         return res.json({
             ok: true,
             usuario: { id: user.usuario_id, email: user.email, rol: user.nombre_rol },
