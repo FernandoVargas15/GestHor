@@ -106,3 +106,19 @@ Correo: profe@unach.mx
 Contraseña: 123456
 
 # Recuerden levantar el backend primero y despues el frontend para probar el inicio de sesion
+
+12/10/2025
+# instalar
+npm install bcrypt jsonwebtoken axios
+
+**Ejecutar**
+INSERT INTO usuarios (email, password, rol_id) 
+VALUES ('admin@unach.mx', '$2b$10$FCAhKuP1XlzHSgWDcKMwj.uQS2A2WhSTuLobPbdldayZsh14Y2I.G', 1)
+ON CONFLICT (email) DO UPDATE SET password = '$2b$10$FCAhKuP1XlzHSgWDcKMwj.uQS2A2WhSTuLobPbdldayZsh14Y2I.G';
+
+INSERT INTO usuarios (email, password, rol_id) 
+VALUES ('profe@unach.mx', '$2b$10$FCAhKuP1XlzHSgWDcKMwj.uQS2A2WhSTuLobPbdldayZsh14Y2I.G', 2)
+ON CONFLICT (email) DO UPDATE SET password = '$2b$10$FCAhKuP1XlzHSgWDcKMwj.uQS2A2WhSTuLobPbdldayZsh14Y2I.G';
+
+
+

@@ -1,5 +1,33 @@
-POST http://localhost:4000/api/insertardocente
+
+### Login Admin
+POST http://localhost:3000/api/login
 Content-Type: application/json
+
+{
+    "correo": "admin@unach.mx",
+    "contraseña": "123456"
+}
+
+###
+
+### Login Profesor
+POST http://localhost:3000/api/login
+Content-Type: application/json
+
+{
+    "correo": "profe@unach.mx",
+    "contraseña": "123456"
+}
+
+###
+
+### ====================================
+### DOCENTES - Gestión de profesores
+### ====================================
+
+POST http://localhost:3000/api/insertardocente
+Content-Type: application/json
+Authorization: Bearer <TOKEN_AQUI>
 
 {
     "nombres": "Jose Ruben",
@@ -14,8 +42,9 @@ Content-Type: application/json
 
 ###
 
-POST http://localhost:4000/api/insertardocente
+POST http://localhost:3000/api/insertardocente
 Content-Type: application/json
+Authorization: Bearer <TOKEN_AQUI>
 
 {
     "nombres": "Maria Fernanda",
@@ -29,4 +58,33 @@ Content-Type: application/json
 }
 
 ###
+
+### ====================================
+### UTILIDADES
+### ====================================
+
+### Health check - Verificar conexión a DB
+GET http://localhost:3000/api
+Content-Type: application/json
+
+###
+
+### ====================================
+### SQL - INSERTAR USUARIOS CON HASH
+### ====================================
+
+# Ejecutar en PostgreSQL para crear los usuarios:
+
+# Admin: admin@unach.mx / 123456
+INSERT INTO usuarios (email, password, rol_id) 
+VALUES ('admin@unach.mx', '$2b$10$FCAhKuP1XlzHSgWDcKMwj.uQS2A2WhSTuLobPbdldayZsh14Y2I.G', 1)
+ON CONFLICT (email) DO UPDATE SET password = '$2b$10$FCAhKuP1XlzHSgWDcKMwj.uQS2A2WhSTuLobPbdldayZsh14Y2I.G';
+
+# Profesor: profe@unach.mx / 123456
+INSERT INTO usuarios (email, password, rol_id) 
+VALUES ('profe@unach.mx', '$2b$10$FCAhKuP1XlzHSgWDcKMwj.uQS2A2WhSTuLobPbdldayZsh14Y2I.G', 2)
+ON CONFLICT (email) DO UPDATE SET password = '$2b$10$FCAhKuP1XlzHSgWDcKMwj.uQS2A2WhSTuLobPbdldayZsh14Y2I.G';
+
+###
+
 
