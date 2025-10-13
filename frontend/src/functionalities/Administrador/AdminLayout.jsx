@@ -17,6 +17,7 @@ export default function AdminLayout() {
                     <ul className="sidebar__list">
                         <li className="sidebar__item"><NavLink to="/admin/dashboard" className={linkClass}>Dashboard</NavLink></li>
                         <li className="sidebar__item"><NavLink to="/admin/docentes" className={linkClass}>Docentes</NavLink></li>
+                        <li className="sidebar__item"><NavLink to="/admin/materias" className={linkClass}>Materias</NavLink></li>
                         <li className="sidebar__item"><NavLink to="/admin/planes" className={linkClass}>Planes de Estudio</NavLink></li>
                         <li className="sidebar__item"><NavLink to="/admin/lugares" className={linkClass}>Lugares</NavLink></li>
                         <li className="sidebar__item"><NavLink to="/admin/horarios" className={linkClass}>Horarios</NavLink></li>

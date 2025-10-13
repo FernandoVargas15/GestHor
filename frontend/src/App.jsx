@@ -9,6 +9,7 @@ import MiHorario from "./functionalities/Profesor/MiHorario.jsx";
 import AdminLayout from "./functionalities/Administrador/AdminLayout.jsx";
 import AdminDashboard from "./functionalities/Administrador/Dashboard.jsx";
 import Docentes from "./functionalities/Administrador/Docentes.jsx";
+import Materias from "./functionalities/Administrador/Materias.jsx";
 import PlanesEstudio from "./functionalities/Administrador/PlanesEstudio.jsx";
 import Lugares from "./functionalities/Administrador/Lugares.jsx";
 import Horarios from "./functionalities/Administrador/Horarios.jsx";
@@ -34,6 +35,7 @@ function App() {
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<AdminDashboard />} />
           <Route path="docentes" element={<Docentes />} />
+          <Route path="materias" element={<Materias />} />
           <Route path="planes" element={<PlanesEstudio />} />
           <Route path="lugares" element={<Lugares />} />
           <Route path="horarios" element={<Horarios />} />
