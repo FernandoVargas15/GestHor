@@ -159,3 +159,9 @@ SELECT
 FROM public.materias m
 JOIN public.materias_catalogo mc ON m.nombre_materia = mc.nombre_materia
 ON CONFLICT (carrera_id, materia_id, numero_semestre) DO NOTHING;
+
+13/10/2025
+# Para cada cambio colocar npm install, puede que se hayan agregado nuevas dependencias (en el caso de que falle) - EN ESTE CASO EN BACKEND
+**Agregar lo siguiente en el .env para que jale (del backend)**
+JWT_EXPIRES_IN=15m
+JWT_SECRET= *coloca el siguiente comando y te generara el codigo / openssl rand -base64 32 / copialo y pagalo ahi*
