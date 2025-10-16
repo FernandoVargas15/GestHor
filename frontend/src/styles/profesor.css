@@ -1,0 +1,281 @@
+/* ====== Profesor UI — variables base ====== */
+:root {
+    --pf-bg: #f7f9fc;
+    --pf-card: #ffffff;
+    --pf-text: #0f172a;
+    --pf-muted: #6b7280;
+    --pf-border: #e5e7eb;
+    --pf-primary: #2563eb;
+    --pf-primary-600: #1d4ed8;
+    --pf-success: #16a34a;
+    --pf-danger: #dc2626;
+    --pf-warning: #f59e0b;
+    --pf-hover: #f3f4f6;
+    --pf-shadow: 0 1px 2px rgba(0, 0, 0, .04), 0 6px 16px rgba(0, 0, 0, .06);
+}
+
+/* ====== Layout básico ====== */
+.pf-page {
+    background: var(--pf-bg);
+    min-height: 100vh;
+    padding: 16px;
+}
+
+.pf-container {
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+/* ====== Card reusables ====== */
+.pf-card {
+    background: var(--pf-card);
+    border: 1px solid var(--pf-border);
+    border-radius: 14px;
+    box-shadow: var(--pf-shadow);
+    padding: 16px;
+}
+
+/* ====== Títulos y texto ====== */
+.pf-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--pf-text);
+    margin: 0;
+}
+
+.pf-subtitle {
+    margin-top: 4px;
+    color: var(--pf-muted);
+    font-size: 14px;
+}
+
+/* ====== Barra superior (encabezado simple) ====== */
+.pf-header {
+    background: var(--pf-card);
+    border: 1px solid var(--pf-border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--pf-shadow);
+    margin-bottom: 12px;
+}
+
+.pf-header__left {
+    display: flex;
+    flex-direction: column;
+}
+
+.pf-header__title {
+    font-weight: 800;
+    color: var(--pf-text);
+}
+
+.pf-header__caption {
+    font-size: 13px;
+    color: var(--pf-muted);
+}
+
+/* ====== Tabs ====== */
+.pf-tabs {
+    background: var(--pf-card);
+    border: 1px solid var(--pf-border);
+    border-radius: 14px;
+    padding: 0 8px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    box-shadow: var(--pf-shadow);
+    margin-bottom: 16px;
+}
+
+.pf-tab {
+    appearance: none;
+    border: none;
+    background: transparent;
+    padding: 12px 14px;
+    font-size: 14px;
+    color: var(--pf-muted);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    border-radius: 10px 10px 0 0;
+    text-decoration: none;
+}
+
+.pf-tab:hover {
+    background: var(--pf-hover);
+}
+
+.pf-tab--active {
+    color: var(--pf-text);
+    font-weight: 700;
+    border-bottom-color: var(--pf-primary);
+}
+
+/* ====== Controles / botones ====== */
+.pf-btn {
+    appearance: none;
+    border: 1px solid var(--pf-border);
+    background: var(--pf-card);
+    padding: 8px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.pf-btn:hover {
+    background: var(--pf-hover);
+}
+
+.pf-btn--primary {
+    background: var(--pf-primary);
+    border-color: var(--pf-primary);
+    color: #fff;
+}
+
+.pf-btn--primary:hover {
+    background: var(--pf-primary-600);
+}
+
+.pf-select {
+    border: 1px solid var(--pf-border);
+    background: var(--pf-card);
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 14px;
+}
+
+/* ====== Tabla de horario ====== */
+.pf-table-wrap {
+    overflow-x: auto;
+}
+
+.pf-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.pf-table thead th {
+    background: #f8fafc;
+    text-align: left;
+    font-weight: 700;
+    color: var(--pf-text);
+    padding: 12px 10px;
+    border: 1px solid var(--pf-border);
+}
+
+.pf-table tbody td {
+    border: 1px solid var(--pf-border);
+    padding: 12px 10px;
+    vertical-align: top;
+}
+
+.pf-table .pf-time {
+    background: #f8fafc;
+    font-weight: 700;
+    width: 140px;
+}
+
+/* ====== Bloques de clase (eventos) ====== */
+.pf-event {
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    margin: 2px 0;
+}
+
+.pf-event small {
+    display: block;
+    margin-top: 4px;
+    font-weight: 600;
+    opacity: .8;
+}
+
+/* Paletas suaves (no iconos) */
+.pf-c-blue {
+    background: #e8f0ff;
+    color: #1d4ed8;
+}
+
+.pf-c-green {
+    background: #e7f7ef;
+    color: #15803d;
+}
+
+.pf-c-yellow {
+    background: #fff6d9;
+    color: #92400e;
+}
+
+.pf-c-red {
+    background: #ffe3e3;
+    color: #b91c1c;
+}
+
+.pf-c-purple {
+    background: #f3e8ff;
+    color: #7e22ce;
+}
+
+.pf-c-cyan {
+    background: #e6f9ff;
+    color: #0e7490;
+}
+
+.pf-c-pink {
+    background: #ffe6f2;
+    color: #be185d;
+}
+
+.pf-c-teal {
+    background: #e6fffb;
+    color: #0f766e;
+}
+
+.pf-c-amber {
+    background: #fff3cd;
+    color: #92400e;
+}
+
+.pf-c-lime {
+    background: #f0ffe1;
+    color: #3f6212;
+}
+
+.pf-c-indigo {
+    background: #e9eaff;
+    color: #4338ca;
+}
+
+/* ====== Fila de acciones del horario ====== */
+.pf-schedule-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* ====== Responsivo ====== */
+@media (max-width: 900px) {
+    .pf-table .pf-time {
+        width: 110px;
+    }
+}
+
+@media (max-width: 640px) {
+    .pf-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .pf-tabs {
+        overflow-x: auto;
+    }
+
+    .pf-schedule-actions {
+        width: 100%;
+    }
+}

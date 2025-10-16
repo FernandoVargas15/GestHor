@@ -1,9 +1,14 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
+
 import LoginForm from "./functionalities/LoginForm";
 import RecoveryForm from "./functionalities/RecoveryForm";
+
+//profesor
 import MiHorario from "./functionalities/Profesor/MiHorario.jsx";
+import MisMaterias from "./functionalities/Profesor/MisMaterias.jsx";
+import Disponibilidad from "./functionalities/Profesor/Disponibilidad.jsx";
 
 // Admin
 import AdminLayout from "./functionalities/Administrador/AdminLayout.jsx";
@@ -28,6 +33,8 @@ function App() {
 
         {/* Profesor */}
         <Route path="/profesor/mi-horario" element={<MiHorario />} />
+        <Route path="/profesor/mis-materias" element={<MisMaterias />} />
+        <Route path="/profesor/disponibilidad" element={<Disponibilidad />} />
 
         {/* Admin con layout + sidebar */}
         <Route path="/admin" element={<AdminLayout />}>
@@ -39,7 +46,7 @@ function App() {
           <Route path="planes" element={<PlanesEstudio />} />
           <Route path="lugares" element={<Lugares />} />
           <Route path="horarios" element={<Horarios />} />
-          <Route path="solicitudes" element={<Solicitudes />} /> 
+          <Route path="solicitudes" element={<Solicitudes />} />
         </Route>
 
         {/* si alguien entra a ruta vieja */}
