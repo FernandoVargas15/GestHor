@@ -24,7 +24,7 @@ const login = async (req, res) => {
             });
         }
 
-        // Comparar contraseña con hash usando bcrypt
+        // Comparar contraseña/token con el hash almacenado
         const passwordMatch = await bcrypt.compare(contraseña, user.password);
         
         if (!passwordMatch) {

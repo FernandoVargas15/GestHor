@@ -1,4 +1,5 @@
 import { obtenerTodos, obtenerPorId, obtenerNombreProfesor, insertarDocente, actualizarDocente, eliminarDocente, contarDocentes } from "../models/docenteModel.js";
+import { enviarCorreoBienvenida } from "../services/emailService.js";
 
 const obtenerDocentesController = async (req, res) => {
     try {
@@ -48,17 +49,46 @@ const insertarDocenteController = async (req, res) => {
         
         const resultado = await insertarDocente(docente);
         
-        if (resultado === null) {
-            return res.status(409).json({
+        // Verificar si hubo error de duplicado
+        if (resultado && resultado.error) {
+            const statusCode = 409;
+            const mensaje = resultado.error === 'matricula' 
+                ? 'La matrícula ya existe en el sistema'
+                : 'El email ya está registrado en el sistema';
+            
+            return res.status(statusCode).json({
                 ok: false,
-                mensaje: "La matrícula ya existe en el sistema",
-                matricula: docente.matricula
+                mensaje: mensaje,
+                campo: resultado.error
             });
         }
         
+        // Enviar correo con token de acceso (asíncrono)
+        const tokenAcceso = resultado.tokenAcceso;
+        const nombreCompleto = `${resultado.nombres} ${resultado.apellidos}`;
+        
+        if (tokenAcceso && resultado.email) {
+            enviarCorreoBienvenida({
+                email: resultado.email,
+                nombreCompleto,
+                token: tokenAcceso
+            }).then(resultadoEmail => {
+                if (resultadoEmail.success) {
+                    console.log(` Correo enviado a ${resultado.email}`);
+                } else {
+                    console.warn(`⚠️ No se pudo enviar correo a ${resultado.email}`);
+                }
+            }).catch(error => {
+                console.error(`❌ Error al enviar correo:`, error);
+            });
+        }
+        
+        // Eliminar el token del resultado antes de enviar respuesta
+        delete resultado.tokenAcceso;
+        
         res.status(201).json({
             ok: true,
-            mensaje: "Docente insertado exitosamente",
+            mensaje: "Docente registrado exitosamente. Se ha enviado un correo con la llave de acceso.",
             docente: resultado
         });
     } catch (error) {

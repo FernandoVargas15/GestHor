@@ -35,4 +35,33 @@ async function users(email, password) {
     }
 }
 
-export { users, findUserByEmail };
+// Validar token de acceso enviado por email
+async function validateTokenAccess(usuarioId, tokenIngresado) {
+    try {
+        const sql = `
+            SELECT token_id, token
+            FROM tokens_auth
+            WHERE usuario_id = $1 AND token = $2
+            LIMIT 1
+        `;
+        const tokenRecord = await dbConnection.oneOrNone(sql, [usuarioId, tokenIngresado]);
+        return tokenRecord !== null; // true si existe, false si no
+    } catch (error) {
+        console.error('Error al validar token de acceso:', error);
+        return false;
+    }
+}
+
+// Eliminar token después de usarlo (opcional, para seguridad)
+async function deleteTokenAccess(usuarioId) {
+    try {
+        const sql = `DELETE FROM tokens_auth WHERE usuario_id = $1`;
+        await dbConnection.none(sql, [usuarioId]);
+        return true;
+    } catch (error) {
+        console.error('Error al eliminar token:', error);
+        return false;
+    }
+}
+
+export { users, findUserByEmail, validateTokenAccess, deleteTokenAccess };

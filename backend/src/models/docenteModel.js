@@ -1,4 +1,6 @@
 import { dbConnection } from "../config/database.js";
+import { generarTokenAcceso } from "../utils/tokenGenerator.js";
+import bcrypt from "bcrypt";
 
 const obtenerTodos = async () => {
     try {
@@ -37,30 +39,57 @@ const insertarDocente = async (docente) => {
     try {
         const { nombres, apellidos, matricula, grado_academico, numero_plaza, numero_contrato, direccion, telefono, email } = docente;
         
-        const existe = await dbConnection.oneOrNone(
+        // Verificar si la matrícula ya existe
+        const existeMatricula = await dbConnection.oneOrNone(
             'SELECT * FROM profesores WHERE matricula = $1',
             [matricula]
         );
         
-        if (existe) {
-            return null; 
+        if (existeMatricula) {
+            return { error: 'matricula', mensaje: 'La matrícula ya existe en el sistema' };
         }
         
-        const defaultPassword = '$2b$10$FCAhKuP1XlzHSgWDcKMwj.uQS2A2WhSTuLobPbdldayZsh14Y2I.G';
+        // Verificar si el email ya existe
+        const existeEmail = await dbConnection.oneOrNone(
+            'SELECT * FROM usuarios WHERE email = $1',
+            [email]
+        );
         
+        if (existeEmail) {
+            return { error: 'email', mensaje: 'El email ya está registrado en el sistema' };
+        }
+        
+        // Generar token de acceso de 8 caracteres
+        const token = generarTokenAcceso();
+        
+        // Hashear el token para guardarlo como contraseña
+        const hashedToken = await bcrypt.hash(token, 10);
+        
+        // Crear usuario con rol profesor (rol_id = 2)
         const usuario = await dbConnection.one(
             `INSERT INTO usuarios (email, password, rol_id) 
              VALUES ($1, $2, 2) 
              RETURNING usuario_id`,
-            [email, defaultPassword]
+            [email, hashedToken]
         );
         
+        // Insertar profesor
         const resultado = await dbConnection.one(
             `INSERT INTO profesores (profesor_id, nombres, apellidos, matricula, grado_academico, numero_plaza, numero_contrato, direccion, telefono, email) 
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
              RETURNING *`,
             [usuario.usuario_id, nombres, apellidos, matricula, grado_academico, numero_plaza, numero_contrato, direccion, telefono, email]
         );
+        
+        // Guardar token en la tabla tokens_auth
+        await dbConnection.none(
+            `INSERT INTO tokens_auth (usuario_id, token) 
+             VALUES ($1, $2)`,
+            [usuario.usuario_id, token]
+        );
+        
+        // Agregar el token al resultado para enviarlo por correo
+        resultado.tokenAcceso = token;
         
         return resultado;
     } catch (error) {

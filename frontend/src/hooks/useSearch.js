@@ -1,17 +1,6 @@
 import { useMemo } from "react";
 
-/**
- * Hook personalizado para filtrar items basado en un término de búsqueda
- * 
- * @param {Array} items - Array de objetos a filtrar
- * @param {string} searchTerm - Término de búsqueda
- * @param {Array<string>} searchKeys - Array con los nombres de las propiedades donde buscar
- * @returns {Array} - Array filtrado
- * 
- * @example
- * const filteredCarreras = useSearch(carreras, "ingenieria", ["nombre_carrera"]);
- * const filteredMaterias = useSearch(materias, "calc", ["nombre_materia", "codigo"]);
- */
+
 export const useSearch = (items = [], searchTerm = "", searchKeys = []) => {
     return useMemo(() => {
         if (!searchTerm.trim()) {

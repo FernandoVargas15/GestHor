@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "../styles/LoginForm.module.css";
+import PasswordInput from "../components/ui/PasswordInput";
 
 function LoginForm() {
   const [correo, setCorreo] = useState("");
@@ -100,18 +101,14 @@ function LoginForm() {
                 />
               </div>
 
-              <div className={styles.formGroup}>
-                <label htmlFor="contraseña">Contraseña</label>
-                <input
-                  type="password"
-                  id="contraseña"
-                  value={contraseña}
-                  onChange={handleInputChange}
-                  required
-                  className={styles.inputField}
-                  placeholder="Ingresa tu contraseña"
-                />
-              </div>
+              <PasswordInput
+                id="contraseña"
+                value={contraseña}
+                onChange={handleInputChange}
+                placeholder="Ingresa tu contraseña o token de acceso"
+                required={true}
+                label="Contraseña"
+              />
 
               <div className={styles.forgotPasswordLink}>
                 <Link to="/recovery">¿Olvidaste tu contraseña?</Link>

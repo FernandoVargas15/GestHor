@@ -54,11 +54,7 @@ export const auth = (req, res, next) => {
     }
 };
 
-/**
- * Middleware para verificar que el usuario tenga uno de los roles permitidos
- * Debe usarse después del middleware auth
- * @param {...string} roles - Lista de roles permitidos (ej: 'administrador', 'profesor')
- */
+
 export const requireRole = (...roles) => {
     return (req, res, next) => {
         if (!req.user) {
