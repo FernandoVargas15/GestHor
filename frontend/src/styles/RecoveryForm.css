@@ -52,30 +52,32 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0 5%; /* prueba*/
-
+  padding: 1rem 5%;
+  overflow-y: auto;
 }
 
 .form-card {
   background-color: var(--white);
-  color: #333; /* Texto oscuro para la tarjeta blanca */
-  padding: 3rem;
-  border-radius: 12px; /* Esquinas redondeadas */
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); /* Sombra sutil */
+  color: #333;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   width: 100%;
-  max-width: 450px; /* Ancho máximo de la tarjeta */
+  max-width: 450px;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .card-title {
   font-size: 1.8rem;
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.3rem;
 }
 
 .card-subtitle {
   font-size: 1rem;
   color: #666;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 /* --- Estilos del Formulario y Campos --- */
@@ -85,7 +87,7 @@
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .form-group label {
@@ -99,11 +101,11 @@
 .form-group input,
 .form-group textarea {
   width: 100%;
-  padding: 10px 15px;
+  padding: 8px 12px;
   border: 1px solid var(--input-border);
   border-radius: 6px;
   font-size: 1rem;
-  box-sizing: border-box; /* Incluye padding y border en el ancho/alto */
+  box-sizing: border-box;
 }
 
 .form-group input::placeholder,
@@ -112,15 +114,16 @@
 }
 
 .form-group textarea {
-  resize: vertical; /* Permite redimensionar solo verticalmente */
+  resize: vertical;
+  min-height: 60px;
 }
 
 /* Mensaje Importante (texto pequeño y gris) */
 .important-note {
   font-size: 0.8rem;
   color: #666;
-  margin-top: 1rem;
-  margin-bottom: 1.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
   line-height: 1.4;
 }
 
@@ -128,30 +131,30 @@
 .submit-button {
   background-color: var(--button-blue);
   color: var(--white);
-  padding: 12px;
+  padding: 10px;
   border: none;
   border-radius: 6px;
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.3s ease;
-  width: 100%; /* Ocupa todo el ancho */
+  width: 100%;
 }
 
 .submit-button:hover {
-  background-color: #0056b3; /* Tono más oscuro al pasar el ratón */
+  background-color: #0056b3;
 }
 
 /* Enlace de Volver */
 .back-link-container {
   text-align: center;
-  margin-top: 1.5rem;
+  margin-top: 1rem;
 }
 
 .back-link {
   color: var(--button-blue);
   font-size: 0.95rem;
-  text-decoration: none; 
+  text-decoration: none;
   transition: color 0.3s ease;
 }
 

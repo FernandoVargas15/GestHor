@@ -171,3 +171,6 @@ JWT_SECRET= *coloca el siguiente comando y te generara el codigo / openssl rand 
 16/10-2025
 # instalar en frontend
 npm install xlsx
+# instalar en backend 
+npm install passport passport-google-oauth20 express-session
+

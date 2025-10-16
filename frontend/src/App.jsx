@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import LoginForm from "./functionalities/LoginForm";
 import RecoveryForm from "./functionalities/RecoveryForm";
+import AuthCallback from "./functionalities/AuthCallback";
 
 //profesor
 import MiHorario from "./functionalities/Profesor/MiHorario.jsx";
@@ -30,6 +31,7 @@ function App() {
         <Route path="/" element={<LoginForm />} />
         <Route path="/login" element={<LoginForm />} />
         <Route path="/recovery" element={<RecoveryForm />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
 
         {/* Profesor */}
         <Route path="/profesor/mi-horario" element={<MiHorario />} />

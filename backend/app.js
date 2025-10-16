@@ -1,11 +1,14 @@
 import express from "express";
 import cors from "cors";
+import session from "express-session";
+import passport from "./src/config/passport.js";
 import docentes from './docentes.js'
 
 
 // cambio de rutas para que nos funcione a todos (creo)
 import { pruebaConexion } from "./src/config/database.js";
 import authRoutes from "./src/routes/authRout.js";
+import googleAuthRoutes from "./src/routes/googleAuthRoutes.js";
 import docenteRoutes from "./src/routes/docenteRoutes.js";
 import carreraRoutes from "./src/routes/carreraRoutes.js";
 import materiaRoutes from "./src/routes/materiaRoutes.js";
@@ -21,6 +24,20 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// Configurar sesiones para passport
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || 'your-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false } // cambiar a true en producción con HTTPS
+  })
+);
+
+// Inicializar passport
+app.use(passport.initialize());
+app.use(passport.session());
+
 // Rutas base:
 //  - POST /api/login              (desde authRout.js)
 //  - /api/docentes                (desde docenteRoutes.js)
@@ -32,7 +49,10 @@ app.use(express.json());
 //  - /api/profesores/:id/info-horarios  (desde profesorInfoRoutes.js)
 //  - /api/horarios/validar-profesor-materia (desde profesorInfoRoutes.js)
 //  - /api/horarios                (desde horarioRoutes.js)
+//  - /api/auth/google             (desde googleAuthRoutes.js)
+//  - /api/auth/google/callback    (desde googleAuthRoutes.js)
 app.use("/api", authRoutes);
+app.use("/api", googleAuthRoutes);
 app.use("/api", docenteRoutes);
 app.use("/api", carreraRoutes);
 app.use("/api", materiaRoutes);
