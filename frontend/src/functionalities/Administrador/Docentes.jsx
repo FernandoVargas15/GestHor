@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { obtenerDocentes, crearDocente, actualizarDocente, eliminarDocente } from "../../services/docenteService";
+import SearchInput from "../../components/ui/SearchInput";
+import { useSearch } from "../../hooks/useSearch";
 
 function emptyForm() {
     return {
@@ -19,6 +21,10 @@ export default function Docentes() {
     const [docentes, setDocentes] = useState([]);
     const [form, setForm] = useState(emptyForm());
     const [editingId, setEditingId] = useState(null);
+    const [busqueda, setBusqueda] = useState("");
+    
+    // Buscar en nombres, apellidos, matricula y email
+    const docentesFiltrados = useSearch(docentes, busqueda, ["nombres", "apellidos", "matricula", "email"]);
 
     useEffect(() => {
         cargarDocentes();
@@ -130,15 +136,33 @@ export default function Docentes() {
                 </div>
                 <div className="card">
                     <h3>Registrados ({docentes.length})</h3>
-                    {docentes.map((d) => (
-                        <div key={d.profesor_id} className="card">
-                            <div><strong>{d.nombres} {d.apellidos}</strong></div>
-                            <div>Mat: {d.matricula}</div>
-                            <div>Email: {d.email}</div>
-                            <button className="link-btn" onClick={() => onEdit(d)}>Editar</button>
-                            <button className="link-btn link-btn--danger" onClick={() => onDelete(d.profesor_id)}>Eliminar</button>
+                    
+                    {/* Buscador */}
+                    {docentes.length > 0 && (
+                        <div style={{ marginBottom: 12 }}>
+                            <SearchInput
+                                value={busqueda}
+                                onChange={setBusqueda}
+                                placeholder=" Buscar docente (nombre, matrícula, email)..."
+                            />
                         </div>
-                    ))}
+                    )}
+                    
+                    {docentesFiltrados.length === 0 && busqueda ? (
+                        <div className="form__hint">
+                            No se encontraron docentes que coincidan con "{busqueda}"
+                        </div>
+                    ) : (
+                        docentesFiltrados.map((d) => (
+                            <div key={d.profesor_id} className="card">
+                                <div><strong>{d.nombres} {d.apellidos}</strong></div>
+                                <div>Mat: {d.matricula}</div>
+                                <div>Email: {d.email}</div>
+                                <button className="link-btn" onClick={() => onEdit(d)}>Editar</button>
+                                <button className="link-btn link-btn--danger" onClick={() => onDelete(d.profesor_id)}>Eliminar</button>
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
         </>

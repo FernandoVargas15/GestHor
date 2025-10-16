@@ -1,25 +1,16 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { obtenerMaterias } from "../../services/materiaService";
+import { obtenerDocentes } from "../../services/docenteService";
+import { obtenerHorarios, crearHorario, actualizarHorario, eliminarHorario } from "../../services/horarioService";
+import AutocompleteInput from "../../components/admin/AutocompleteInput";
+import InfoProfesorModal from "../../components/admin/InfoProfesorModal";
+import { useValidacionHorario } from "../../hooks/useValidacionHorario";
 
-// simulacion de datos (conectar al backend luego)
-const PROFESORES = [
-    { id: "p1", nombre: "Prof. Juan Pérez" },
-    { id: "p2", nombre: "Prof. María García" },
-    { id: "p3", nombre: "Prof. Carlos López" },
-];
-
-const MATERIAS = [
-    "Matemáticas I",
-    "Álgebra",
-    "Cálculo",
-    "Geometría",
-    "Física I",
-    "Química General",
-];
-
+// simulacion de datos de salones (conectar al backend luego)
 const SALONES = [
-    { id: "s101", nombre: "Aula 101" },
-    { id: "s102", nombre: "Aula 102" },
-    { id: "s103", nombre: "Lab 103" },
+    { id: 1, nombre: "Aula 101" },
+    { id: 2, nombre: "Aula 102" },
+    { id: 3, nombre: "Lab 103" },
 ];
 
 const DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
@@ -56,14 +47,57 @@ const emptyForm = {
 
 export default function Horarios() {
     const [form, setForm] = useState(emptyForm);
-    const [horarios, setHorarios] = useState([]); // [{id, profesorId, materia, salonId, dia, inicio, fin}]
+    const [horarios, setHorarios] = useState([]);
     const [editId, setEditId] = useState(null);
+    const [materias, setMaterias] = useState([]);
+    const [profesores, setProfesores] = useState([]);
+    const [cargando, setCargando] = useState(false);
+    const [profesorSeleccionado, setProfesorSeleccionado] = useState(null);
+    
+    // Hook de validación - Principio: Dependency Inversion
+    const { loading: validando, infoProfesor, cargarInfoProfesor, validarAsignacion } = useValidacionHorario();
+
+    useEffect(() => {
+        cargarDatos();
+    }, []);
+
+    const cargarDatos = async () => {
+        try {
+            setCargando(true);
+            const [dataMaterias, dataDocentes, dataHorarios] = await Promise.all([
+                obtenerMaterias(),
+                obtenerDocentes(),
+                obtenerHorarios()
+            ]);
+            setMaterias(dataMaterias.materias || []);
+            setProfesores(dataDocentes.docentes || []);
+            setHorarios(dataHorarios.horarios || []);
+        } catch (error) {
+            console.error("Error al cargar datos:", error);
+            alert("Error al cargar datos iniciales");
+        } finally {
+            setCargando(false);
+        }
+    };
 
     const horas = useMemo(() => timeRange("07:00", "22:00", 60), []);
 
     const onChange = (e) => {
         const { name, value } = e.target;
         setForm((f) => ({ ...f, [name]: value }));
+    };
+
+    const handleSeleccionarProfesor = async (profesor) => {
+        setProfesorSeleccionado(profesor);
+        setForm((f) => ({ ...f, profesorId: profesor.profesor_id }));
+        
+        // Cargar info del profesor automáticamente al seleccionarlo
+        await cargarInfoProfesor(profesor.profesor_id);
+    };
+
+    const limpiarProfesor = () => {
+        setProfesorSeleccionado(null);
+        setForm((f) => ({ ...f, profesorId: "" }));
     };
 
     const validar = () => {
@@ -101,56 +135,158 @@ export default function Horarios() {
         return null;
     };
 
-    const submit = (e) => {
+    const submit = async (e) => {
         e.preventDefault();
-        const err = validar();
-        if (err) return alert(err);
+        
+        if (cargando) return;
 
-        const payload = { id: editId ?? crypto.randomUUID(), ...form };
+        try {
+            setCargando(true);
 
-        if (editId) {
-            setHorarios((arr) => arr.map((h) => (h.id === editId ? payload : h)));
-            setEditId(null);
-        } else {
-            setHorarios((arr) => [...arr, payload]);
+            // 1. Validaciones básicas
+            const err = validar();
+            if (err) {
+                alert(err);
+                return;
+            }
+
+            // 2. Obtener la materia seleccionada
+            const materiaSeleccionada = materias.find(m => m.nombre_materia === form.materia);
+            if (!materiaSeleccionada) {
+                alert("Error: No se encontró la materia seleccionada");
+                return;
+            }
+
+            // 3. Validar que el profesor puede impartir la materia (solo en creación)
+            if (!editId) {
+                const nombreProfesor = profName(form.profesorId);
+                const puedeAsignar = await validarAsignacion(
+                    form.profesorId,
+                    materiaSeleccionada.materia_id,
+                    nombreProfesor,
+                    form.materia
+                );
+
+                if (!puedeAsignar) return;
+            }
+
+            // 4. Preparar datos para el backend
+            const horarioData = {
+                profesorId: parseInt(form.profesorId),
+                materiaId: materiaSeleccionada.materia_id,
+                salonId: parseInt(form.salonId),
+                diaSemana: form.dia,
+                horaInicio: form.inicio,
+                horaFin: form.fin
+            };
+
+            // 5. Guardar en el backend
+            if (editId) {
+                const response = await actualizarHorario(editId, horarioData);
+                if (response.ok) {
+                    // Recargar horarios
+                    const dataHorarios = await obtenerHorarios();
+                    setHorarios(dataHorarios.horarios || []);
+                    alert("Horario actualizado exitosamente");
+                    setEditId(null);
+                    setForm(emptyForm);
+                    setProfesorSeleccionado(null);
+                } else {
+                    alert(response.mensaje || "Error al actualizar horario");
+                }
+            } else {
+                const response = await crearHorario(horarioData);
+                if (response.ok) {
+                    // Recargar horarios
+                    const dataHorarios = await obtenerHorarios();
+                    setHorarios(dataHorarios.horarios || []);
+                    alert("Horario creado exitosamente");
+                    
+                    // MEJORA UX: Limpiar solo campos de horario, mantener profesor seleccionado
+                    setForm({
+                        profesorId: form.profesorId,  // Mantener profesor
+                        materia: "",                   // Limpiar materia
+                        salonId: "",                   // Limpiar salón
+                        dia: "",                       // Limpiar día
+                        inicio: "",                    // Limpiar hora inicio
+                        fin: ""                        // Limpiar hora fin
+                    });
+                    // NO limpiar profesorSeleccionado para que permanezca visible
+                } else {
+                    alert(response.mensaje || "Error al crear horario");
+                }
+            }
+        } catch (error) {
+            console.error("Error en submit:", error);
+            alert(error.response?.data?.mensaje || "Error al guardar horario");
+        } finally {
+            setCargando(false);
         }
-        setForm(emptyForm);
     };
 
     const onEdit = (h) => {
         setForm({
-            profesorId: h.profesorId,
-            materia: h.materia,
-            salonId: h.salonId,
-            dia: h.dia,
-            inicio: h.inicio,
-            fin: h.fin,
+            profesorId: h.profesor_id,
+            materia: h.nombre_materia,
+            salonId: h.salon_id,
+            dia: h.dia_semana,
+            inicio: h.hora_inicio.substring(0, 5),
+            fin: h.hora_fin.substring(0, 5),
         });
-        setEditId(h.id);
+        
+        // Encontrar y establecer el profesor seleccionado para edición
+        const profesor = profesores.find(p => p.profesor_id === h.profesor_id);
+        setProfesorSeleccionado(profesor || null);
+        
+        setEditId(h.horario_id);
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
-    const onDelete = (id) => {
+    const onDelete = async (horarioId) => {
         if (!confirm("¿Eliminar este horario?")) return;
-        setHorarios((arr) => arr.filter((h) => h.id !== id));
-        if (editId === id) {
-            setEditId(null);
-            setForm(emptyForm);
+        
+        try {
+            setCargando(true);
+            const response = await eliminarHorario(horarioId);
+            
+            if (response.ok) {
+                // Recargar horarios
+                const dataHorarios = await obtenerHorarios();
+                setHorarios(dataHorarios.horarios || []);
+                alert("Horario eliminado exitosamente");
+                
+                if (editId === horarioId) {
+                    setEditId(null);
+                    setForm(emptyForm);
+                    setProfesorSeleccionado(null);
+                }
+            } else {
+                alert(response.mensaje || "Error al eliminar horario");
+            }
+        } catch (error) {
+            console.error("Error al eliminar:", error);
+            alert(error.response?.data?.mensaje || "Error al eliminar horario");
+        } finally {
+            setCargando(false);
         }
     };
 
     // helpers para mostrar nombres
-    const profName = (id) => PROFESORES.find((p) => p.id === id)?.nombre || "";
+    const profName = (id) => {
+        const profesor = profesores.find((p) => p.profesor_id === id);
+        return profesor ? `${profesor.nombres} ${profesor.apellidos}` : "";
+    };
+    
     const salonName = (id) => SALONES.find((s) => s.id === id)?.nombre || "";
 
     // agrupar por dia para el listado
     const porDia = useMemo(() => {
         const map = {};
         DIAS.forEach((d) => (map[d] = []));
-        horarios.forEach((h) => map[h.dia]?.push(h));
+        horarios.forEach((h) => map[h.dia_semana]?.push(h));
         // ordenar por inicio
         Object.values(map).forEach((list) =>
-            list.sort((a, b) => toMins(a.inicio) - toMins(b.inicio))
+            list.sort((a, b) => toMins(a.hora_inicio.substring(0, 5)) - toMins(b.hora_inicio.substring(0, 5)))
         );
         return map;
     }, [horarios]);
@@ -171,19 +307,54 @@ export default function Horarios() {
                 <form onSubmit={submit}>
                     <div className="form__row form__row--2">
                         <div>
-                            <label>Profesor</label>
-                            <select
-                                className="select"
-                                name="profesorId"
-                                value={form.profesorId}
-                                onChange={onChange}
-                                required
-                            >
-                                <option value="">Seleccionar profesor...</option>
-                                {PROFESORES.map((p) => (
-                                    <option key={p.id} value={p.id}>{p.nombre}</option>
-                                ))}
-                            </select>
+                            <label>Profesor *</label>
+                            {profesorSeleccionado ? (
+                                <div>
+                                    <div style={{ 
+                                        display: "flex", 
+                                        alignItems: "center", 
+                                        gap: 8,
+                                        padding: "10px 12px",
+                                        border: "1px solid var(--border)",
+                                        borderRadius: 4,
+                                        backgroundColor: "#f0fdf4"
+                                    }}>
+                                        <span style={{ flex: 1, fontWeight: 600 }}>
+                                            {profesorSeleccionado.nombres} {profesorSeleccionado.apellidos}
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={limpiarProfesor}
+                                            style={{
+                                                background: "transparent",
+                                                border: "none",
+                                                color: "#dc2626",
+                                                cursor: "pointer",
+                                                fontSize: 20,
+                                                padding: "0 4px",
+                                                lineHeight: 1
+                                            }}
+                                            title="Cambiar profesor"
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <AutocompleteInput
+                                    items={profesores}
+                                    onSelect={handleSeleccionarProfesor}
+                                    placeholder=" Buscar profesor por nombre o apellido..."
+                                    disabled={cargando}
+                                    getItemKey={(p) => p.profesor_id}
+                                    getItemLabel={(p) => `${p.nombres} ${p.apellidos}`}
+                                />
+                            )}
+                            {profesores.length === 0 && !cargando && (
+                                <div className="form__hint" style={{ marginTop: 4 }}>
+                                    No hay profesores registrados. Ve a la sección "Docentes" para agregar.
+                                </div>
+                            )}
                         </div>
 
                         <div>
@@ -194,10 +365,13 @@ export default function Horarios() {
                                 value={form.materia}
                                 onChange={onChange}
                                 required
+                                disabled={cargando}
                             >
                                 <option value="">Seleccionar materia...</option>
-                                {MATERIAS.map((m) => (
-                                    <option key={m} value={m}>{m}</option>
+                                {materias.map((m) => (
+                                    <option key={m.materia_id} value={m.nombre_materia}>
+                                        {m.nombre_materia}
+                                    </option>
                                 ))}
                             </select>
                         </div>
@@ -272,8 +446,12 @@ export default function Horarios() {
                     </div>
 
                     <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
-                        <button type="submit" className="btn btn--primary">
-                            {editId ? "Actualizar Horario" : "Asignar Horario"}
+                        <button 
+                            type="submit" 
+                            className="btn btn--primary"
+                            disabled={cargando}
+                        >
+                            {cargando ? "Cargando..." : editId ? "Actualizar Horario" : "Asignar Horario"}
                         </button>
                         {editId && (
                             <button
@@ -282,7 +460,9 @@ export default function Horarios() {
                                 onClick={() => {
                                     setEditId(null);
                                     setForm(emptyForm);
+                                    setProfesorSeleccionado(null);
                                 }}
+                                disabled={cargando}
                             >
                                 Cancelar edición
                             </button>
@@ -320,19 +500,19 @@ export default function Horarios() {
                                             </thead>
                                             <tbody>
                                                 {porDia[dia].map((h) => (
-                                                    <tr key={h.id}>
-                                                        <td>{profName(h.profesorId)}</td>
-                                                        <td>{h.materia}</td>
-                                                        <td>{salonName(h.salonId)}</td>
-                                                        <td>{h.inicio}</td>
-                                                        <td>{h.fin}</td>
+                                                    <tr key={h.horario_id}>
+                                                        <td>{h.nombres} {h.apellidos}</td>
+                                                        <td>{h.nombre_materia}</td>
+                                                        <td>{salonName(h.salon_id)}</td>
+                                                        <td>{h.hora_inicio.substring(0, 5)}</td>
+                                                        <td>{h.hora_fin.substring(0, 5)}</td>
                                                         <td style={{ textAlign: "right" }}>
                                                             <button className="link-btn" onClick={() => onEdit(h)}>
                                                                 Editar
                                                             </button>
                                                             <button
                                                                 className="link-btn link-btn--danger"
-                                                                onClick={() => onDelete(h.id)}
+                                                                onClick={() => onDelete(h.horario_id)}
                                                             >
                                                                 Eliminar
                                                             </button>
@@ -348,6 +528,14 @@ export default function Horarios() {
                     </div>
                 )}
             </div>
+
+            {/* Información del profesor - se muestra automáticamente */}
+            {profesorSeleccionado && infoProfesor && (
+                <InfoProfesorModal
+                    profesorNombre={`${profesorSeleccionado.nombres} ${profesorSeleccionado.apellidos}`}
+                    infoProfesor={infoProfesor}
+                />
+            )}
         </>
     );
 }

@@ -5,6 +5,8 @@ import {
     actualizarMateria, 
     eliminarMateria 
 } from "../../services/materiaService";
+import SearchInput from "../../components/ui/SearchInput";
+import { useSearch } from "../../hooks/useSearch";
 
 function emptyForm() {
     return {
@@ -18,6 +20,9 @@ export default function Materias() {
     const [editingId, setEditingId] = useState(null);
     const [cargando, setCargando] = useState(false);
     const [busqueda, setBusqueda] = useState("");
+    
+    // Usar el hook de búsqueda
+    const materiasFiltradas = useSearch(materias, busqueda, ["nombre_materia"]);
 
     useEffect(() => {
         cargarMaterias();
@@ -99,11 +104,6 @@ export default function Materias() {
         }
     };
 
-    // Filtrar materias por búsqueda
-    const materiasFiltradas = materias.filter(m => 
-        m.nombre_materia.toLowerCase().includes(busqueda.toLowerCase())
-    );
-
     return (
         <>
             <div style={{ marginBottom: 16 }}>
@@ -167,11 +167,11 @@ export default function Materias() {
 
                     {/* Buscador */}
                     <div style={{ marginBottom: 12 }}>
-                        <input
-                            className="input"
-                            placeholder="🔍 Buscar materia..."
+                        <SearchInput
                             value={busqueda}
-                            onChange={(e) => setBusqueda(e.target.value)}
+                            onChange={setBusqueda}
+                            placeholder=" Buscar materia..."
+                            disabled={cargando}
                         />
                     </div>
 
@@ -222,7 +222,7 @@ export default function Materias() {
 
             {/* Información adicional */}
             <div className="card">
-                <h3 style={{ marginTop: 0 }}>💡 ¿Cómo funciona?</h3>
+                <h3 style={{ marginTop: 0 }}>¿Cómo funciona?</h3>
                 <ul style={{ marginBottom: 0, paddingLeft: 20 }}>
                     <li>Agrega materias aquí una sola vez al catálogo global</li>
                     <li>Luego, al crear o editar una carrera, selecciona las materias del catálogo</li>

@@ -2,6 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import "../../styles/profesor.css";
 import ProfesorTabs from "../../components/Profesor/ProfesorTabs";
 import { useNavigate } from "react-router-dom";
+import { obtenerNombreProfesor } from "../../services/docenteService";
+import { 
+    obtenerDisponibilidad, 
+    guardarDisponibilidad as guardarDisponibilidadAPI, 
+    obtenerPreferencias, 
+    guardarPreferencias as guardarPreferenciasAPI
+} from "../../services/disponibilidadService";
 
 const DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
 
@@ -37,6 +44,11 @@ function makeAvailability(slots) {
 
 export default function Disponibilidad() {
     const navigate = useNavigate();
+    const [nombreProfesor, setNombreProfesor] = useState("");
+    
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const profesorId = user.usuario_id;
+
     const [tipo, setTipo] = useState("matutino");
 
     // mantenemos disponibilidad separada por tipo
@@ -54,6 +66,63 @@ export default function Disponibilidad() {
 
     const slots = SLOTS[tipo];
     const availability = availByType[tipo];
+
+    useEffect(() => {
+        if (profesorId) {
+            cargarDatos();
+        }
+    }, [profesorId]);
+
+    const cargarDatos = async () => {
+        try {
+            const [dataNombre, dataDisponibilidad, dataPreferencias] = await Promise.all([
+                obtenerNombreProfesor(profesorId),
+                obtenerDisponibilidad(profesorId),
+                obtenerPreferencias(profesorId)
+            ]);
+
+            if (dataNombre.profesor) {
+                setNombreProfesor(`${dataNombre.profesor.nombres} ${dataNombre.profesor.apellidos}`);
+            }
+
+            if (dataDisponibilidad.disponibilidad && dataDisponibilidad.disponibilidad.length > 0) {
+                const disponibilidadCargada = { matutino: {}, vespertino: {} };
+                
+                dataDisponibilidad.disponibilidad.forEach(slot => {
+                    const turno = slot.turno;
+                    const horario = `${slot.hora_inicio.slice(0, 5)} - ${slot.hora_fin.slice(0, 5)}`;
+                    const diaIndex = DIAS.indexOf(slot.dia_semana);
+                    
+                    if (!disponibilidadCargada[turno][horario]) {
+                        disponibilidadCargada[turno][horario] = Array(DIAS.length).fill(false);
+                    }
+                    if (diaIndex >= 0) {
+                        disponibilidadCargada[turno][horario][diaIndex] = true;
+                    }
+                });
+
+                Object.keys(SLOTS).forEach(turno => {
+                    SLOTS[turno].forEach(slot => {
+                        if (!disponibilidadCargada[turno][slot]) {
+                            disponibilidadCargada[turno][slot] = Array(DIAS.length).fill(false);
+                        }
+                    });
+                });
+
+                setAvailByType(disponibilidadCargada);
+            }
+
+            if (dataPreferencias.preferencias) {
+                setPrefs({
+                    maxHorasDia: dataPreferencias.preferencias.max_horas_dia.toString(),
+                    preferencia: dataPreferencias.preferencias.preferencia_horario.toLowerCase(),
+                    comentarios: dataPreferencias.preferencias.comentarios_adicionales || ''
+                });
+            }
+        } catch (error) {
+            console.error("Error al cargar datos:", error);
+        }
+    };
 
     // si cambia el tipo y aún no hay estructura (por si agregas nuevos slots) la creamos
     useEffect(() => {
@@ -106,18 +175,31 @@ export default function Disponibilidad() {
         return count;
     }, [availability]);
 
-    const guardarDisponibilidad = () => {
-        // Aquí enviarías al backend availability del tipo actual
-        alert(
-            `Disponibilidad (${tipo}) guardada.\nBloques seleccionados: ${totalSeleccionadas}`
-        );
+    const guardarDisponibilidad = async () => {
+        try {
+            await guardarDisponibilidadAPI(profesorId, tipo, availability);
+            alert(`Disponibilidad ${tipo} guardada exitosamente.\nBloques seleccionados: ${totalSeleccionadas}`);
+        } catch (error) {
+            console.error("Error al guardar disponibilidad:", error);
+            alert("Error al guardar la disponibilidad. Intenta nuevamente.");
+        }
     };
 
-    const guardarPreferencias = (e) => {
+    const guardarPreferencias = async (e) => {
         e.preventDefault();
-        alert(
-            `Preferencias guardadas:\n- Máx horas/día: ${prefs.maxHorasDia}\n- Preferencia: ${prefs.preferencia}\n- Comentarios: ${prefs.comentarios || "(ninguno)"}`
-        );
+        try {
+            await guardarPreferenciasAPI(
+                profesorId, 
+                parseInt(prefs.maxHorasDia), 
+                prefs.preferencia.charAt(0).toUpperCase() + prefs.preferencia.slice(1),
+                prefs.comentarios
+            );
+            alert(`Preferencias guardadas exitosamente:\n- Máx horas/día: ${prefs.maxHorasDia}\n- Preferencia: ${prefs.preferencia}`);
+            cargarDatos();
+        } catch (error) {
+            console.error("Error al guardar preferencias:", error);
+            alert("Error al guardar las preferencias. Intenta nuevamente.");
+        }
     };
 
     const handleLogout = () => {
@@ -131,9 +213,9 @@ export default function Disponibilidad() {
             <div className="pf-container">
                 {/* Header */}
                 <div className="pf-header">
-                    <div className="pf-header__left">
-                        <span className="pf-header__title">Panel del Profesor</span>
-                        <span className="pf-header__caption">Bienvenido, Prof. Juan Pérez</span>
+                                        <div className="pf-header__left">
+                        <span className="pf-header__title">Disponibilidad de Horarios</span>
+                        <span className="pf-header__caption">Bienvenido, Prof. {nombreProfesor || "Cargando..."}</span>
                     </div>
                     <button className="pf-btn" onClick={handleLogout}>
                         Cerrar Sesión

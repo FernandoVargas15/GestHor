@@ -1,7 +1,8 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import "../../styles/profesor.css";
 import ProfesorTabs from "../../components/Profesor/ProfesorTabs";
 import { useNavigate } from "react-router-dom";
+import { obtenerNombreProfesor } from "../../services/docenteService";
 
 const DATA = {
   matutino: {
@@ -80,6 +81,22 @@ const DAYS = ["lunes", "martes", "miercoles", "jueves", "viernes"];
 
 export default function MiHorario() {
   const navigate = useNavigate();
+  const [nombreProfesor, setNombreProfesor] = useState("");
+
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const profesorId = user.usuario_id;
+
+  useEffect(() => {
+    if (profesorId) {
+      obtenerNombreProfesor(profesorId)
+        .then((data) => {
+          if (data.profesor) {
+            setNombreProfesor(`${data.profesor.nombres} ${data.profesor.apellidos}`);
+          }
+        })
+        .catch((error) => console.error("Error al cargar nombre:", error));
+    }
+  }, [profesorId]);
 
   const [tipo, setTipo] = useState("matutino");
   const schedule = DATA[tipo];
@@ -103,9 +120,9 @@ export default function MiHorario() {
       <div className="pf-container">
         {/* Header */}
         <div className="pf-header">
-          <div className="pf-header__left">
-            <span className="pf-header__title">Panel del Profesor</span>
-            <span className="pf-header__caption">Bienvenido, Prof. Juan Pérez</span>
+                    <div className="pf-header__left">
+            <span className="pf-header__title">Mi Horario</span>
+            <span className="pf-header__caption">Bienvenido, Prof. {nombreProfesor || "Cargando..."}</span>
           </div>
           <button className="pf-btn" onClick={handleLogout}>
             Cerrar Sesión

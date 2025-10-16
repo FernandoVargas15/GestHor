@@ -1,4 +1,4 @@
-import { obtenerTodos, obtenerPorId, insertarDocente, actualizarDocente, eliminarDocente } from "../models/docenteModel.js";
+import { obtenerTodos, obtenerPorId, obtenerNombreProfesor, insertarDocente, actualizarDocente, eliminarDocente, contarDocentes } from "../models/docenteModel.js";
 
 const obtenerDocentesController = async (req, res) => {
     try {
@@ -23,6 +23,22 @@ const obtenerDocentePorIdController = async (req, res) => {
     } catch (error) {
         console.error("Error en obtenerDocentePorIdController:", error);
         res.status(500).json({ ok: false, mensaje: "Error al obtener docente", error: error.message });
+    }
+};
+
+const obtenerNombreProfesorController = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const profesor = await obtenerNombreProfesor(id);
+        
+        if (!profesor) {
+            return res.status(404).json({ ok: false, mensaje: "Profesor no encontrado" });
+        }
+        
+        res.json({ ok: true, profesor });
+    } catch (error) {
+        console.error("Error en obtenerNombreProfesorController:", error);
+        res.status(500).json({ ok: false, mensaje: "Error al obtener nombre del profesor", error: error.message });
     }
 };
 
@@ -98,5 +114,28 @@ const eliminarDocenteController = async (req, res) => {
     }
 };
 
-export { obtenerDocentesController, obtenerDocentePorIdController, insertarDocenteController, actualizarDocenteController, eliminarDocenteController };
+/**
+ * Obtener estadísticas de docentes (contador)
+ * Endpoint: GET /api/docentes/estadisticas
+ */
+const obtenerEstadisticasDocentesController = async (req, res) => {
+    try {
+        const total = await contarDocentes();
+        res.json({ 
+            ok: true, 
+            estadisticas: {
+                totalDocentes: total
+            }
+        });
+    } catch (error) {
+        console.error("Error en obtenerEstadisticasDocentesController:", error);
+        res.status(500).json({ 
+            ok: false,
+            mensaje: "Error al obtener estadísticas de docentes",
+            error: error.message 
+        });
+    }
+};
+
+export { obtenerDocentesController, obtenerDocentePorIdController, obtenerNombreProfesorController, insertarDocenteController, actualizarDocenteController, eliminarDocenteController, obtenerEstadisticasDocentesController };
 export default insertarDocenteController;

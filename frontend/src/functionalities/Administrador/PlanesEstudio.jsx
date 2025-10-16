@@ -166,7 +166,7 @@ export default function PlanesEstudio() {
                                 <AutocompleteInput 
                                     items={catalogoMaterias}
                                     onSelect={handleSeleccionarMateria}
-                                    placeholder="🔍 Escribe para buscar materia..."
+                                    placeholder=" Escribe para buscar materia..."
                                     disabled={cargando}
                                     getItemKey={(m) => m.materia_id}
                                     getItemLabel={(m) => m.nombre_materia}

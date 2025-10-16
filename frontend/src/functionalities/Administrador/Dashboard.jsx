@@ -1,10 +1,18 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { obtenerEstadisticasDocentes } from "../../services/docenteService";
+import { obtenerEstadisticasCarreras } from "../../services/carreraService";
 
-function StatCard({ label, value }) {
+function StatCard({ label, value, loading = false }) {
   return (
     <div className="card">
       <div style={{ color: "var(--muted)", fontSize: 14 }}>{label}</div>
-      <div style={{ fontSize: 28, fontWeight: 800, marginTop: 6 }}>{value}</div>
+      <div style={{ fontSize: 28, fontWeight: 800, marginTop: 6 }}>
+        {loading ? (
+          <span style={{ color: "var(--muted)" }}>...</span>
+        ) : (
+          value
+        )}
+      </div>
     </div>
   );
 }
@@ -67,7 +75,7 @@ function ScheduleTable({ rows }) {
 }
 
 export default function Dashboard() {
-  // Tabla con rangos horarios tipo “matutino”, faltaria filtar para vespertino y actualizar la tabla 
+  // Tabla con rangos horarios tipo "matutino", faltaria filtar para vespertino y actualizar la tabla 
   const timeSlots = useMemo(
     () => [
       "07:00 - 08:00",
@@ -81,13 +89,40 @@ export default function Dashboard() {
     []
   );
 
-  // para luego que se conecte con datos reales del backend
-  const [stats] = useState({
-    docentes: 24,
-    carreras: 8,
-    salones: 45,
-    activos: 156,
+  // Estados para estadísticas reales del backend
+  const [stats, setStats] = useState({
+    docentes: 0,  // Se cargará desde BD
+    carreras: 0,  // Se cargará desde BD
+    salones: 45,  // TODO: Conectar con backend
+    activos: 156, // TODO: Conectar con backend
   });
+  const [cargando, setCargando] = useState(true);
+
+  // Cargar estadísticas al montar el componente
+  useEffect(() => {
+    cargarEstadisticas();
+  }, []);
+
+  const cargarEstadisticas = async () => {
+    try {
+      setCargando(true);
+      const [estadisticasDocentes, estadisticasCarreras] = await Promise.all([
+        obtenerEstadisticasDocentes(),
+        obtenerEstadisticasCarreras()
+      ]);
+      
+      setStats(prevStats => ({
+        ...prevStats,
+        docentes: estadisticasDocentes.estadisticas.totalDocentes,
+        carreras: estadisticasCarreras.estadisticas.totalCarreras
+      }));
+    } catch (error) {
+      console.error("Error al cargar estadísticas:", error);
+      // Mantener valores por defecto en caso de error
+    } finally {
+      setCargando(false);
+    }
+  };
 
   return (
     <>
@@ -101,8 +136,8 @@ export default function Dashboard() {
 
       {/* stats */}
       <div className="grid grid--4" style={{ marginBottom: 16 }}>
-        <StatCard label="Total Docentes" value={stats.docentes} />
-        <StatCard label="Carreras" value={stats.carreras} />
+        <StatCard label="Total Docentes" value={stats.docentes} loading={cargando} />
+        <StatCard label="Carreras" value={stats.carreras} loading={cargando} />
         <StatCard label="Salones" value={stats.salones} />
         <StatCard label="Horarios Activos" value={stats.activos} />
       </div>

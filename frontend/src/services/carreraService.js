@@ -44,3 +44,8 @@ export const eliminarCarrera = async (id) => {
     const response = await axios.delete(`${API_URL}/carreras/${id}`);
     return response.data;
 };
+
+export const obtenerEstadisticasCarreras = async () => {
+    const response = await axios.get(`${API_URL}/carreras/estadisticas`);
+    return response.data;
+};

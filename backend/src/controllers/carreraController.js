@@ -1,4 +1,4 @@
-import { obtenerTodas, obtenerPorId, insertar, actualizar, eliminar } from "../models/carreraModel.js";
+import { obtenerTodas, obtenerPorId, insertar, actualizar, eliminar, contarCarreras } from "../models/carreraModel.js";
 import { asignarMultiplesACarrera } from "../models/materiaModel.js";
 
 /**
@@ -165,10 +165,30 @@ const eliminarCarreraController = async (req, res) => {
     }
 };
 
+const obtenerEstadisticasCarrerasController = async (req, res) => {
+    try {
+        const total = await contarCarreras();
+        res.json({ 
+            ok: true, 
+            estadisticas: {
+                totalCarreras: total
+            }
+        });
+    } catch (error) {
+        console.error("Error en obtenerEstadisticasCarrerasController:", error);
+        res.status(500).json({ 
+            ok: false,
+            mensaje: "Error al obtener estadísticas de carreras",
+            error: error.message 
+        });
+    }
+};
+
 export { 
     obtenerCarrerasController, 
     obtenerCarreraPorIdController, 
     insertarCarreraController, 
     actualizarCarreraController, 
-    eliminarCarreraController 
+    eliminarCarreraController,
+    obtenerEstadisticasCarrerasController
 };

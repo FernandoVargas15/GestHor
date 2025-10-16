@@ -43,8 +43,13 @@ function LoginForm() {
       // si todo esta bien, redirige según el rol
       const rol = result?.usuario?.rol;
 
-      // (opcional) guarda la sesión
-      //localStorage.setItem("usuario", JSON.stringify(result.usuario));
+      // Guardar token y usuario en localStorage
+      localStorage.setItem("token", result.token);
+      localStorage.setItem("user", JSON.stringify({
+        usuario_id: result.usuario.id,
+        email: result.usuario.email,
+        rol: result.usuario.rol
+      }));
 
       if (rol === "administrador") {
         navigate("/admin/admin-dashboard");

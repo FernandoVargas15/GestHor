@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function AutocompleteInput({ 
     items, 
@@ -6,14 +6,28 @@ export default function AutocompleteInput({
     placeholder = "Buscar...", 
     disabled = false,
     getItemKey,
-    getItemLabel 
+    getItemLabel,
+    onSearchChange = null // Nueva prop para búsqueda dinámica
 }) {
     const [busqueda, setBusqueda] = useState("");
     const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
 
-    const itemsFiltrados = items.filter(item => 
-        getItemLabel(item).toLowerCase().includes(busqueda.toLowerCase())
-    );
+    // Si se proporciona onSearchChange, se llama cuando cambia la búsqueda
+    useEffect(() => {
+        if (onSearchChange && busqueda) {
+            const timer = setTimeout(() => {
+                onSearchChange(busqueda);
+            }, 300); // Debounce de 300ms
+            
+            return () => clearTimeout(timer);
+        }
+    }, [busqueda, onSearchChange]);
+
+    const itemsFiltrados = onSearchChange 
+        ? items // Si hay búsqueda dinámica, los items ya vienen filtrados
+        : items.filter(item => 
+            getItemLabel(item).toLowerCase().includes(busqueda.toLowerCase())
+          );
 
     const handleSelect = (item) => {
         onSelect(item);
@@ -52,7 +66,10 @@ export default function AutocompleteInput({
                 }}>
                     {itemsFiltrados.length === 0 ? (
                         <div style={{ padding: 12, color: "var(--text-muted)", textAlign: "center" }}>
-                            No se encontraron resultados con "{busqueda}"
+                            {busqueda.length < 2 
+                                ? "Escribe al menos 2 caracteres..." 
+                                : `No se encontraron resultados con "${busqueda}"`
+                            }
                         </div>
                     ) : (
                         itemsFiltrados.map((item) => (

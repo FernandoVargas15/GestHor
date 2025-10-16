@@ -131,4 +131,14 @@ const eliminar = async (id) => {
     }
 };
 
-export { obtenerTodas, obtenerPorId, insertar, actualizar, eliminar };
+const contarCarreras = async () => {
+    try {
+        const resultado = await dbConnection.one('SELECT COUNT(*) as total FROM carreras');
+        return parseInt(resultado.total, 10);
+    } catch (error) {
+        console.error('Error al contar carreras:', error);
+        throw error;
+    }
+};
+
+export { obtenerTodas, obtenerPorId, insertar, actualizar, eliminar, contarCarreras };

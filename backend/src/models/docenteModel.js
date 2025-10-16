@@ -20,6 +20,19 @@ const obtenerPorId = async (id) => {
     }
 };
 
+const obtenerNombreProfesor = async (id) => {
+    try {
+        const profesor = await dbConnection.oneOrNone(
+            'SELECT nombres, apellidos FROM profesores WHERE profesor_id = $1',
+            [id]
+        );
+        return profesor;
+    } catch (error) {
+        console.error('Error al obtener nombre del profesor:', error);
+        throw error;
+    }
+};
+
 const insertarDocente = async (docente) => {
     try {
         const { nombres, apellidos, matricula, grado_academico, numero_plaza, numero_contrato, direccion, telefono, email } = docente;
@@ -76,6 +89,17 @@ const actualizarDocente = async (id, docente) => {
     }
 };
 
+//   Obtener el conteo total de profesores 
+const contarDocentes = async () => {
+    try {
+        const resultado = await dbConnection.one('SELECT COUNT(*) as total FROM profesores');
+        return parseInt(resultado.total, 10);
+    } catch (error) {
+        console.error('Error al contar docentes:', error);
+        throw error;
+    }
+};
+
 const eliminarDocente = async (id) => {
     try {
         const resultado = await dbConnection.result('DELETE FROM profesores WHERE profesor_id = $1', [id]);
@@ -86,5 +110,5 @@ const eliminarDocente = async (id) => {
     }
 };
 
-export { obtenerTodos, obtenerPorId, insertarDocente, actualizarDocente, eliminarDocente };
+export { obtenerTodos, obtenerPorId, obtenerNombreProfesor, insertarDocente, actualizarDocente, eliminarDocente, contarDocentes };
 export default insertarDocente;
