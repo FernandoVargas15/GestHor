@@ -165,3 +165,9 @@ ON CONFLICT (carrera_id, materia_id, numero_semestre) DO NOTHING;
 **Agregar lo siguiente en el .env para que jale (del backend)**
 JWT_EXPIRES_IN=15m
 JWT_SECRET= *coloca el siguiente comando y te generara el codigo / openssl rand -base64 32 / copialo y pagalo ahi*
+
+
+
+16/10-2025
+# instalar en frontend
+npm install xlsx

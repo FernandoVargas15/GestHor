@@ -3,6 +3,7 @@ import "../../styles/profesor.css";
 import ProfesorTabs from "../../components/Profesor/ProfesorTabs";
 import { useNavigate } from "react-router-dom";
 import { obtenerNombreProfesor } from "../../services/docenteService";
+import { HorarioExcelExporter } from "../../utils/excelExportService";
 
 const DATA = {
   matutino: {
@@ -106,8 +107,26 @@ export default function MiHorario() {
     [tipo]
   );
 
-  const exportPDF = () => alert("Exportar a PDF (simulado).");
-  const exportExcel = () => alert("Exportar a Excel/CSV (simulado).");
+  /**
+   * Exporta el horario actual a PDF
+   */
+  const exportPDF = () => {
+    alert("Exportar a PDF (simulado).");
+  };
+
+
+  const exportExcel = () => {
+    try {
+      HorarioExcelExporter.exportSchedule(
+        schedule,
+        tipo,
+        nombreProfesor || 'Profesor'
+      );
+    } catch (error) {
+      console.error('Error al exportar a Excel:', error);
+      alert('Error al exportar el horario. Por favor, intenta nuevamente.');
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
