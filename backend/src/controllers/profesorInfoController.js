@@ -1,12 +1,7 @@
 import { obtenerDisponibilidadProfesor, obtenerPreferenciasProfesor } from '../models/disponibilidadModel.js';
 import { obtenerMateriasPorProfesor } from '../models/profesorMateriaModel.js';
 
-/**
- * Obtener información completa del profesor para asignación de horarios
- * Incluye: disponibilidad horaria, materias que puede impartir y preferencias
- * Principio: Single Responsibility - Consolida datos relacionados al horario
- */
-export const obtenerInfoHorariosProfesor = async (req, res) => {
+const obtenerInfoHorariosProfesor = async (req, res) => {
     try {
         const { profesorId } = req.params;
 
@@ -42,12 +37,7 @@ export const obtenerInfoHorariosProfesor = async (req, res) => {
     }
 };
 
-/**
- * Validar si un profesor puede impartir una materia
- * NO bloquea la asignación, solo informa al administrador
- * Principio: Open/Closed - Validación sin modificar la lógica de asignación
- */
-export const validarProfesorMateria = async (req, res) => {
+const validarProfesorMateria = async (req, res) => {
     try {
         const { profesorId, materiaId } = req.body;
 
@@ -60,7 +50,6 @@ export const validarProfesorMateria = async (req, res) => {
 
         const materias = await obtenerMateriasPorProfesor(profesorId);
         
-        // Verificar si la materia está en el perfil del profesor
         const puedeImpartir = materias.some(
             materia => materia.materia_id === parseInt(materiaId)
         );
@@ -81,4 +70,9 @@ export const validarProfesorMateria = async (req, res) => {
             error: error.message 
         });
     }
+};
+
+export {
+    obtenerInfoHorariosProfesor,
+    validarProfesorMateria
 };

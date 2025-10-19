@@ -64,3 +64,52 @@ export const plantillaBienvenida = ({ nombreCompleto, token, adminEmail }) => {
 </html>
     `.trim();
 };
+
+export const plantillaRecuperacion = ({ nombreCompleto, nuevoToken }) => {
+    return `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperación de Contraseña - GestHor</title>
+    <style>
+        ${emailStyles}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Sistema GestHor</h1>
+            <p>Recuperación de Contraseña</p>
+        </div>
+        
+        <div class="content">
+            <p>Hola <strong>${nombreCompleto}</strong>,</p>
+            
+            <p>Tu solicitud de recuperación de contraseña ha sido procesada exitosamente por el administrador del sistema.</p>
+            
+            <div class="token-box">
+                <div class="token-label">Tu nueva llave de acceso:</div>
+                <div class="token-value">${nuevoToken}</div>
+            </div>
+            
+            <p>Esta nueva llave de acceso reemplaza la anterior. Úsala para iniciar sesión en el sistema.</p>
+            
+            <div class="alert-box">
+                <p><strong> Importante:</strong> Guarda esta llave en un lugar seguro. Será necesaria cada vez que ingreses al sistema.</p>
+            </div>
+            
+            <p>Si no solicitaste este cambio, contacta inmediatamente al administrador del sistema.</p>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Sistema GestHor</strong></p>
+            <p>Gestión de Horarios Académicos</p>
+            <p>© ${new Date().getFullYear()} - Este es un correo automático</p>
+        </div>
+    </div>
+</body>
+</html>
+    `.trim();
+};

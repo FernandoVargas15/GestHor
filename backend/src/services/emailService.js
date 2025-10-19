@@ -1,6 +1,6 @@
 import { createTransport } from 'nodemailer';
 import dotenv from 'dotenv';
-import { plantillaBienvenida } from '../templates/emailTemplate.js';
+import { plantillaBienvenida, plantillaRecuperacion } from '../templates/emailTemplate.js';
 
 dotenv.config();
 
@@ -53,6 +53,44 @@ export const enviarCorreoBienvenida = async ({ email, nombreCompleto, token }) =
         
     } catch (error) {
         console.error(` Error al enviar correo a ${email}:`, error.message);
+        
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+};
+
+export const enviarCorreoRecuperacion = async ({ email, nombreCompleto, nuevoToken }) => {
+    try {
+        const transporter = crearTransporter();
+        
+        const html = plantillaRecuperacion({
+            nombreCompleto,
+            nuevoToken
+        });
+        
+        const mailOptions = {
+            from: {
+                name: 'Sistema GestHor',
+                address: process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER
+            },
+            to: email,
+            subject: 'Recuperación de Contraseña - Sistema GestHor',
+            html
+        };
+        
+        const info = await transporter.sendMail(mailOptions);
+        
+        console.log(`✅ Correo de recuperación enviado a ${email} - ID: ${info.messageId}`);
+        
+        return {
+            success: true,
+            messageId: info.messageId
+        };
+        
+    } catch (error) {
+        console.error(`❌ Error al enviar correo de recuperación a ${email}:`, error.message);
         
         return {
             success: false,

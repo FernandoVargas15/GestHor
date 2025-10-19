@@ -1,7 +1,6 @@
 import { obtenerMateriasPorProfesor, asignarMateriaAProfesor, eliminarMateriaDeProfesor } from '../models/profesorMateriaModel.js';
 
-// Obtener materias de un profesor
-export const obtenerMaterias = async (req, res) => {
+const obtenerMaterias = async (req, res) => {
     try {
         const { profesorId } = req.params;
 
@@ -17,8 +16,7 @@ export const obtenerMaterias = async (req, res) => {
     }
 };
 
-// Asignar materia a profesor
-export const asignarMateria = async (req, res) => {
+const asignarMateria = async (req, res) => {
     try {
         const { profesorId } = req.params;
         const { materia_id } = req.body;
@@ -44,8 +42,7 @@ export const asignarMateria = async (req, res) => {
     }
 };
 
-// Eliminar materia de profesor
-export const eliminarMateria = async (req, res) => {
+const eliminarMateria = async (req, res) => {
     try {
         const { profesorId, materiaId } = req.params;
         
@@ -59,4 +56,10 @@ export const eliminarMateria = async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: 'Error al eliminar materia del profesor' });
     }
+};
+
+export {
+    obtenerMaterias,
+    asignarMateria,
+    eliminarMateria
 };

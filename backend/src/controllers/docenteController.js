@@ -167,5 +167,12 @@ const obtenerEstadisticasDocentesController = async (req, res) => {
     }
 };
 
-export { obtenerDocentesController, obtenerDocentePorIdController, obtenerNombreProfesorController, insertarDocenteController, actualizarDocenteController, eliminarDocenteController, obtenerEstadisticasDocentesController };
-export default insertarDocenteController;
+export { 
+    obtenerDocentesController, 
+    obtenerDocentePorIdController, 
+    obtenerNombreProfesorController, 
+    insertarDocenteController, 
+    actualizarDocenteController, 
+    eliminarDocenteController, 
+    obtenerEstadisticasDocentesController 
+};

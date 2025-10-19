@@ -1,11 +1,6 @@
 import { dbConnection as db } from '../config/database.js';
 
-// =======================================================
-// 📦 CONTROLADOR DE EDIFICIOS
-// =======================================================
-
-// Obtener todos los edificios con sus salones
-export const obtenerEdificios = async (req, res) => {
+const obtenerEdificios = async (req, res) => {
     try {
         const edificios = await db.any('SELECT * FROM edificios');
         
@@ -25,8 +20,7 @@ export const obtenerEdificios = async (req, res) => {
     }
 };
 
-// Crear un nuevo edificio
-export const crearEdificio = async (req, res) => {
+const crearEdificio = async (req, res) => {
     try {
         const { nombre, descripcion } = req.body;
         const nuevoEdificio = await db.one(
@@ -40,8 +34,7 @@ export const crearEdificio = async (req, res) => {
     }
 };
 
-// Actualizar un edificio existente
-export const actualizarEdificio = async (req, res) => {
+const actualizarEdificio = async (req, res) => {
     try {
         const { id } = req.params;
         const { nombre, descripcion } = req.body;
@@ -56,8 +49,7 @@ export const actualizarEdificio = async (req, res) => {
     }
 };
 
-// Eliminar un edificio
-export const eliminarEdificio = async (req, res) => {
+const eliminarEdificio = async (req, res) => {
     try {
         const { id } = req.params;
         await db.none('DELETE FROM edificios WHERE id = $1', [id]);
@@ -68,12 +60,7 @@ export const eliminarEdificio = async (req, res) => {
     }
 };
 
-// =======================================================
-// 🏫 CONTROLADOR DE SALONES
-// =======================================================
-
-// Crear un nuevo salón
-export const crearSalon = async (req, res) => {
+const crearSalon = async (req, res) => {
     try {
         const { edificioId, numero, capacidad, tipo } = req.body;
         const nuevoSalon = await db.one(
@@ -87,8 +74,7 @@ export const crearSalon = async (req, res) => {
     }
 };
 
-// Actualizar un salón
-export const actualizarSalon = async (req, res) => {
+const actualizarSalon = async (req, res) => {
     try {
         const { id } = req.params;
         const { numero, capacidad, tipo } = req.body;
@@ -103,8 +89,7 @@ export const actualizarSalon = async (req, res) => {
     }
 };
 
-// Eliminar un salón
-export const eliminarSalon = async (req, res) => {
+const eliminarSalon = async (req, res) => {
     try {
         const { id } = req.params;
         await db.none('DELETE FROM salones WHERE id = $1', [id]);
@@ -113,4 +98,14 @@ export const eliminarSalon = async (req, res) => {
         console.error('Error al eliminar salón:', error);
         res.status(500).json({ error: 'Error al eliminar salón' });
     }
+};
+
+export {
+    obtenerEdificios,
+    crearEdificio,
+    actualizarEdificio,
+    eliminarEdificio,
+    crearSalon,
+    actualizarSalon,
+    eliminarSalon
 };

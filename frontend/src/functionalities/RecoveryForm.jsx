@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import '../styles/RecoveryForm.css';
+import { crearSolicitudRecuperacion } from '../services/solicitudRecuperacionService';
 
 const RecoveryForm = () => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   
   const [formData, setFormData] = useState({
-    userMatricula: '',
     registeredEmail: '',
     requestReason: '',
   });
@@ -20,12 +23,26 @@ const RecoveryForm = () => {
   };
 
   
-  const handleSubmit = (e) => {
-    e.preventDefault(); 
-    console.log('Solicitud enviada:', formData);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
     
-    alert('Solicitud de recuperación enviada. Revisa la consola para ver los datos.');
-    
+    try {
+      await crearSolicitudRecuperacion(
+        formData.registeredEmail,
+        formData.requestReason
+      );
+      
+      alert('Solicitud de recuperación enviada exitosamente. El administrador dará respuesta en un máximo de 24 horas hábiles.');
+      navigate('/login');
+    } catch (err) {
+      const mensaje = err.response?.data?.mensaje || 'Error al enviar la solicitud. Por favor, intente nuevamente.';
+      setError(mensaje);
+      alert(mensaje);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -46,21 +63,19 @@ const RecoveryForm = () => {
           <p className="card-subtitle">Complete los siguientes campos para enviar su solicitud</p>
 
           <form onSubmit={handleSubmit} className="recovery-form">
-            {/* Campo: Tu Usuario/Matrícula */}
-            <div className="form-group">
-              <label htmlFor="userMatricula">Tu Usuario/Matrícula</label>
-              <input
-                type="text"
-                id="userMatricula"
-                name="userMatricula"
-                value={formData.userMatricula}
-                onChange={handleChange}
-                placeholder="Ingrese su usuario o matrícula"
-                required
-              />
-            </div>
-
-            {/* Campo: Correo Electrónico Registrado */}
+            {error && (
+              <div style={{ 
+                padding: '10px', 
+                marginBottom: '15px', 
+                backgroundColor: '#fee', 
+                border: '1px solid #fcc',
+                borderRadius: '8px',
+                color: '#c33'
+              }}>
+                {error}
+              </div>
+            )}
+            
             <div className="form-group">
               <label htmlFor="registeredEmail">Correo Electrónico Registrado</label>
               <input
@@ -94,8 +109,8 @@ const RecoveryForm = () => {
             </p>
 
             {/* Botón de Enviar */}
-            <button type="submit" className="submit-button">
-              Enviar solicitud
+            <button type="submit" className="submit-button" disabled={loading}>
+              {loading ? 'Enviando...' : 'Enviar solicitud'}
             </button>
           </form>
 

@@ -8,10 +8,7 @@ import {
     verificarChoqueSalon
 } from '../models/horarioModel.js';
 
-/**
- * Obtener todos los horarios
- */
-export const listarHorarios = async (req, res) => {
+const listarHorarios = async (req, res) => {
     try {
         const horarios = await obtenerHorarios();
         res.json({ 
@@ -28,10 +25,7 @@ export const listarHorarios = async (req, res) => {
     }
 };
 
-/**
- * Obtener horarios de un profesor específico
- */
-export const listarHorariosProfesor = async (req, res) => {
+const listarHorariosProfesor = async (req, res) => {
     try {
         const { profesorId } = req.params;
         const horarios = await obtenerHorariosPorProfesor(profesorId);
@@ -49,10 +43,7 @@ export const listarHorariosProfesor = async (req, res) => {
     }
 };
 
-/**
- * Crear un nuevo horario con validaciones
- */
-export const registrarHorario = async (req, res) => {
+const registrarHorario = async (req, res) => {
     try {
         const { profesorId, materiaId, salonId, diaSemana, horaInicio, horaFin } = req.body;
 
@@ -100,10 +91,7 @@ export const registrarHorario = async (req, res) => {
     }
 };
 
-/**
- * Actualizar un horario existente
- */
-export const modificarHorario = async (req, res) => {
+const modificarHorario = async (req, res) => {
     try {
         const { horarioId } = req.params;
         const { profesorId, materiaId, salonId, diaSemana, horaInicio, horaFin } = req.body;
@@ -152,10 +140,7 @@ export const modificarHorario = async (req, res) => {
     }
 };
 
-/**
- * Eliminar un horario
- */
-export const borrarHorario = async (req, res) => {
+const borrarHorario = async (req, res) => {
     try {
         const { horarioId } = req.params;
         
@@ -180,4 +165,12 @@ export const borrarHorario = async (req, res) => {
             error: error.message 
         });
     }
+};
+
+export {
+    listarHorarios,
+    listarHorariosProfesor,
+    registrarHorario,
+    modificarHorario,
+    borrarHorario
 };
