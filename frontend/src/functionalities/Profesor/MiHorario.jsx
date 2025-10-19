@@ -8,11 +8,9 @@ import { obtenerHorariosProfesor } from "../../services/horarioService";
 
   const DAYS = ["lunes", "martes", "miercoles", "jueves", "viernes"];
 
-  // normalize strings: remove diacritics and lowercase for robust matching
   const normalize = (s) =>
     String(s || "")
       .normalize("NFD")
-      // remove combining diacritical marks (more compatible than \p{Diacritic})
       .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase()
       .trim();
@@ -201,7 +199,6 @@ export default function MiHorario() {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
             <div>
               <div className="pf-title">Mi Horario Semanal Asignado</div>
-              {/* Si quieres usar titleTipo en algún lado, está disponible */}
             </div>
 
             <div className="pf-schedule-actions">
@@ -234,7 +231,6 @@ export default function MiHorario() {
                     <td className="pf-time">{slot}</td>
                     {DAYS.map((d) => {
                       const info = schedule.classes[slot]?.[d];
-                      // if this slot is marked as skipped (part of a previous multi-hour), do not render a <td>
                       if (info && info.skip) {
                         return null;
                       }
