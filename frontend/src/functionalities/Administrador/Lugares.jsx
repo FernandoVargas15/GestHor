@@ -1,62 +1,120 @@
 import { useEffect, useMemo, useState } from "react";
 import * as lugaresService from "../../services/lugaresService";
 
-const TIPOS_SALON = ["Aula Regular", "Laboratorio", "Auditorio", "Taller"];
+const TIPOS_EDIFICIO = ["Académico", "Laboratorio", "Administrativo"];
+const TIPOS_SALON = ["Aula", "Laboratorio", "Salas de usos múltiples", "Taller"];
 
-function emptyBuilding() {
-    return { nombre: "", descripcion: "" };
+function emptyLugar() {
+    return { nombre_lugar: "", tipo_lugar: "" };
 }
-function emptyClassroom() {
-    return { edificioId: "", numero: "", capacidad: "", tipo: TIPOS_SALON[0] };
+
+function emptyEdificio() {
+    return { lugar_id: "", nombre_edificio: "", tipo_edificio: "" };
+}
+
+function emptySalon() {
+    return { edificio_id: "", nombre_salon: "", tipo_salon: "" };
 }
 
 export default function Lugares() {
-    const [edificios, setEdificios] = useState([]);
-    const [formEdificio, setFormEdificio] = useState(emptyBuilding());
+    const [lugares, setLugares] = useState([]);
+    const [formLugar, setFormLugar] = useState(emptyLugar());
+    const [editLugarId, setEditLugarId] = useState(null);
+
+    const [formEdificio, setFormEdificio] = useState(emptyEdificio());
     const [editEdificioId, setEditEdificioId] = useState(null);
 
-    const [formSalon, setFormSalon] = useState(emptyClassroom());
-    const [editSalon, setEditSalon] = useState({ edificioId: null, salonId: null });
+    const [formSalon, setFormSalon] = useState(emptySalon());
+    const [editSalonId, setEditSalonId] = useState(null);
 
-    // Cargar edificios al montar
     useEffect(() => {
-        cargarEdificios();
+        cargarEstructura();
     }, []);
 
-    const cargarEdificios = async () => {
+    const cargarEstructura = async () => {
         try {
-            const data = await lugaresService.obtenerEdificios();
-            setEdificios(data);
+            const data = await lugaresService.obtenerEstructura();
+            // API devuelve { ok: true, lugares: [...] }
+            setLugares(data.lugares || []);
         } catch (error) {
-            console.error("Error al cargar edificios:", error);
-            alert("Error al cargar edificios");
+            console.error("Error al cargar lugares:", error);
+            alert("Error al cargar lugares");
         }
     };
 
     // ======= VALIDACIONES =======
+    // ======= handlers de formulario =======
+    const onChangeLugar = (e) => {
+        const { name, value } = e.target;
+        setFormLugar((f) => ({ ...f, [name]: value }));
+    };
+
+    const validarLugar = () => {
+        if (!formLugar.nombre_lugar.trim()) return "El nombre del lugar es obligatorio.";
+        return null;
+    };
+
     const onChangeEdificio = (e) => {
         const { name, value } = e.target;
         setFormEdificio((f) => ({ ...f, [name]: value }));
     };
 
     const validarEdificio = () => {
-        if (!formEdificio.nombre.trim()) return "El nombre del edificio es obligatorio.";
+        if (!formEdificio.lugar_id) return "Selecciona un lugar.";
+        if (!formEdificio.nombre_edificio.trim()) return "El nombre del edificio es obligatorio.";
         return null;
     };
 
     const onChangeSalon = (e) => {
         const { name, value } = e.target;
-        setFormSalon((f) => ({
-            ...f,
-            [name]: name === "capacidad" ? value.replace(/\D/g, "") : value,
-        }));
+        setFormSalon((f) => ({ ...f, [name]: value }));
     };
 
     const validarSalon = () => {
-        if (!formSalon.edificioId) return "Selecciona un edificio.";
-        if (!formSalon.numero.trim()) return "El número/nombre del salón es obligatorio.";
-        if (!formSalon.capacidad) return "La capacidad es obligatoria.";
+        if (!formSalon.edificio_id) return "Selecciona un edificio.";
+        if (!formSalon.nombre_salon.trim()) return "El nombre del salón es obligatorio.";
         return null;
+    };
+
+    // ======= CRUD LUGARES =======
+    const submitLugar = async (e) => {
+        e.preventDefault();
+        const err = validarLugar();
+        if (err) return alert(err);
+
+        try {
+            if (editLugarId) {
+                const actualizado = await lugaresService.actualizarLugar(editLugarId, formLugar);
+                // actualizar en memoria
+                setLugares((prev) => prev.map((l) => (l.lugar_id === editLugarId ? { ...l, ...actualizado.lugar } : l)));
+                setEditLugarId(null);
+            } else {
+                const nuevo = await lugaresService.crearLugar(formLugar);
+                // recargar estructura para mantener consistencia
+                await cargarEstructura();
+            }
+            setFormLugar(emptyLugar());
+        } catch (error) {
+            console.error("Error al guardar lugar:", error);
+            alert(error.message || "Error al guardar lugar");
+        }
+    };
+
+    const editarLugar = (lugar) => {
+        setEditLugarId(lugar.lugar_id);
+        setFormLugar({ nombre_lugar: lugar.nombre_lugar, tipo_lugar: lugar.tipo_lugar || "" });
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    const eliminarLugar = async (id) => {
+        if (!confirm("¿Está seguro de eliminar este lugar y todos sus edificios/salones?")) return;
+        try {
+            await lugaresService.eliminarLugar(id);
+            setLugares((prev) => prev.filter((l) => l.lugar_id !== id));
+        } catch (error) {
+            console.error("Error al eliminar lugar:", error);
+            alert("Error al eliminar lugar");
+        }
     };
 
     // ======= CRUD EDIFICIOS =======
@@ -67,40 +125,38 @@ export default function Lugares() {
 
         try {
             if (editEdificioId) {
-                const edificioActualizado = await lugaresService.actualizarEdificio(
-                    editEdificioId,
-                    formEdificio
-                );
-                setEdificios((prev) =>
-                    prev.map((ed) =>
-                        ed.id === editEdificioId
-                            ? { ...edificioActualizado, salones: ed.salones }
-                            : ed
-                    )
-                );
+                const actualizado = await lugaresService.actualizarEdificio(editEdificioId, {
+                    nombre_edificio: formEdificio.nombre_edificio,
+                    tipo_edificio: formEdificio.tipo_edificio,
+                });
+                await cargarEstructura();
                 setEditEdificioId(null);
             } else {
-                const nuevoEdificio = await lugaresService.crearEdificio(formEdificio);
-                setEdificios((prev) => [...prev, { ...nuevoEdificio, salones: [] }]);
+                await lugaresService.crearEdificio({
+                    lugar_id: formEdificio.lugar_id,
+                    nombre_edificio: formEdificio.nombre_edificio,
+                    tipo_edificio: formEdificio.tipo_edificio,
+                });
+                await cargarEstructura();
             }
-            setFormEdificio(emptyBuilding());
+            setFormEdificio(emptyEdificio());
         } catch (error) {
             console.error("Error al guardar edificio:", error);
-            alert("Error al guardar edificio");
+            alert(error.message || "Error al guardar edificio");
         }
     };
 
-    const editarEdificio = (ed) => {
-        setEditEdificioId(ed.id);
-        setFormEdificio({ nombre: ed.nombre, descripcion: ed.descripcion || "" });
+    const editarEdificio = (lugarId, edificio) => {
+        setEditEdificioId(edificio.edificio_id);
+        setFormEdificio({ lugar_id: lugarId, nombre_edificio: edificio.nombre_edificio, tipo_edificio: edificio.tipo_edificio || "" });
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
     const eliminarEdificio = async (id) => {
-        if (!confirm("¿Está seguro de eliminar este edificio?")) return;
+        if (!confirm("¿Está seguro de eliminar este edificio y sus salones?")) return;
         try {
             await lugaresService.eliminarEdificio(id);
-            setEdificios((prev) => prev.filter((ed) => ed.id !== id));
+            await cargarEstructura();
         } catch (error) {
             console.error("Error al eliminar edificio:", error);
             alert("Error al eliminar edificio");
@@ -114,74 +170,46 @@ export default function Lugares() {
         if (err) return alert(err);
 
         try {
-            if (editSalon.salonId) {
-                const salonActualizado = await lugaresService.actualizarSalon(
-                    editSalon.salonId,
-                    formSalon
-                );
-                setEdificios((prev) =>
-                    prev.map((ed) =>
-                        ed.id === editSalon.edificioId
-                            ? {
-                                  ...ed,
-                                  salones: ed.salones.map((s) =>
-                                      s.id === editSalon.salonId ? salonActualizado : s
-                                  ),
-                              }
-                            : ed
-                    )
-                );
-                setEditSalon({ edificioId: null, salonId: null });
+            if (editSalonId) {
+                await lugaresService.actualizarSalon(editSalonId, {
+                    nombre_salon: formSalon.nombre_salon,
+                    tipo_salon: formSalon.tipo_salon,
+                });
+                await cargarEstructura();
+                setEditSalonId(null);
             } else {
-                const nuevoSalon = await lugaresService.crearSalon(formSalon);
-                setEdificios((prev) =>
-                    prev.map((ed) =>
-                        ed.id === formSalon.edificioId
-                            ? { ...ed, salones: [...ed.salones, nuevoSalon] }
-                            : ed
-                    )
-                );
+                await lugaresService.crearSalon({
+                    edificio_id: formSalon.edificio_id,
+                    nombre_salon: formSalon.nombre_salon,
+                    tipo_salon: formSalon.tipo_salon,
+                });
+                await cargarEstructura();
             }
-            setFormSalon(emptyClassroom());
+            setFormSalon(emptySalon());
         } catch (error) {
             console.error("Error al guardar salón:", error);
-            alert("Error al guardar salón");
+            alert(error.message || "Error al guardar salón");
         }
     };
 
     const editarSalon = (edificioId, salon) => {
-        setFormSalon({
-            edificioId,
-            numero: salon.numero,
-            capacidad: String(salon.capacidad),
-            tipo: salon.tipo,
-        });
-        setEditSalon({ edificioId, salonId: salon.id });
+        setEditSalonId(salon.salon_id);
+        setFormSalon({ edificio_id: edificioId, nombre_salon: salon.nombre_salon, tipo_salon: salon.tipo_salon || "" });
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
-    const eliminarSalon = async (edificioId, salonId) => {
+    const eliminarSalon = async (salonId) => {
         if (!confirm("¿Está seguro de eliminar este salón?")) return;
-
         try {
             await lugaresService.eliminarSalon(salonId);
-            setEdificios((prev) =>
-                prev.map((ed) =>
-                    ed.id === edificioId
-                        ? { ...ed, salones: ed.salones.filter((s) => s.id !== salonId) }
-                        : ed
-                )
-            );
+            await cargarEstructura();
         } catch (error) {
             console.error("Error al eliminar salón:", error);
             alert("Error al eliminar salón");
         }
     };
 
-    const optionsEdificios = useMemo(
-        () => edificios.map((e) => ({ value: e.id, label: e.nombre })),
-        [edificios]
-    );
+    const optionsLugares = useMemo(() => lugares.map((l) => ({ value: l.lugar_id, label: l.nombre_lugar })), [lugares]);
 
     // ======= RENDER =======
     return (
@@ -196,52 +224,54 @@ export default function Lugares() {
             </div>
 
             <div className="grid grid--2" style={{ marginBottom: 16 }}>
-                {/* Edificio */}
+                {/* Lugar */}
                 <div className="card">
-                    <h3 style={{ marginTop: 0 }}>
-                        {editEdificioId ? "Editar Edificio" : "Registrar Edificio"}
-                    </h3>
-                    <form onSubmit={submitEdificio}>
+                    <h3 style={{ marginTop: 0 }}>{editLugarId ? "Editar Lugar" : "Registrar Lugar"}</h3>
+                    <form onSubmit={submitLugar}>
                         <div>
-                            <label>Nombre del Edificio</label>
-                            <input
-                                className="input"
-                                name="nombre"
-                                placeholder="Ej: Edificio A"
-                                value={formEdificio.nombre}
-                                onChange={onChangeEdificio}
-                                required
-                            />
+                            <label>Nombre del Lugar</label>
+                            <input className="input" name="nombre_lugar" placeholder="Ej: Facultad de Ingeniería" value={formLugar.nombre_lugar} onChange={onChangeLugar} required />
                         </div>
                         <div style={{ marginTop: 12 }}>
-                            <label>Descripción</label>
-                            <textarea
-                                className="textarea"
-                                name="descripcion"
-                                placeholder="Descripción del edificio"
-                                rows={3}
-                                value={formEdificio.descripcion}
-                                onChange={onChangeEdificio}
-                            />
+                            <label>Tipo de Lugar</label>
+                            <input className="input" name="tipo_lugar" placeholder="Ej: Facultad" value={formLugar.tipo_lugar} onChange={onChangeLugar} />
                         </div>
 
                         <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
-                            <button type="submit" className="btn btn--primary">
-                                {editEdificioId
-                                    ? "Actualizar Edificio"
-                                    : "Agregar Edificio"}
-                            </button>
+                            <button type="submit" className="btn btn--primary">{editLugarId ? "Actualizar Lugar" : "Agregar Lugar"}</button>
+                            {editLugarId && (
+                                <button type="button" className="btn" onClick={() => { setEditLugarId(null); setFormLugar(emptyLugar()); }}>Cancelar edición</button>
+                            )}
+                        </div>
+                    </form>
+                </div>
+
+                {/* Edificio */}
+                <div className="card">
+                    <h3 style={{ marginTop: 0 }}>{editEdificioId ? "Editar Edificio" : "Registrar Edificio"}</h3>
+                    <form onSubmit={submitEdificio}>
+                        <div>
+                            <label>Lugar</label>
+                            <select className="select" name="lugar_id" value={formEdificio.lugar_id} onChange={onChangeEdificio} required>
+                                <option value="">Seleccionar lugar...</option>
+                                {optionsLugares.map((op) => (<option key={op.value} value={op.value}>{op.label}</option>))}
+                            </select>
+                        </div>
+                        <div style={{ marginTop: 12 }}>
+                            <label>Nombre del Edificio</label>
+                            <input className="input" name="nombre_edificio" placeholder="Ej: Edificio A" value={formEdificio.nombre_edificio} onChange={onChangeEdificio} required />
+                        </div>
+                        <div style={{ marginTop: 12 }}>
+                            <label>Tipo de Edificio</label>
+                            <select className="select" name="tipo_edificio" value={formEdificio.tipo_edificio} onChange={onChangeEdificio}>
+                                {TIPOS_EDIFICIO.map((t) => (<option key={t} value={t}>{t}</option>))}
+                            </select>
+                        </div>
+
+                        <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
+                            <button type="submit" className="btn btn--primary">{editEdificioId ? "Actualizar Edificio" : "Agregar Edificio"}</button>
                             {editEdificioId && (
-                                <button
-                                    type="button"
-                                    className="btn"
-                                    onClick={() => {
-                                        setEditEdificioId(null);
-                                        setFormEdificio(emptyBuilding());
-                                    }}
-                                >
-                                    Cancelar edición
-                                </button>
+                                <button type="button" className="btn" onClick={() => { setEditEdificioId(null); setFormEdificio(emptyEdificio()); }}>Cancelar edición</button>
                             )}
                         </div>
                     </form>
@@ -249,94 +279,32 @@ export default function Lugares() {
 
                 {/* Salon */}
                 <div className="card">
-                    <h3 style={{ marginTop: 0 }}>
-                        {editSalon.salonId ? "Editar Salón" : "Registrar Salón"}
-                    </h3>
-
+                    <h3 style={{ marginTop: 0 }}>{editSalonId ? "Editar Salón" : "Registrar Salón"}</h3>
                     <form onSubmit={submitSalon}>
                         <div>
                             <label>Edificio</label>
-                            <select
-                                className="select"
-                                name="edificioId"
-                                value={formSalon.edificioId}
-                                onChange={onChangeSalon}
-                                required
-                            >
+                            <select className="select" name="edificio_id" value={formSalon.edificio_id} onChange={onChangeSalon} required>
                                 <option value="">Seleccionar edificio...</option>
-                                {optionsEdificios.map((op) => (
-                                    <option key={op.value} value={op.value}>
-                                        {op.label}
-                                    </option>
+                                {lugares.flatMap(l => l.edificios || []).map((ed) => (
+                                    <option key={ed.edificio_id} value={ed.edificio_id}>{ed.nombre_edificio} — {lugares.find(x => x.lugar_id === ed.lugar_id)?.nombre_lugar || ''}</option>
                                 ))}
                             </select>
                         </div>
-
-                        <div
-                            className="form__row form__row--2"
-                            style={{ marginTop: 12 }}
-                        >
-                            <div>
-                                <label>Número de Salón</label>
-                                <input
-                                    className="input"
-                                    name="numero"
-                                    placeholder="Ej: 101"
-                                    value={formSalon.numero}
-                                    onChange={onChangeSalon}
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label>Capacidad</label>
-                                <input
-                                    className="input"
-                                    name="capacidad"
-                                    inputMode="numeric"
-                                    placeholder="30"
-                                    value={formSalon.capacidad}
-                                    onChange={onChangeSalon}
-                                    required
-                                />
-                            </div>
+                        <div style={{ marginTop: 12 }}>
+                            <label>Nombre del Salón</label>
+                            <input className="input" name="nombre_salon" placeholder="Ej: 101 / LabComp" value={formSalon.nombre_salon} onChange={onChangeSalon} required />
                         </div>
-
                         <div style={{ marginTop: 12 }}>
                             <label>Tipo de Salón</label>
-                            <select
-                                className="select"
-                                name="tipo"
-                                value={formSalon.tipo}
-                                onChange={onChangeSalon}
-                            >
-                                {TIPOS_SALON.map((t) => (
-                                    <option key={t} value={t}>
-                                        {t}
-                                    </option>
-                                ))}
+                            <select className="select" name="tipo_salon" value={formSalon.tipo_salon} onChange={onChangeSalon}>
+                                {TIPOS_SALON.map((t) => (<option key={t} value={t}>{t}</option>))}
                             </select>
                         </div>
 
                         <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
-                            <button type="submit" className="btn btn--primary">
-                                {editSalon.salonId
-                                    ? "Actualizar Salón"
-                                    : "Agregar Salón"}
-                            </button>
-                            {editSalon.salonId && (
-                                <button
-                                    type="button"
-                                    className="btn"
-                                    onClick={() => {
-                                        setEditSalon({
-                                            edificioId: null,
-                                            salonId: null,
-                                        });
-                                        setFormSalon(emptyClassroom());
-                                    }}
-                                >
-                                    Cancelar edición
-                                </button>
+                            <button type="submit" className="btn btn--primary">{editSalonId ? "Actualizar Salón" : "Agregar Salón"}</button>
+                            {editSalonId && (
+                                <button type="button" className="btn" onClick={() => { setEditSalonId(null); setFormSalon(emptySalon()); }}>Cancelar edición</button>
                             )}
                         </div>
                     </form>
@@ -347,120 +315,58 @@ export default function Lugares() {
             <div className="card">
                 <h3 style={{ marginTop: 0 }}>Edificios y Salones Registrados</h3>
                 <div className="grid" style={{ gap: 16 }}>
-                    {edificios.map((ed) => (
-                        <div
-                            key={ed.id}
-                            className="card"
-                            style={{ borderColor: "var(--border)" }}
-                        >
-                            <div
-                                style={{
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                    alignItems: "flex-start",
-                                    gap: 8,
-                                }}
-                            >
-                                <div>
-                                    <div style={{ fontWeight: 700 }}>
-                                        {ed.nombre}
-                                    </div>
-                                    {ed.descripcion && (
-                                        <div className="form__hint">
-                                            {ed.descripcion}
-                                        </div>
-                                    )}
-                                </div>
-                                <div>
-                                    <button
-                                        className="link-btn"
-                                        onClick={() => editarEdificio(ed)}
-                                    >
-                                        Editar
-                                    </button>
-                                    <button
-                                        className="link-btn link-btn--danger"
-                                        onClick={() =>
-                                            eliminarEdificio(ed.id)
-                                        }
-                                    >
-                                        Eliminar
-                                    </button>
-                                </div>
+                    {lugares.length === 0 && (
+                        <div className="form__hint">Aún no hay lugares.</div>
+                    )}
+
+                    {lugares.map((lugar) => (
+                        <div key={lugar.lugar_id} className="card" style={{ borderColor: "var(--border)" }}>
+                            <div style={{ marginBottom: 8 }}>
+                                <div style={{ fontWeight: 700 }}>{lugar.nombre_lugar}</div>
+                                {lugar.tipo_lugar && <div className="form__hint">{lugar.tipo_lugar}</div>}
                             </div>
 
-                            {/* Salones */}
-                            <div
-                                className="grid"
-                                style={{ gap: 8, marginTop: 10 }}
-                            >
-                                {ed.salones.length === 0 && (
-                                    <div className="form__hint">
-                                        Sin salones registrados.
-                                    </div>
-                                )}
-                                {ed.salones.map((s) => (
-                                    <div
-                                        key={s.id}
-                                        className="card"
-                                        style={{ padding: 10 }}
-                                    >
-                                        <div
-                                            style={{
-                                                display: "flex",
-                                                justifyContent: "space-between",
-                                                alignItems: "center",
-                                                gap: 8,
-                                            }}
-                                        >
-                                            <div>
-                                                <div style={{ fontWeight: 600 }}>
-                                                    {s.numero}
-                                                </div>
-                                                <div className="form__hint">
-                                                    {s.tipo} •{" "}
-                                                    <span
-                                                        style={{
-                                                            color: "#16a34a",
-                                                        }}
-                                                    >
-                                                        {s.capacidad} lugares
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <button
-                                                    className="link-btn"
-                                                    onClick={() =>
-                                                        editarSalon(ed.id, s)
-                                                    }
-                                                >
-                                                    Editar
-                                                </button>
-                                                <button
-                                                    className="link-btn link-btn--danger"
-                                                    onClick={() =>
-                                                        eliminarSalon(
-                                                            ed.id,
-                                                            s.id
-                                                        )
-                                                    }
-                                                >
-                                                    Eliminar
-                                                </button>
-                                            </div>
+                            {(lugar.edificios || []).length === 0 && (
+                                <div className="form__hint">Sin edificios registrados en este lugar.</div>
+                            )}
+
+                            {(lugar.edificios || []).map((ed) => (
+                                <div key={ed.edificio_id} className="card" style={{ marginBottom: 10, padding: 12 }}>
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+                                        <div>
+                                            <div style={{ fontWeight: 700 }}>{ed.nombre_edificio}</div>
+                                            {ed.tipo_edificio && <div className="form__hint">{ed.tipo_edificio}</div>}
+                                        </div>
+                                        <div>
+                                            <button className="link-btn" onClick={() => editarEdificio(lugar.lugar_id, ed)}>Editar</button>
+                                            <button className="link-btn link-btn--danger" onClick={() => eliminarEdificio(ed.edificio_id)}>Eliminar</button>
                                         </div>
                                     </div>
-                                ))}
-                            </div>
+
+                                    {/* Salones */}
+                                    <div className="grid" style={{ gap: 8, marginTop: 10 }}>
+                                        {(ed.salones || []).length === 0 && (
+                                            <div className="form__hint">Sin salones registrados.</div>
+                                        )}
+                                        {(ed.salones || []).map((s) => (
+                                            <div key={s.salon_id} className="card" style={{ padding: 10 }}>
+                                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                                                    <div>
+                                                        <div style={{ fontWeight: 600 }}>{s.nombre_salon}</div>
+                                                        <div className="form__hint">{s.tipo_salon || ""}</div>
+                                                    </div>
+                                                    <div>
+                                                        <button className="link-btn" onClick={() => editarSalon(ed.edificio_id, s)}>Editar</button>
+                                                        <button className="link-btn link-btn--danger" onClick={() => eliminarSalon(s.salon_id)}>Eliminar</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     ))}
-
-                    {edificios.length === 0 && (
-                        <div className="form__hint">
-                            Aún no hay edificios.
-                        </div>
-                    )}
                 </div>
             </div>
         </>

@@ -1,111 +1,132 @@
-import { dbConnection as db } from '../config/database.js';
+import * as lugaresModel from '../models/lugaresModel.js';
 
-const obtenerEdificios = async (req, res) => {
+const obtenerEstructura = async (req, res) => {
     try {
-        const edificios = await db.any('SELECT * FROM edificios');
-        
-        // Obtener salones de cada edificio
-        for (let edificio of edificios) {
-            const salones = await db.any(
-                'SELECT * FROM salones WHERE edificio_id = $1',
-                [edificio.id]
-            );
-            edificio.salones = salones;
-        }
-        
-        res.json(edificios);
+        const estructura = await lugaresModel.obtenerEstructuraLugares();
+        res.json({ ok: true, lugares: estructura });
     } catch (error) {
-        console.error('Error al obtener edificios:', error);
-        res.status(500).json({ error: 'Error al obtener edificios' });
+        console.error('Error al obtener estructura de lugares:', error);
+        res.status(500).json({ ok: false, mensaje: 'Error al obtener lugares', error: error.message });
     }
 };
 
-const crearEdificio = async (req, res) => {
+// LUGARES
+const crearLugar = async (req, res) => {
     try {
-        const { nombre, descripcion } = req.body;
-        const nuevoEdificio = await db.one(
-            'INSERT INTO edificios (nombre, descripcion) VALUES ($1, $2) RETURNING *',
-            [nombre, descripcion]
-        );
-        res.status(201).json(nuevoEdificio);
+        const { nombre_lugar, tipo_lugar } = req.body;
+        if (!nombre_lugar) return res.status(400).json({ ok: false, mensaje: 'nombre_lugar es requerido' });
+        const nuevo = await lugaresModel.crearLugar(nombre_lugar, tipo_lugar || null);
+        res.status(201).json({ ok: true, lugar: nuevo });
+    } catch (error) {
+        console.error('Error al crear lugar:', error);
+        res.status(500).json({ ok: false, mensaje: 'Error al crear lugar', error: error.message });
+    }
+};
+
+const actualizarLugar = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { nombre_lugar, tipo_lugar } = req.body;
+        const actualizado = await lugaresModel.actualizarLugar(id, nombre_lugar, tipo_lugar);
+        res.json({ ok: true, lugar: actualizado });
+    } catch (error) {
+        console.error('Error al actualizar lugar:', error);
+        res.status(500).json({ ok: false, mensaje: 'Error al actualizar lugar', error: error.message });
+    }
+};
+
+const eliminarLugarController = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await lugaresModel.eliminarLugar(id);
+        res.status(204).send();
+    } catch (error) {
+        console.error('Error al eliminar lugar:', error);
+        res.status(500).json({ ok: false, mensaje: 'Error al eliminar lugar', error: error.message });
+    }
+};
+
+// EDIFICIOS
+const crearEdificioController = async (req, res) => {
+    try {
+        const { lugar_id, nombre_edificio, tipo_edificio } = req.body;
+        if (!lugar_id || !nombre_edificio) return res.status(400).json({ ok: false, mensaje: 'lugar_id y nombre_edificio son requeridos' });
+        const nuevo = await lugaresModel.crearEdificio(lugar_id, nombre_edificio, tipo_edificio || null);
+        res.status(201).json({ ok: true, edificio: nuevo });
     } catch (error) {
         console.error('Error al crear edificio:', error);
-        res.status(500).json({ error: 'Error al crear edificio' });
+        res.status(500).json({ ok: false, mensaje: 'Error al crear edificio', error: error.message });
     }
 };
 
-const actualizarEdificio = async (req, res) => {
+const actualizarEdificioController = async (req, res) => {
     try {
         const { id } = req.params;
-        const { nombre, descripcion } = req.body;
-        const edificioActualizado = await db.one(
-            'UPDATE edificios SET nombre = $1, descripcion = $2 WHERE id = $3 RETURNING *',
-            [nombre, descripcion, id]
-        );
-        res.json(edificioActualizado);
+        const { nombre_edificio, tipo_edificio } = req.body;
+        const actualizado = await lugaresModel.actualizarEdificio(id, nombre_edificio, tipo_edificio);
+        res.json({ ok: true, edificio: actualizado });
     } catch (error) {
         console.error('Error al actualizar edificio:', error);
-        res.status(500).json({ error: 'Error al actualizar edificio' });
+        res.status(500).json({ ok: false, mensaje: 'Error al actualizar edificio', error: error.message });
     }
 };
 
-const eliminarEdificio = async (req, res) => {
+const eliminarEdificioController = async (req, res) => {
     try {
         const { id } = req.params;
-        await db.none('DELETE FROM edificios WHERE id = $1', [id]);
+        await lugaresModel.eliminarEdificio(id);
         res.status(204).send();
     } catch (error) {
         console.error('Error al eliminar edificio:', error);
-        res.status(500).json({ error: 'Error al eliminar edificio' });
+        res.status(500).json({ ok: false, mensaje: 'Error al eliminar edificio', error: error.message });
     }
 };
 
-const crearSalon = async (req, res) => {
+// SALONES
+const crearSalonController = async (req, res) => {
     try {
-        const { edificioId, numero, capacidad, tipo } = req.body;
-        const nuevoSalon = await db.one(
-            'INSERT INTO salones (edificio_id, numero, capacidad, tipo) VALUES ($1, $2, $3, $4) RETURNING *',
-            [edificioId, numero, capacidad, tipo]
-        );
-        res.status(201).json(nuevoSalon);
+        const { edificio_id, nombre_salon, tipo_salon } = req.body;
+        if (!edificio_id || !nombre_salon) return res.status(400).json({ ok: false, mensaje: 'edificio_id y nombre_salon son requeridos' });
+        const nuevo = await lugaresModel.crearSalon(edificio_id, nombre_salon, tipo_salon || null);
+        res.status(201).json({ ok: true, salon: nuevo });
     } catch (error) {
-        console.error('Error al crear salón:', error);
-        res.status(500).json({ error: 'Error al crear salón' });
+        console.error('Error al crear salon:', error);
+        res.status(500).json({ ok: false, mensaje: 'Error al crear salon', error: error.message });
     }
 };
 
-const actualizarSalon = async (req, res) => {
+const actualizarSalonController = async (req, res) => {
     try {
         const { id } = req.params;
-        const { numero, capacidad, tipo } = req.body;
-        const salonActualizado = await db.one(
-            'UPDATE salones SET numero = $1, capacidad = $2, tipo = $3 WHERE id = $4 RETURNING *',
-            [numero, capacidad, tipo, id]
-        );
-        res.json(salonActualizado);
+        const { nombre_salon, tipo_salon } = req.body;
+        const actualizado = await lugaresModel.actualizarSalon(id, nombre_salon, tipo_salon);
+        res.json({ ok: true, salon: actualizado });
     } catch (error) {
-        console.error('Error al actualizar salón:', error);
-        res.status(500).json({ error: 'Error al actualizar salón' });
+        console.error('Error al actualizar salon:', error);
+        res.status(500).json({ ok: false, mensaje: 'Error al actualizar salon', error: error.message });
     }
 };
 
-const eliminarSalon = async (req, res) => {
+const eliminarSalonController = async (req, res) => {
     try {
         const { id } = req.params;
-        await db.none('DELETE FROM salones WHERE id = $1', [id]);
+        await lugaresModel.eliminarSalon(id);
         res.status(204).send();
     } catch (error) {
-        console.error('Error al eliminar salón:', error);
-        res.status(500).json({ error: 'Error al eliminar salón' });
+        console.error('Error al eliminar salon:', error);
+        res.status(500).json({ ok: false, mensaje: 'Error al eliminar salon', error: error.message });
     }
 };
 
 export {
-    obtenerEdificios,
-    crearEdificio,
-    actualizarEdificio,
-    eliminarEdificio,
-    crearSalon,
-    actualizarSalon,
-    eliminarSalon
+    obtenerEstructura,
+    crearLugar,
+    actualizarLugar,
+    eliminarLugarController,
+    crearEdificioController,
+    actualizarEdificioController,
+    eliminarEdificioController,
+    crearSalonController,
+    actualizarSalonController,
+    eliminarSalonController
 };
