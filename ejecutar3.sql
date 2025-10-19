@@ -2,12 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict hQx6Z4uwmMqZ2vVNFEAWXa7D6yaFdhZafPkk3EiBQ6sw2GPu1gWdKRzQF66sNfr
+\restrict Or9fe117mxZ87KdZ9KFzmcNWZka1lDQ7tFAQ98grIveNCx5v37rjey5aKgBU80V
 
 -- Dumped from database version 16.10 (Ubuntu 16.10-0ubuntu0.24.04.1)
 -- Dumped by pg_dump version 16.10 (Ubuntu 16.10-0ubuntu0.24.04.1)
 
--- Started on 2025-10-18 22:31:58 CST
+-- Started on 2025-10-19 00:19:27 CST
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -31,9 +31,9 @@ CREATE DATABASE "GestHor" WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE_PRO
 
 ALTER DATABASE "GestHor" OWNER TO postgres;
 
-\unrestrict hQx6Z4uwmMqZ2vVNFEAWXa7D6yaFdhZafPkk3EiBQ6sw2GPu1gWdKRzQF66sNfr
+\unrestrict Or9fe117mxZ87KdZ9KFzmcNWZka1lDQ7tFAQ98grIveNCx5v37rjey5aKgBU80V
 \connect "GestHor"
-\restrict hQx6Z4uwmMqZ2vVNFEAWXa7D6yaFdhZafPkk3EiBQ6sw2GPu1gWdKRzQF66sNfr
+\restrict Or9fe117mxZ87KdZ9KFzmcNWZka1lDQ7tFAQ98grIveNCx5v37rjey5aKgBU80V
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -875,6 +875,15 @@ COPY public.edificios (edificio_id, lugar_id, nombre_edificio, tipo_edificio) FR
 --
 
 COPY public.horarios (horario_id, profesor_id, materia_id, salon_id, dia_semana, hora_inicio, hora_fin) FROM stdin;
+5	18	34	1	Lunes	07:00:00	08:00:00
+6	18	34	3	Lunes	08:00:00	09:00:00
+7	18	14	3	Martes	07:00:00	08:00:00
+8	18	34	3	Miércoles	07:00:00	08:00:00
+9	18	57	3	Jueves	10:00:00	11:00:00
+10	18	30	1	Viernes	07:00:00	08:00:00
+11	18	34	3	Miércoles	11:00:00	12:00:00
+12	18	34	3	Martes	15:00:00	16:00:00
+13	18	34	3	Lunes	10:00:00	12:00:00
 \.
 
 
@@ -1107,7 +1116,7 @@ SELECT pg_catalog.setval('public.edificios_edificio_id_seq', 1, true);
 -- Name: horarios_horario_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.horarios_horario_id_seq', 4, true);
+SELECT pg_catalog.setval('public.horarios_horario_id_seq', 13, true);
 
 
 --
@@ -1635,11 +1644,11 @@ ALTER TABLE ONLY public.salones
     ADD CONSTRAINT salones_edificio_id_fkey FOREIGN KEY (edificio_id) REFERENCES public.edificios(edificio_id);
 
 
--- Completed on 2025-10-18 22:31:58 CST
+-- Completed on 2025-10-19 00:19:27 CST
 
 --
 -- PostgreSQL database dump complete
 --
 
-\unrestrict hQx6Z4uwmMqZ2vVNFEAWXa7D6yaFdhZafPkk3EiBQ6sw2GPu1gWdKRzQF66sNfr
+\unrestrict Or9fe117mxZ87KdZ9KFzmcNWZka1lDQ7tFAQ98grIveNCx5v37rjey5aKgBU80V
 
