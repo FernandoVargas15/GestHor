@@ -11,17 +11,17 @@ async function checkResponse(res) {
     return payload;
 }
 
-export const obtenerEstructura = async () => {
+const obtenerEstructura = async () => {
     const res = await fetch(`${BASE_URL}/lugares/estructura`);
     return checkResponse(res);
 };
 
-export const obtenerLugares = async () => {
+const obtenerLugares = async () => {
     const res = await fetch(`${BASE_URL}/lugares`);
     return checkResponse(res);
 };
 
-export const crearLugar = async (lugar) => {
+const crearLugar = async (lugar) => {
     const res = await fetch(`${BASE_URL}/lugares`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -30,7 +30,7 @@ export const crearLugar = async (lugar) => {
     return checkResponse(res);
 };
 
-export const actualizarLugar = async (id, lugar) => {
+const actualizarLugar = async (id, lugar) => {
     const res = await fetch(`${BASE_URL}/lugares/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -39,13 +39,13 @@ export const actualizarLugar = async (id, lugar) => {
     return checkResponse(res);
 };
 
-export const eliminarLugar = async (id) => {
+const eliminarLugar = async (id) => {
     const res = await fetch(`${BASE_URL}/lugares/${id}`, { method: 'DELETE' });
     return checkResponse(res);
 };
 
 // Edificios
-export const crearEdificio = async (edificio) => {
+const crearEdificio = async (edificio) => {
     const res = await fetch(`${BASE_URL}/edificios`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -54,7 +54,7 @@ export const crearEdificio = async (edificio) => {
     return checkResponse(res);
 };
 
-export const actualizarEdificio = async (id, edificio) => {
+const actualizarEdificio = async (id, edificio) => {
     const res = await fetch(`${BASE_URL}/edificios/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -63,13 +63,13 @@ export const actualizarEdificio = async (id, edificio) => {
     return checkResponse(res);
 };
 
-export const eliminarEdificio = async (id) => {
+const eliminarEdificio = async (id) => {
     const res = await fetch(`${BASE_URL}/edificios/${id}`, { method: 'DELETE' });
     return checkResponse(res);
 };
 
 // Salones
-export const crearSalon = async (salon) => {
+const crearSalon = async (salon) => {
     const res = await fetch(`${BASE_URL}/salones`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -78,7 +78,7 @@ export const crearSalon = async (salon) => {
     return checkResponse(res);
 };
 
-export const actualizarSalon = async (id, salon) => {
+const actualizarSalon = async (id, salon) => {
     const res = await fetch(`${BASE_URL}/salones/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -87,7 +87,21 @@ export const actualizarSalon = async (id, salon) => {
     return checkResponse(res);
 };
 
-export const eliminarSalon = async (id) => {
+const eliminarSalon = async (id) => {
     const res = await fetch(`${BASE_URL}/salones/${id}`, { method: 'DELETE' });
     return checkResponse(res);
+};
+
+export {
+  obtenerEstructura,
+  obtenerLugares,
+  crearLugar,
+  actualizarLugar,
+  eliminarLugar,
+  crearEdificio,
+  actualizarEdificio,
+  eliminarEdificio,
+  crearSalon,
+  actualizarSalon,
+  eliminarSalon,
 };

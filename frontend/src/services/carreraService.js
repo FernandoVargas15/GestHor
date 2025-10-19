@@ -5,7 +5,7 @@ const API_URL = 'http://localhost:3000/api';
 /**
  * Obtener todas las carreras
  */
-export const obtenerCarreras = async () => {
+const obtenerCarreras = async () => {
     const response = await axios.get(`${API_URL}/carreras`);
     return response.data;
 };
@@ -13,12 +13,12 @@ export const obtenerCarreras = async () => {
 /**
  * Obtener una carrera por ID (incluye materias por semestre)
  */
-export const obtenerCarreraPorId = async (id) => {
+const obtenerCarreraPorId = async (id) => {
     const response = await axios.get(`${API_URL}/carreras/${id}`);
     return response.data;
 };
 
-export const crearCarrera = async (carrera) => {
+const crearCarrera = async (carrera) => {
     const response = await axios.post(`${API_URL}/carreras`, carrera);
     return response.data;
 };
@@ -26,7 +26,7 @@ export const crearCarrera = async (carrera) => {
 /**
  * Actualizar una carrera (solo datos básicos)
  */
-export const actualizarCarrera = async (id, carrera) => {
+const actualizarCarrera = async (id, carrera) => {
     const response = await axios.put(`${API_URL}/carreras/${id}`, carrera);
     return response.data;
 };
@@ -34,12 +34,14 @@ export const actualizarCarrera = async (id, carrera) => {
 /**
  * Eliminar una carrera
  */
-export const eliminarCarrera = async (id) => {
+const eliminarCarrera = async (id) => {
     const response = await axios.delete(`${API_URL}/carreras/${id}`);
     return response.data;
 };
 
-export const obtenerEstadisticasCarreras = async () => {
+const obtenerEstadisticasCarreras = async () => {
     const response = await axios.get(`${API_URL}/carreras/estadisticas`);
     return response.data;
 };
+
+export { obtenerCarreras, obtenerCarreraPorId, crearCarrera, actualizarCarrera, eliminarCarrera, obtenerEstadisticasCarreras };

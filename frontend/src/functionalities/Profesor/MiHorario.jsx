@@ -4,81 +4,18 @@ import ProfesorTabs from "../../components/Profesor/ProfesorTabs";
 import { useNavigate } from "react-router-dom";
 import { obtenerNombreProfesor } from "../../services/docenteService";
 import { HorarioExcelExporter } from "../../utils/excelExportService";
+import { obtenerHorariosProfesor } from "../../services/horarioService";
 
-const DATA = {
-  matutino: {
-    slots: [
-      "07:00 - 08:00",
-      "08:00 - 09:00",
-      "09:00 - 10:00",
-      "10:00 - 11:00",
-      "11:00 - 12:00",
-      "12:00 - 13:00",
-      "13:00 - 14:00",
-    ],
-    classes: {
-      "07:00 - 08:00": {
-        lunes: { s: "Matemáticas I", r: "Aula 101", c: "pf-c-blue" },
-        miercoles: { s: "Álgebra", r: "Aula 203", c: "pf-c-green" },
-        viernes: { s: "Cálculo", r: "Aula 105", c: "pf-c-purple" },
-      },
-      "08:00 - 09:00": {
-        martes: { s: "Geometría", r: "Aula 102", c: "pf-c-yellow" },
-        jueves: { s: "Estadística", r: "Aula 201", c: "pf-c-red" },
-      },
-      "09:00 - 10:00": {
-        lunes: { s: "Física I", r: "Lab 301", c: "pf-c-indigo" },
-        viernes: { s: "Química", r: "Lab 302", c: "pf-c-pink" },
-      },
-      "10:00 - 11:00": {
-        miercoles: { s: "Trigonometría", r: "Aula 104", c: "pf-c-teal" },
-      },
-      "11:00 - 12:00": {
-        martes: { s: "Probabilidad", r: "Aula 106", c: "pf-c-amber" },
-        jueves: { s: "Álgebra II", r: "Aula 107", c: "pf-c-cyan" },
-      },
-    },
-  },
-  vespertino: {
-    slots: [
-      "15:00 - 16:00",
-      "16:00 - 17:00",
-      "17:00 - 18:00",
-      "18:00 - 19:00",
-      "19:00 - 20:00",
-      "20:00 - 21:00",
-      "21:00 - 22:00",
-    ],
-    classes: {
-      "15:00 - 16:00": {
-        lunes: { s: "Cálculo Integral", r: "Aula 201", c: "pf-c-blue" },
-        miercoles: { s: "Física II", r: "Lab 303", c: "pf-c-green" },
-      },
-      "16:00 - 17:00": {
-        martes: { s: "Estadística II", r: "Aula 202", c: "pf-c-purple" },
-        jueves: { s: "Matemáticas III", r: "Aula 203", c: "pf-c-red" },
-        viernes: { s: "Geometría Analítica", r: "Aula 204", c: "pf-c-yellow" },
-      },
-      "17:00 - 18:00": {
-        lunes: { s: "Álgebra Lineal", r: "Aula 205", c: "pf-c-indigo" },
-        miercoles: { s: "Cálculo Vectorial", r: "Aula 206", c: "pf-c-pink" },
-      },
-      "18:00 - 19:00": {
-        martes: { s: "Ecuaciones Diferenciales", r: "Aula 207", c: "pf-c-teal" },
-        viernes: { s: "Análisis Numérico", r: "Lab 304", c: "pf-c-amber" },
-      },
-      "19:00 - 20:00": {
-        jueves: { s: "Matemáticas Discretas", r: "Aula 208", c: "pf-c-cyan" },
-      },
-      "20:00 - 21:00": {
-        lunes: { s: "Topología", r: "Aula 209", c: "pf-c-lime" },
-        miercoles: { s: "Teoría de Números", r: "Aula 210", c: "pf-c-amber" },
-      },
-    },
-  },
-};
+  const DAYS = ["lunes", "martes", "miercoles", "jueves", "viernes"];
 
-const DAYS = ["lunes", "martes", "miercoles", "jueves", "viernes"];
+  // normalize strings: remove diacritics and lowercase for robust matching
+  const normalize = (s) =>
+    String(s || "")
+      .normalize("NFD")
+      // remove combining diacritical marks (more compatible than \p{Diacritic})
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim();
 
 export default function MiHorario() {
   const navigate = useNavigate();
@@ -100,7 +37,115 @@ export default function MiHorario() {
   }, [profesorId]);
 
   const [tipo, setTipo] = useState("matutino");
-  const schedule = DATA[tipo];
+  const [schedule, setSchedule] = useState({ slots: [], classes: {} });
+
+  // Cargar horarios del profesor y mapear a la estructura usada por la UI
+  useEffect(() => {
+    const cargarHorario = async () => {
+      if (!profesorId) return;
+      try {
+        const resp = await obtenerHorariosProfesor(profesorId);
+        const rows = resp.horarios || [];
+
+        const matutinoSlots = [
+          "07:00 - 08:00",
+          "08:00 - 09:00",
+          "09:00 - 10:00",
+          "10:00 - 11:00",
+          "11:00 - 12:00",
+          "12:00 - 13:00",
+          "13:00 - 14:00",
+        ];
+        const vespertinoSlots = [
+          "15:00 - 16:00",
+          "16:00 - 17:00",
+          "17:00 - 18:00",
+          "18:00 - 19:00",
+          "19:00 - 20:00",
+          "20:00 - 21:00",
+          "21:00 - 22:00",
+        ];
+
+        const horaToSlot = (hora) => {
+          if (!hora) return null;
+          const h = hora.substring(0,5);
+          for (const s of matutinoSlots) if (s.startsWith(h)) return s;
+          for (const s of vespertinoSlots) if (s.startsWith(h)) return s;
+          const [hh, mm] = h.split(":").map(Number);
+          const hh2 = String((hh + 1)).padStart(2,'0');
+          return `${h} - ${hh2}:${String(mm).padStart(2,'0')}`;
+        };
+
+        const classes = {};
+        for (const r of rows) {
+          const slot = horaToSlot(r.hora_inicio);
+          if (!slot) continue;
+          // Normalize database day names (e.g. "Miércoles") to match DAYS keys ("miercoles")
+          const diaKey = normalize(r.dia_semana);
+          if (!classes[slot]) classes[slot] = {};
+
+          const subject = r.nombre_materia || '';
+          const roomParts = [];
+          if (r.nombre_salon) roomParts.push(r.nombre_salon);
+          if (r.nombre_edificio) roomParts.push(r.nombre_edificio);
+          if (r.nombre_lugar) roomParts.push(r.nombre_lugar);
+          const room = roomParts.join(' - ');
+
+          // Map materia_id deterministically to the defined color palette names
+          const _colors = [
+            'blue',
+            'green',
+            'yellow',
+            'red',
+            'purple',
+            'cyan',
+            'pink',
+            'teal',
+            'amber',
+            'lime',
+            'indigo',
+          ];
+          const colorClass = `pf-c-${_colors[(r.materia_id || 0) % _colors.length]}`;
+
+          // calculate duration in 1-hour slots
+          const parseMinutes = (timeStr) => {
+            if (!timeStr) return 0;
+            const t = String(timeStr).substring(0,5);
+            const [hh, mm] = t.split(':').map(Number);
+            return hh * 60 + (mm || 0);
+          };
+          const startMin = parseMinutes(r.hora_inicio);
+          const endMin = parseMinutes(r.hora_fin);
+          let span = 1;
+          if (endMin > startMin) {
+            span = Math.max(1, Math.round((endMin - startMin) / 60));
+          }
+
+          // determine which slot array this slot belongs to
+          const slotsArray = matutinoSlots.includes(slot) ? matutinoSlots : vespertinoSlots;
+          const startIndex = slotsArray.indexOf(slot);
+
+          // assign start cell with span and mark following slots as skipped
+          classes[slot][diaKey] = { s: subject, r: room, c: colorClass, span };
+          for (let i = 1; i < span; i++) {
+            const nextIndex = startIndex + i;
+            if (nextIndex >= 0 && nextIndex < slotsArray.length) {
+              const nextSlot = slotsArray[nextIndex];
+              if (!classes[nextSlot]) classes[nextSlot] = {};
+              classes[nextSlot][diaKey] = { skip: true };
+            }
+          }
+        }
+
+        const finalSlots = tipo === 'matutino' ? matutinoSlots : vespertinoSlots;
+        setSchedule({ slots: finalSlots, classes });
+      } catch (err) {
+        console.error('Error al cargar horario del profesor:', err);
+      }
+    };
+
+    cargarHorario();
+  }, [profesorId, tipo]);
 
   const titleTipo = useMemo(
     () => (tipo === "matutino" ? "Matutino (07:00 - 14:00)" : "Vespertino (15:00 - 22:00)"),
@@ -189,12 +234,19 @@ export default function MiHorario() {
                     <td className="pf-time">{slot}</td>
                     {DAYS.map((d) => {
                       const info = schedule.classes[slot]?.[d];
+                      // if this slot is marked as skipped (part of a previous multi-hour), do not render a <td>
+                      if (info && info.skip) {
+                        return null;
+                      }
+
+                      const rowSpan = info && info.span && info.span > 1 ? info.span : undefined;
+
                       return (
-                        <td key={d}>
-                          {info && (
-                            <div className={`pf-event ${info.c}`}>
-                              {info.s}
-                              <small>{info.r}</small>
+                        <td key={d} rowSpan={rowSpan}>
+                          {info && !info.skip && (
+                            <div className={`pf-event ${info.c}`} title={info.s}>
+                              <div className="pf-event__subject">{info.s}</div>
+                              <div className="pf-event__room">{info.r}</div>
                             </div>
                           )}
                         </td>

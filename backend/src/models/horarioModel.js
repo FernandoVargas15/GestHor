@@ -37,11 +37,30 @@ const obtenerHorariosPorProfesor = async (profesorId) => {
             h.dia_semana,
             h.hora_inicio,
             h.hora_fin,
-            mc.nombre_materia
+            mc.nombre_materia,
+            s.nombre_salon,
+            s.tipo_salon,
+            e.edificio_id,
+            e.nombre_edificio,
+            l.lugar_id,
+            l.nombre_lugar
         FROM horarios h
         JOIN materias_catalogo mc ON h.materia_id = mc.materia_id
+        LEFT JOIN salones s ON h.salon_id = s.salon_id
+        LEFT JOIN edificios e ON s.edificio_id = e.edificio_id
+        LEFT JOIN lugares l ON e.lugar_id = l.lugar_id
         WHERE h.profesor_id = $1
-        ORDER BY h.dia_semana, h.hora_inicio
+        ORDER BY
+            CASE
+                WHEN h.dia_semana ILIKE 'Lunes' THEN 1
+                WHEN h.dia_semana ILIKE 'Martes' THEN 2
+                WHEN h.dia_semana ILIKE 'Miércoles' THEN 3
+                WHEN h.dia_semana ILIKE 'Miercoles' THEN 3
+                WHEN h.dia_semana ILIKE 'Jueves' THEN 4
+                WHEN h.dia_semana ILIKE 'Viernes' THEN 5
+                ELSE 6
+            END,
+            h.hora_inicio
     `;
     return await dbConnection.any(query, [profesorId]);
 };

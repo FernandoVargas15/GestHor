@@ -40,8 +40,7 @@ const InfoProfesorModal = ({ profesorNombre, onClose, infoProfesor }) => {
                         padding: '16px', 
                         backgroundColor: '#f8f9fa', 
                         borderRadius: '4px',
-                        marginBottom: '24px',
-                        borderLeft: '4px solid var(--primary)'
+                        marginBottom: '24px'
                     }}>
                         <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>{profesorNombre}</h3>
                     </div>

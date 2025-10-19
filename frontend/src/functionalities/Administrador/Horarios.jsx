@@ -2,16 +2,12 @@ import { useMemo, useState, useEffect } from "react";
 import { obtenerMaterias } from "../../services/materiaService";
 import { obtenerDocentes } from "../../services/docenteService";
 import { obtenerHorarios, crearHorario, actualizarHorario, eliminarHorario } from "../../services/horarioService";
+import { obtenerEstructura } from "../../services/lugaresService";
 import AutocompleteInput from "../../components/admin/AutocompleteInput";
 import InfoProfesorModal from "../../components/admin/InfoProfesorModal";
 import { useValidacionHorario } from "../../hooks/useValidacionHorario";
 
-// simulacion de datos de salones (conectar al backend luego)
-const SALONES = [
-    { id: 1, nombre: "Aula 101" },
-    { id: 2, nombre: "Aula 102" },
-    { id: 3, nombre: "Lab 103" },
-];
+// Los salones se obtienen desde la API mediante la estructura lugares -> edificios -> salones
 
 const DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
 
@@ -51,6 +47,9 @@ export default function Horarios() {
     const [editId, setEditId] = useState(null);
     const [materias, setMaterias] = useState([]);
     const [profesores, setProfesores] = useState([]);
+    const [lugares, setLugares] = useState([]);
+    const [selectedLugarId, setSelectedLugarId] = useState("");
+    const [selectedEdificioId, setSelectedEdificioId] = useState("");
     const [cargando, setCargando] = useState(false);
     const [profesorSeleccionado, setProfesorSeleccionado] = useState(null);
     
@@ -72,6 +71,14 @@ export default function Horarios() {
             setMaterias(dataMaterias.materias || []);
             setProfesores(dataDocentes.docentes || []);
             setHorarios(dataHorarios.horarios || []);
+
+            // Cargar estructura de lugares (lugares -> edificios -> salones)
+            try {
+                const resp = await obtenerEstructura();
+                setLugares(resp.lugares || []);
+            } catch (err) {
+                console.warn('No se pudieron cargar los lugares:', err);
+            }
         } catch (error) {
             console.error("Error al cargar datos:", error);
             alert("Error al cargar datos iniciales");
@@ -277,7 +284,29 @@ export default function Horarios() {
         return profesor ? `${profesor.nombres} ${profesor.apellidos}` : "";
     };
     
-    const salonName = (id) => SALONES.find((s) => s.id === id)?.nombre || "";
+    // Buscar nombre de salón por id en la estructura cargada
+    const salonName = (id) => {
+        for (const lugar of lugares) {
+            for (const edificio of lugar.edificios || []) {
+                for (const s of edificio.salones || []) {
+                    if (s.salon_id === id) return s.nombre_salon;
+                }
+            }
+        }
+        return "";
+    };
+
+    // Dadas las selecciones, obtener la lista de salones filtrada
+    const salonesFiltrados = () => {
+        let resultados = [];
+        const lugar = lugares.find((l) => String(l.lugar_id) === String(selectedLugarId));
+        const edificios = lugar ? (lugar.edificios || []) : lugares.flatMap(l => l.edificios || []);
+        const edificiosFiltrados = selectedEdificioId ? edificios.filter(e => String(e.edificio_id) === String(selectedEdificioId)) : edificios;
+        for (const ed of edificiosFiltrados) {
+            resultados = resultados.concat(ed.salones || []);
+        }
+        return resultados;
+    };
 
     // agrupar por dia para el listado
     const porDia = useMemo(() => {
@@ -380,18 +409,43 @@ export default function Horarios() {
                     <div className="form__row form__row--2" style={{ marginTop: 12 }}>
                         <div>
                             <label>Salón</label>
-                            <select
-                                className="select"
-                                name="salonId"
-                                value={form.salonId}
-                                onChange={onChange}
-                                required
-                            >
-                                <option value="">Seleccionar salón...</option>
-                                {SALONES.map((s) => (
-                                    <option key={s.id} value={s.id}>{s.nombre}</option>
-                                ))}
-                            </select>
+                                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                    <div style={{ flex: 1 }}>
+                                        <label>Lugar (opcional)</label>
+                                        <select className="select" value={selectedLugarId} onChange={(e) => { setSelectedLugarId(e.target.value); setSelectedEdificioId(""); }} required>
+                                            <option value="">Seleccionar lugar...</option>
+                                            {lugares.map((l) => (
+                                                <option key={l.lugar_id} value={l.lugar_id}>{l.nombre_lugar}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div style={{ flex: 1 }}>
+                                        <label>Edificio (opcional)</label>
+                                        <select className="select" value={selectedEdificioId} onChange={(e) => setSelectedEdificioId(e.target.value)} required>
+                                            <option value="">Seleccionar edificio...</option>
+                                            {(lugares.find(l => String(l.lugar_id) === String(selectedLugarId))?.edificios || lugares.flatMap(l => l.edificios || [])).map((ed) => (
+                                                <option key={ed.edificio_id} value={ed.edificio_id}>{ed.nombre_edificio}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div style={{ flex: 1 }}>
+                                        <label>Salón</label>
+                                        <select
+                                            className="select"
+                                            name="salonId"
+                                            value={form.salonId}
+                                            onChange={onChange}
+                                            required
+                                        >
+                                            <option value="">Seleccionar salón...</option>
+                                            {salonesFiltrados().map((s) => (
+                                                <option key={s.salon_id} value={s.salon_id}>{s.nombre_salon} {s.tipo_salon ? ` - ${s.tipo_salon}` : ""}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
                         </div>
 
                         <div>
