@@ -80,7 +80,6 @@ export default function MiHorario() {
           if (!slot) continue;
           // Normalize database day names (e.g. "Miércoles") to match DAYS keys ("miercoles")
           const diaKey = normalize(r.dia_semana);
-          if (!classes[slot]) classes[slot] = {};
 
           const subject = r.nombre_materia || '';
           const roomParts = [];
@@ -123,14 +122,22 @@ export default function MiHorario() {
           const slotsArray = matutinoSlots.includes(slot) ? matutinoSlots : vespertinoSlots;
           const startIndex = slotsArray.indexOf(slot);
 
-          // assign start cell with span and mark following slots as skipped
-          classes[slot][diaKey] = { s: subject, r: room, c: colorClass, span };
-          for (let i = 1; i < span; i++) {
-            const nextIndex = startIndex + i;
-            if (nextIndex >= 0 && nextIndex < slotsArray.length) {
-              const nextSlot = slotsArray[nextIndex];
-              if (!classes[nextSlot]) classes[nextSlot] = {};
-              classes[nextSlot][diaKey] = { skip: true };
+          for (let i = 0; i < span; i++) {
+            const idx = startIndex + i;
+            if (idx < 0 || idx >= slotsArray.length) break;
+            const targetSlot = slotsArray[idx];
+
+            if (!classes[targetSlot]) classes[targetSlot] = {};
+
+            const item = { s: subject, r: room, c: colorClass };
+
+            if (classes[targetSlot][diaKey]) {
+              const existing = classes[targetSlot][diaKey];
+              classes[targetSlot][diaKey] = Array.isArray(existing)
+                ? [...existing, item]
+                : [existing, item];
+            } else {
+              classes[targetSlot][diaKey] = item;
             }
           }
         }
@@ -231,19 +238,23 @@ export default function MiHorario() {
                     <td className="pf-time">{slot}</td>
                     {DAYS.map((d) => {
                       const info = schedule.classes[slot]?.[d];
-                      if (info && info.skip) {
-                        return null;
-                      }
-
-                      const rowSpan = info && info.span && info.span > 1 ? info.span : undefined;
 
                       return (
-                        <td key={d} rowSpan={rowSpan}>
-                          {info && !info.skip && (
-                            <div className={`pf-event ${info.c}`} title={info.s}>
-                              <div className="pf-event__subject">{info.s}</div>
-                              <div className="pf-event__room">{info.r}</div>
-                            </div>
+                        <td key={d}>
+                          {Array.isArray(info) ? (
+                            info.map((ev, idx) => (
+                              <div key={idx} className={`pf-event ${ev.c}`} title={ev.s} style={{ marginBottom: 6 }}>
+                                <div className="pf-event__subject">{ev.s}</div>
+                                <div className="pf-event__room">{ev.r}</div>
+                              </div>
+                            ))
+                          ) : (
+                            info && (
+                              <div className={`pf-event ${info.c}`} title={info.s}>
+                                <div className="pf-event__subject">{info.s}</div>
+                                <div className="pf-event__room">{info.r}</div>
+                              </div>
+                            )
                           )}
                         </td>
                       );
