@@ -324,3 +324,13 @@ body {
 .link-btn--danger:hover {
     background: #fee2e2;
 }
+
+/*informacion de profesor*/
+.main__content > :last-child {
+  padding-inline: 20px;
+}
+
+@media (max-width: 768px) {
+  .main__content > :last-child { padding-inline: 16px; }
+}
+
