@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { obtenerNombreProfesor } from "../../services/docenteService";
 import { HorarioExcelExporter } from "../../utils/excelExportService";
 import { obtenerHorariosProfesor } from "../../services/horarioService";
-
+import { HorarioPDFExporter } from "../../utils/pdfExportService"; 
   const DAYS = ["lunes", "martes", "miercoles", "jueves", "viernes"];
 
   const normalize = (s) =>
@@ -160,9 +160,18 @@ export default function MiHorario() {
   /**
    * Exporta el horario actual a PDF
    */
-  const exportPDF = () => {
-    alert("Exportar a PDF (simulado).");
-  };
+const exportPDF = () => {
+  try {
+    HorarioPDFExporter.exportSchedule(
+      schedule,
+      tipo,
+      nombreProfesor || "Profesor"
+    );
+  } catch (error) {
+    console.error("Error al exportar PDF:", error);
+    alert("Error al generar el PDF. Por favor, intenta nuevamente.");
+  }
+};
 
 
   const exportExcel = () => {
@@ -215,7 +224,7 @@ export default function MiHorario() {
                 <option value="vespertino">Vespertino (15:00 - 22:00)</option>
               </select>
 
-              <button className="pf-btn" onClick={exportPDF}>PDF</button>
+              <button className="pf-btn pf-btn--primary" onClick={exportPDF}>PDF</button>
               <button className="pf-btn pf-btn--primary" onClick={exportExcel}>Excel</button>
             </div>
           </div>
