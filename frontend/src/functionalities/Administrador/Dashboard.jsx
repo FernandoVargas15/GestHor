@@ -277,7 +277,7 @@ function ScheduleTable() {
                 setProfesorSel(null);
               }}
             />
-            {query && sugerencias.length > 0 && (
+            {query && sugerencias.length > 0 && !profesorSel && (
               <div
                 style={{
                   position: "absolute",
@@ -295,8 +295,8 @@ function ScheduleTable() {
               >
                 {sugerencias.map((d) => (
                   <div
-                    key={d.profesor_id}
-                    onClick={() => {
+                    onMouseDown={(e) => {
+                      e.preventDefault();
                       setProfesorSel(d);
                       setQuery(`${d.nombres} ${d.apellidos}`.trim());
                       setSugerencias([]);
