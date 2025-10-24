@@ -2,6 +2,7 @@ import express from 'express';
 import { 
     listarHorarios, 
     listarHorariosProfesor,
+    listarHorariosSalon,
     registrarHorario, 
     modificarHorario, 
     borrarHorario 
@@ -14,6 +15,8 @@ router.get('/horarios', listarHorarios);
 
 // GET /api/horarios/profesor/:profesorId - Obtener horarios de un profesor
 router.get('/horarios/profesor/:profesorId', listarHorariosProfesor);
+// GET /api/horarios/salon/:salonId - Obtener horarios de un salón
+router.get('/horarios/salon/:salonId', listarHorariosSalon);
 
 // POST /api/horarios - Crear nuevo horario
 router.post('/horarios', registrarHorario);

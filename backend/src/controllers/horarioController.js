@@ -1,6 +1,7 @@
 import { 
     obtenerHorarios, 
     obtenerHorariosPorProfesor,
+    obtenerHorariosPorSalon,
     crearHorario, 
     actualizarHorario, 
     eliminarHorario,
@@ -41,6 +42,17 @@ const listarHorariosProfesor = async (req, res) => {
             mensaje: 'Error al obtener horarios del profesor',
             error: error.message 
         });
+    }
+};
+
+const listarHorariosSalon = async (req, res) => {
+    try {
+        const { salonId } = req.params;
+        const horarios = await obtenerHorariosPorSalon(salonId);
+        res.json({ ok: true, horarios });
+    } catch (error) {
+        console.error('Error en listarHorariosSalon:', error);
+        res.status(500).json({ ok: false, mensaje: 'Error al obtener horarios del salón', error: error.message });
     }
 };
 
@@ -179,6 +191,7 @@ const borrarHorario = async (req, res) => {
 export {
     listarHorarios,
     listarHorariosProfesor,
+    listarHorariosSalon,
     registrarHorario,
     modificarHorario,
     borrarHorario

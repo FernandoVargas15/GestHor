@@ -53,6 +53,10 @@ function ScheduleTable() {
   const [query, setQuery] = useState("");
   const [sugerencias, setSugerencias] = useState([]); // lista filtrada
   const [profesorSel, setProfesorSel] = useState(null); // profesor_id, nombres, apellidos }
+  const [lugaresEstructura, setLugaresEstructura] = useState([]);
+  const [salonesFlat, setSalonesFlat] = useState([]);
+  const [salonSel, setSalonSel] = useState(null);
+  const [salonHorarios, setSalonHorarios] = useState([]);
 
   // datos del horario del profesor que se seleccione
   const [schedule, setSchedule] = useState({ slots: [], classes: {} });
@@ -81,6 +85,42 @@ function ScheduleTable() {
     return () => {
       abort = true;
     };
+  }, []);
+
+  // Cargar estructura de lugares -> edificios -> salones
+  useEffect(() => {
+    let abort = false;
+    (async () => {
+      try {
+        const r = await fetch('http://localhost:3000/api/lugares');
+        if (!r.ok) throw new Error('No se pudieron cargar los lugares.');
+        const json = await r.json();
+        const estructura = Array.isArray(json) ? json : json.lugares || json;
+        if (abort) return;
+        setLugaresEstructura(estructura || []);
+        // aplanar salones
+        const flat = [];
+        for (const lugar of estructura || []) {
+          for (const edificio of lugar.edificios || []) {
+            for (const salon of edificio.salones || []) {
+              flat.push({
+                salon_id: salon.salon_id,
+                nombre_salon: salon.nombre_salon,
+                tipo_salon: salon.tipo_salon,
+                edificio_id: edificio.edificio_id,
+                nombre_edificio: edificio.nombre_edificio,
+                lugar_id: lugar.lugar_id,
+                nombre_lugar: lugar.nombre_lugar,
+              });
+            }
+          }
+        }
+        setSalonesFlat(flat);
+      } catch (e) {
+        console.error('Error cargando estructura de lugares:', e);
+      }
+    })();
+    return () => { abort = true; };
   }, []);
 
   // Filtrado por nombre (autocompletado) *MEJORAR*
@@ -325,6 +365,35 @@ function ScheduleTable() {
             <option value="vespertino">Vespertino (15:00 - 22:00)</option>
           </select>
 
+          {/* Filtro por Salón */}
+          <select
+            className="btn"
+            value={salonSel || ""}
+            onChange={async (e) => {
+              const val = e.target.value || null;
+              setSalonSel(val);
+              setSalonHorarios([]);
+              if (val) {
+                try {
+                  const resp = await fetch(`http://localhost:3000/api/horarios/salon/${encodeURIComponent(val)}`);
+                  if (!resp.ok) throw new Error('No se pudieron obtener los horarios del salón');
+                  const json = await resp.json();
+                  const rows = Array.isArray(json?.horarios) ? json.horarios : [];
+                  setSalonHorarios(rows);
+                } catch (err) {
+                  console.error(err);
+                }
+              }
+            }}
+          >
+            <option value="">Filtrar por salón (opcional)</option>
+            {salonesFlat.map((s) => (
+              <option key={s.salon_id} value={s.salon_id}>
+                {s.nombre_lugar} / {s.nombre_edificio} / {s.nombre_salon}
+              </option>
+            ))}
+          </select>
+
           <button className="btn" onClick={exportPDF}>PDF</button>
           <button className="btn btn--primary" onClick={exportExcel}>Excel</button>
         </div>
@@ -339,54 +408,178 @@ function ScheduleTable() {
           : "Selecciona un profesor…"}
       </div>
 
+      {/* Información del salón seleccionado */}
+      {salonSel && (
+        <div style={{ marginTop: 8, padding: 10, border: '1px solid var(--border)', borderRadius: 8 }}>
+          <div style={{ fontWeight: 700 }}>Salón seleccionado</div>
+          {(() => {
+            const info = salonesFlat.find(s => String(s.salon_id) === String(salonSel));
+            if (!info) return <div className="form__hint">Información del salón no disponible</div>;
+            const profesoresUnicos = Array.from(new Map(salonHorarios.map(h => [h.profesor_id, { profesor_id: h.profesor_id, nombres: h.nombres, apellidos: h.apellidos }])).values());
+            return (
+              <div style={{ marginTop: 6 }}>
+                <div className="form__hint">Lugar: {info.nombre_lugar}</div>
+                <div className="form__hint">Edificio: {info.nombre_edificio}</div>
+                <div className="form__hint">Salón: {info.nombre_salon} {info.tipo_salon && `(${info.tipo_salon})`}</div>
+                <div style={{ marginTop: 8 }}>
+                  <strong>Profesores con clases en este salón ({profesoresUnicos.length}):</strong>
+                  <ul style={{ marginTop: 6 }}>
+                    {profesoresUnicos.map(p => (
+                      <li key={p.profesor_id} style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                        <span>{p.nombres} {p.apellidos}</span>
+                        <div>
+                          <button className="btn" onClick={() => { setProfesorSel(p); setQuery(`${p.nombres} ${p.apellidos}`); }}>Ver horario</button>
+                        </div>
+                      </li>
+                    ))}
+                    {profesoresUnicos.length === 0 && <li className="form__hint">No hay profesores asignados actualmente</li>}
+                  </ul>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
       {/* Tabla */}
       <div style={{ overflowX: "auto", marginTop: 8 }}>
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Hora</th>
-              <th>Lunes</th>
-              <th>Martes</th>
-              <th>Miércoles</th>
-              <th>Jueves</th>
-              <th>Viernes</th>
-            </tr>
-          </thead>
-          <tbody>
-            {schedule.slots.map((slot) => (
-              <tr key={slot}>
-                <td style={{ fontWeight: 600, background: "#f8fafc" }}>{slot}</td>
-                {DAYS.map((dKey) => {
-                  const info = schedule.classes[slot]?.[dKey];
-                  return (
-                    <td key={dKey}>
-                      {Array.isArray(info) ? (
-                        info.map((ev, idx) => (
-                          <div
-                            key={idx}
-                            className={`pf-event ${ev.c}`}
-                            title={ev.s}
-                            style={{ marginBottom: 6 }}
-                          >
-                            <div className="pf-event__subject">{ev.s}</div>
-                            <div className="pf-event__room">{ev.r}</div>
-                          </div>
-                        ))
-                      ) : (
-                        info && (
-                          <div className={`pf-event ${info.c}`} title={info.s}>
-                            <div className="pf-event__subject">{info.s}</div>
-                            <div className="pf-event__room">{info.r}</div>
-                          </div>
-                        )
-                      )}
-                    </td>
-                  );
-                })}
+        {/* Priority: if a professor is selected, show the existing schedule table.
+            If no professor but a salon is selected, show the compact materia-docente table. */}
+        {profesorSel ? (
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Hora</th>
+                <th>Lunes</th>
+                <th>Martes</th>
+                <th>Miércoles</th>
+                <th>Jueves</th>
+                <th>Viernes</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {schedule.slots.map((slot) => (
+                <tr key={slot}>
+                  <td style={{ fontWeight: 600, background: "#f8fafc" }}>{slot}</td>
+                  {DAYS.map((dKey) => {
+                    const info = schedule.classes[slot]?.[dKey];
+                    return (
+                      <td key={dKey}>
+                        {Array.isArray(info) ? (
+                          info.map((ev, idx) => (
+                            <div
+                              key={idx}
+                              className={`pf-event ${ev.c}`}
+                              title={ev.s}
+                              style={{ marginBottom: 6 }}
+                            >
+                              <div className="pf-event__subject">{ev.s}</div>
+                              <div className="pf-event__room">{ev.r}</div>
+                            </div>
+                          ))
+                        ) : (
+                          info && (
+                            <div className={`pf-event ${info.c}`} title={info.s}>
+                              <div className="pf-event__subject">{info.s}</div>
+                              <div className="pf-event__room">{info.r}</div>
+                            </div>
+                          )
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : salonSel ? (
+          // Compact table grouped by materia + docente for the selected salon
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Materia</th>
+                <th>Docente</th>
+                <th>Lunes</th>
+                <th>Martes</th>
+                <th>Miércoles</th>
+                <th>Jueves</th>
+                <th>Viernes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(() => {
+                // agrupar salonHorarios por materia+docente
+                const groups = new Map();
+                for (const h of salonHorarios || []) {
+                  const key = `${h.materia_id}||${h.profesor_id}`;
+                  if (!groups.has(key)) {
+                    groups.set(key, {
+                      materia_id: h.materia_id,
+                      nombre_materia: h.nombre_materia,
+                      profesor_id: h.profesor_id,
+                      docente_nombre: `${h.nombres} ${h.apellidos}`,
+                      byDay: { Lunes: [], Martes: [], 'Miércoles': [], Jueves: [], Viernes: [] }
+                    });
+                  }
+                  const entry = groups.get(key);
+                  const day = h.dia_semana || '';
+                  const dayNorm = day === 'Miercoles' ? 'Miércoles' : day; // normalize possible accent
+                  const time = `${String(h.hora_inicio || '').substring(0,5)} - ${String(h.hora_fin || '').substring(0,5)}`;
+                  if (entry.byDay[dayNorm]) entry.byDay[dayNorm].push(time);
+                }
+
+                const rows = Array.from(groups.values());
+                if (rows.length === 0) {
+                  return (
+                    <tr>
+                      <td colSpan={7} className="form__hint">No hay clases registradas para este salón.</td>
+                    </tr>
+                  );
+                }
+
+                return rows.map((r) => (
+                  <tr key={`${r.materia_id}-${r.profesor_id}`}>
+                    <td style={{ fontWeight: 600 }}>{r.nombre_materia}</td>
+                    <td>{r.docente_nombre}</td>
+                    {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'].map((d) => (
+                      <td key={d}>
+                        {r.byDay[d] && r.byDay[d].length > 0 ? (
+                          r.byDay[d].map((t, i) => (
+                            <div key={i} style={{ marginBottom: 6 }}>{t}</div>
+                          ))
+                        ) : (
+                          <span className="form__hint">-</span>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ));
+              })()}
+            </tbody>
+          </table>
+        ) : (
+          // Default: show empty schedule (no professor selected)
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Hora</th>
+                <th>Lunes</th>
+                <th>Martes</th>
+                <th>Miércoles</th>
+                <th>Jueves</th>
+                <th>Viernes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {schedule.slots.map((slot) => (
+                <tr key={slot}>
+                  <td style={{ fontWeight: 600, background: "#f8fafc" }}>{slot}</td>
+                  {DAYS.map((dKey) => <td key={dKey}></td>)}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );
