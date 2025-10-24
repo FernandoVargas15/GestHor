@@ -2,7 +2,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 export class HorarioPDFExporter {
-  static exportSchedule(scheduleData, tipo, profesorNombre = "Profesor") {
+  static exportSchedule(scheduleData, tipo, profesorNombre = "Profesor", outputType = 'save') {
     const { slots, classes } = scheduleData;
     const days = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
     const daysKeys = ["lunes", "martes", "miercoles", "jueves", "viernes"];
@@ -107,10 +107,14 @@ export class HorarioPDFExporter {
       doc.text("Sistema de Gestión Académica - GestHor", pageWidth / 2, finalY + 12, { align: "center" });
     }
 
-    // Guardar el archivo con nombre 
-    const safeName = profesorNombre.replace(/[^\w\s]/gi, '').replace(/\s+/g, '_');
-    const fileName = `Horario_${tipo}_${safeName}.pdf`;
-    doc.save(fileName);
+    if (outputType === 'blob') {
+      return doc.output('blob');
+    } else {
+      // Guardar el archivo con nombre 
+      const safeName = profesorNombre.replace(/[^\w\s]/gi, '').replace(/\s+/g, '_');
+      const fileName = `Horario_${tipo}_${safeName}.pdf`;
+      doc.save(fileName);
+    }
   }
 
   static exportEmptySchedule(tipo, profesorNombre = "Plantilla") {

@@ -113,3 +113,47 @@ export const plantillaRecuperacion = ({ nombreCompleto, nuevoToken }) => {
 </html>
     `.trim();
 };
+
+export const plantillaEnvioHorario = ({ nombreCompleto }) => {
+    return `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tu Horario Asignado - GestHor</title>
+    <style>
+        ${emailStyles}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Sistema GestHor</h1>
+            <p>Notificación de Horario</p>
+        </div>
+        
+        <div class="content">
+            <p>Hola <strong>${nombreCompleto}</strong>,</p>
+            
+            <p>Te informamos que tu horario de clases ha sido actualizado por un administrador.</p>
+            
+            <p>Puedes encontrar el documento PDF con tu horario semanal adjunto en este correo.</p>
+            
+            <div class="alert-box">
+                <p><strong>Importante:</strong> Revisa el documento adjunto para conocer tus clases y salones asignados. También puedes consultar tu horario en cualquier momento iniciando sesión en el sistema.</p>
+            </div>
+            
+            <p>Si tienes alguna duda, contacta al administrador del sistema.</p>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Sistema GestHor</strong></p>
+            <p>Gestión de Horarios Académicos</p>
+            <p>© ${new Date().getFullYear()} - Este es un correo automático</p>
+        </div>
+    </div>
+</body>
+</html>
+    `.trim();
+};

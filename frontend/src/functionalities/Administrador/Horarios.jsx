@@ -1,7 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { useToast } from "../../components/ui/NotificacionFlotante";
 import { obtenerMaterias } from "../../services/materiaService";
-import { obtenerDocentes as fetchDocentes } from "../../services/docenteService";
 import { obtenerDocentes as fetchDocentes, enviarHorarioPorCorreo } from "../../services/docenteService";
 import { HorarioPDFExporter } from "../../utils/pdfExportService";
 import { obtenerHorariosProfesor, crearHorario, actualizarHorario, eliminarHorario } from "../../services/horarioService";
@@ -86,24 +85,22 @@ export default function Horarios() {
     useEffect(() => {
         cargarDatos();
     }, []);
-
+    
     const cargarDatos = async () => {
         try {
             setCargando(true);
-            const [dataMaterias, dataDocentes] = await Promise.all([
+            const [dataMaterias, dataDocentes, dataLugares] = await Promise.all([
                 obtenerMaterias(),
                 fetchDocentes(),
+                obtenerEstructura().catch(err => {
+                    // Make this promise non-fatal if it fails
+                    console.warn('No se pudieron cargar los lugares:', err);
+                    return { lugares: [] };
+                })
             ]);
             setMaterias(dataMaterias.materias || []);
             setProfesores(dataDocentes.docentes || []);
-
-            // Cargar estructura de lugares (lugares -> edificios -> salones)
-            try {
-                const resp = await obtenerEstructura();
-                setLugares(resp.lugares || []);
-            } catch (err) {
-                console.warn('No se pudieron cargar los lugares:', err);
-            }
+            setLugares(dataLugares.lugares || []);
         } catch (error) {
             console.error("Error al cargar datos:", error);
             notify({ type: 'error', message: 'Error al cargar datos iniciales' });
@@ -111,7 +108,7 @@ export default function Horarios() {
             setCargando(false);
         }
     };
-
+    
     const horas = useMemo(() => timeRange("07:00", "22:00", 60), []);
 
     const sugerencias = useMemo(() => {
@@ -353,7 +350,7 @@ export default function Horarios() {
 
         try {
             setCargando(true);
-            const pdfBlob = await HorarioPDFExporter.exportSchedule(schedule, tipo, `${profesorSel.nombres} ${profesorSel.apellidos}`, 'blob');
+            const pdfBlob = HorarioPDFExporter.exportSchedule(schedule, tipo, `${profesorSel.nombres} ${profesorSel.apellidos}`, 'blob');
             
             const response = await enviarHorarioPorCorreo(profesorSel.profesor_id, pdfBlob);
 

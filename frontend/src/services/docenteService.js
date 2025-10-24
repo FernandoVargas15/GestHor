@@ -37,4 +37,14 @@ const obtenerEstadisticasDocentes = async () => {
     return response.data;
 };
 
-export { obtenerDocentes, obtenerDocentePorId, obtenerNombreProfesor, crearDocente, actualizarDocente, eliminarDocente, obtenerEstadisticasDocentes };
+const enviarHorarioPorCorreo = async (profesorId, pdfBlob) => {
+    const formData = new FormData();
+    formData.append('horarioPdf', pdfBlob, 'horario.pdf');
+
+    const response = await axios.post(`${API_URL}/docentes/${profesorId}/enviar-horario`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+};
+
+export { obtenerDocentes, obtenerDocentePorId, obtenerNombreProfesor, crearDocente, actualizarDocente, eliminarDocente, obtenerEstadisticasDocentes, enviarHorarioPorCorreo };

@@ -1,6 +1,6 @@
 import { createTransport } from 'nodemailer';
 import dotenv from 'dotenv';
-import { plantillaBienvenida, plantillaRecuperacion } from '../templates/emailTemplate.js';
+import { plantillaBienvenida, plantillaRecuperacion, plantillaEnvioHorario } from '../templates/emailTemplate.js';
 
 dotenv.config();
 
@@ -53,6 +53,48 @@ export const enviarCorreoBienvenida = async ({ email, nombreCompleto, token }) =
         
     } catch (error) {
         console.error(` Error al enviar correo a ${email}:`, error.message);
+        
+        return {
+            success: false,
+            error: error.message
+        };
+    }
+};
+
+export const enviarCorreoConAdjunto = async ({ email, nombreCompleto, pdfBuffer, nombreArchivo }) => {
+    try {
+        const transporter = crearTransporter();
+        
+        const html = plantillaEnvioHorario({ nombreCompleto });
+        
+        const mailOptions = {
+            from: {
+                name: 'Sistema GestHor',
+                address: process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER
+            },
+            to: email,
+            subject: 'Tu Horario de Clases Asignado - GestHor',
+            html,
+            attachments: [
+                {
+                    filename: nombreArchivo,
+                    content: pdfBuffer,
+                    contentType: 'application/pdf'
+                }
+            ]
+        };
+        
+        const info = await transporter.sendMail(mailOptions);
+        
+        console.log(`✅ Correo con horario enviado a ${email} - ID: ${info.messageId}`);
+        
+        return {
+            success: true,
+            messageId: info.messageId
+        };
+        
+    } catch (error) {
+        console.error(`❌ Error al enviar correo con adjunto a ${email}:`, error.message);
         
         return {
             success: false,

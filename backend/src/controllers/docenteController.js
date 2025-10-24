@@ -1,5 +1,5 @@
 import { obtenerTodos, obtenerPorId, obtenerNombreProfesor, insertarDocente, actualizarDocente, eliminarDocente, contarDocentes } from "../models/docenteModel.js";
-import { enviarCorreoBienvenida } from "../services/emailService.js";
+import { enviarCorreoBienvenida, enviarCorreoConAdjunto } from "../services/emailService.js";
 
 const obtenerDocentesController = async (req, res) => {
     try {
@@ -167,6 +167,46 @@ const obtenerEstadisticasDocentesController = async (req, res) => {
     }
 };
 
+/**
+ * Enviar horario en PDF por correo a un docente
+ * Endpoint: POST /api/docentes/:id/enviar-horario
+ */
+const enviarHorarioController = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const pdfFile = req.file;
+
+        if (!pdfFile) {
+            return res.status(400).json({ ok: false, mensaje: "No se recibió ningún archivo PDF." });
+        }
+
+        const docente = await obtenerPorId(id);
+        if (!docente) {
+            return res.status(404).json({ ok: false, mensaje: "Docente no encontrado." });
+        }
+
+        await enviarCorreoConAdjunto({
+            email: docente.email,
+            nombreCompleto: `${docente.nombres} ${docente.apellidos}`,
+            pdfBuffer: pdfFile.buffer,
+            nombreArchivo: `horario-${docente.nombres.split(' ')[0].toLowerCase()}-${docente.apellidos.split(' ')[0].toLowerCase()}.pdf`
+        });
+
+        res.json({
+            ok: true,
+            mensaje: `Horario enviado exitosamente al correo: ${docente.email}`
+        });
+
+    } catch (error) {
+        console.error("Error en enviarHorarioController:", error);
+        res.status(500).json({ 
+            ok: false,
+            mensaje: "Error al enviar el horario por correo.",
+            error: error.message 
+        });
+    }
+};
+
 export { 
     obtenerDocentesController, 
     obtenerDocentePorIdController, 
@@ -174,5 +214,6 @@ export {
     insertarDocenteController, 
     actualizarDocenteController, 
     eliminarDocenteController, 
-    obtenerEstadisticasDocentesController 
+    obtenerEstadisticasDocentesController,
+    enviarHorarioController
 };
