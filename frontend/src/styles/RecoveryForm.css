@@ -397,3 +397,48 @@
     max-width: 100%;
   }
 }
+
+@media (max-width: 480px) {
+  .info-column {
+    padding: 1.2rem 5%;
+  }
+
+  .system-title {
+    font-size: 1.6rem;
+    text-align: center;
+  }
+
+  .system-subtitle {
+    font-size: 0.95rem;
+    text-align: center;
+  }
+
+  .form-card {
+    padding: 20px 14px;
+    border-radius: 14px;
+    max-width: 100%;
+    margin: 1rem;
+  }
+
+  .card-title {
+    font-size: 1.4rem;
+  }
+
+  .recovery-form .form-group input,
+  .recovery-form .form-group textarea {
+    padding: 10px 12px;
+    font-size: 14px;
+    border-radius: 10px;
+  }
+
+  .important-note {
+    font-size: 0.8rem;
+    padding: 8px;
+  }
+
+  .submit-button {
+    padding: 12px;
+    font-size: 15px;
+    border-radius: 10px;
+  }
+}

@@ -431,3 +431,104 @@
   box-shadow: 0 4px 12px rgba(211, 47, 47, 0.15);
   animation: pulse 2s ease-in-out infinite;
 }
+
+@media (max-width: 1024px) {
+  .loginContent {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .infoSection {
+    padding: 3rem 4vw;
+    text-align: center;
+    align-items: center;
+  }
+
+  .systemTitle {
+    font-size: 2.6rem;
+  }
+
+  .loginCard {
+    margin: 2rem 2vw;
+    min-width: 320px;
+    max-width: 520px;
+    padding: 32px 24px;
+    border-radius: 20px;
+  }
+
+  .cardTitle {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .loginBackground {
+    background: linear-gradient(-45deg, #1a5fb4, #298ce7);
+    background-size: 200% 200%;
+  }
+
+  .loginContent {
+    height: auto;
+    padding: 2rem 1rem;
+    flex-direction: column-reverse;
+  }
+
+  .infoSection {
+    padding: 1.2rem 2rem;
+  }
+
+  .systemTitle {
+    font-size: 1.6rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .systemSubtitle {
+    font-size: 1rem;
+  }
+
+  .infoText {
+    display: none; /* Ocultar texto largo en pantallas muy pequeñas */
+  }
+
+  .loginCard {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0 1rem 1.5rem 1rem;
+    padding: 20px 16px;
+    border-radius: 14px;
+  }
+
+  .cardTitle {
+    font-size: 1.4rem;
+  }
+
+  .cardSubtitle {
+    font-size: 0.9rem;
+  }
+
+  .inputField, .googleButton, .loginButton {
+    padding: 10px 12px;
+    font-size: 14px;
+    border-radius: 10px;
+  }
+
+  .forgotPasswordLink {
+    text-align: center;
+    margin-top: 6px;
+  }
+
+  .forgotPasswordLink a {
+    display: inline-block;
+  }
+
+  .divider {
+    font-size: 0.85rem;
+  }
+
+  .googleButton svg {
+    width: 20px;
+    height: 20px;
+  }
+}
