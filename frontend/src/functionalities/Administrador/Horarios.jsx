@@ -1,24 +1,39 @@
 import { useMemo, useState, useEffect } from "react";
 import { useToast } from "../../components/ui/NotificacionFlotante";
 import { obtenerMaterias } from "../../services/materiaService";
-import { obtenerDocentes } from "../../services/docenteService";
-import { obtenerHorarios, crearHorario, actualizarHorario, eliminarHorario } from "../../services/horarioService";
+import { obtenerDocentes as fetchDocentes } from "../../services/docenteService";
+import { obtenerDocentes as fetchDocentes, enviarHorarioPorCorreo } from "../../services/docenteService";
+import { HorarioPDFExporter } from "../../utils/pdfExportService";
+import { obtenerHorariosProfesor, crearHorario, actualizarHorario, eliminarHorario } from "../../services/horarioService";
 import { obtenerEstructura } from "../../services/lugaresService";
 import AutocompleteInput from "../../components/admin/AutocompleteInput";
 import InfoProfesorModal from "../../components/admin/InfoProfesorModal";
+import ProfesorDetailsContent from "../../components/admin/ProfesorDetailsContent";
 import { useValidacionHorario } from "../../hooks/useValidacionHorario";
-
-// Los salones se obtienen desde la API mediante la estructura lugares -> edificios -> salones
+import ScheduleGrid from "../../components/admin/ScheduleGrid";
+import styles from "../../styles/AdminHorarios.module.css";
 
 const DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
+const DAY_KEYS = ["lunes", "martes", "miercoles", "jueves", "viernes"];
+
+const MATUTINO_SLOTS = [
+    "07:00 - 08:00", "08:00 - 09:00", "09:00 - 10:00", "10:00 - 11:00",
+    "11:00 - 12:00", "12:00 - 13:00", "13:00 - 14:00",
+];
+const VESPERTINO_SLOTS = [
+    "15:00 - 16:00", "16:00 - 17:00", "17:00 - 18:00", "18:00 - 19:00",
+    "19:00 - 20:00", "20:00 - 21:00", "21:00 - 22:00",
+];
+
+const COLORS = [
+    'c-blue', 'c-green', 'c-yellow', 'c-red', 'c-purple', 'c-cyan',
+    'c-pink', 'c-teal', 'c-amber', 'c-lime', 'c-indigo',
+];
 
 // utilidades de tiempo
 const toMins = (hhmm) => {
     const [h, m] = hhmm.split(":").map(Number);
     return h * 60 + m;
-};
-const overlap = (aStart, aEnd, bStart, bEnd) => {
-    return toMins(aStart) < toMins(bEnd) && toMins(aEnd) > toMins(bStart);
 };
 const timeRange = (start = "07:00", end = "22:00", step = 60) => {
     const out = [];
@@ -33,8 +48,14 @@ const timeRange = (start = "07:00", end = "22:00", step = 60) => {
     return out;
 };
 
+const normalize = (s) =>
+    String(s || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim();
+
 const emptyForm = {
-    profesorId: "",
     materia: "",
     salonId: "",
     dia: "",
@@ -44,7 +65,6 @@ const emptyForm = {
 
 export default function Horarios() {
     const [form, setForm] = useState(emptyForm);
-    const [horarios, setHorarios] = useState([]);
     const [editId, setEditId] = useState(null);
     const [materias, setMaterias] = useState([]);
     const [profesores, setProfesores] = useState([]);
@@ -52,10 +72,15 @@ export default function Horarios() {
     const [selectedLugarId, setSelectedLugarId] = useState("");
     const [selectedEdificioId, setSelectedEdificioId] = useState("");
     const [cargando, setCargando] = useState(false);
-    const [profesorSeleccionado, setProfesorSeleccionado] = useState(null);
+    const [cargandoHorario, setCargandoHorario] = useState(false);
+    const [errorHorario, setErrorHorario] = useState(null);
+    const [profesorSel, setProfesorSel] = useState(null);
+    const [query, setQuery] = useState("");
+    const [tipo, setTipo] = useState("matutino");
+    const [activeTab, setActiveTab] = useState('horario');
+    const [schedule, setSchedule] = useState({ slots: [], classes: {} });
     const { notify } = useToast();
     
-    // Hook de validación - Principio: Dependency Inversion
     const { loading: validando, infoProfesor, cargarInfoProfesor, validarAsignacion } = useValidacionHorario();
 
     useEffect(() => {
@@ -65,14 +90,12 @@ export default function Horarios() {
     const cargarDatos = async () => {
         try {
             setCargando(true);
-            const [dataMaterias, dataDocentes, dataHorarios] = await Promise.all([
+            const [dataMaterias, dataDocentes] = await Promise.all([
                 obtenerMaterias(),
-                obtenerDocentes(),
-                obtenerHorarios()
+                fetchDocentes(),
             ]);
             setMaterias(dataMaterias.materias || []);
             setProfesores(dataDocentes.docentes || []);
-            setHorarios(dataHorarios.horarios || []);
 
             // Cargar estructura de lugares (lugares -> edificios -> salones)
             try {
@@ -91,69 +114,117 @@ export default function Horarios() {
 
     const horas = useMemo(() => timeRange("07:00", "22:00", 60), []);
 
+    const sugerencias = useMemo(() => {
+        const q = normalize(query);
+        if (!q) return profesores.slice(0, 15);
+        return profesores.filter((d) =>
+            normalize(`${d.nombres} ${d.apellidos}`).includes(q)
+        ).slice(0, 15);
+    }, [query, profesores]);
+
+    useEffect(() => {
+        const cargarHorario = async () => {
+            if (!profesorSel?.profesor_id) {
+                setSchedule({ slots: [], classes: {} });
+                return;
+            }
+            try {
+                setCargandoHorario(true);
+                setErrorHorario(null);
+
+                const resp = await obtenerHorariosProfesor(profesorSel.profesor_id);
+                const rows = resp.horarios || [];
+
+                const horaToSlot = (hora) => {
+                    if (!hora) return null;
+                    const h = hora.substring(0, 5);
+                    const allSlots = [...MATUTINO_SLOTS, ...VESPERTINO_SLOTS];
+                    for (const s of allSlots) if (s.startsWith(h)) return s;
+                    return null;
+                };
+
+                const classes = {};
+                for (const r of rows) {
+                    const slot = horaToSlot(r.hora_inicio);
+                    if (!slot) continue;
+
+                    const diaKey = normalize(r.dia_semana);
+                    if (!DAY_KEYS.includes(diaKey)) continue;
+
+                    const roomParts = [r.nombre_salon, r.nombre_edificio, r.nombre_lugar].filter(Boolean);
+                    const room = roomParts.join(' - ');
+                    const colorClass = COLORS[(r.materia_id || 0) % COLORS.length];
+
+                    const parseMinutes = (t) => t ? toMins(String(t).substring(0, 5)) : 0;
+                    const startMin = parseMinutes(r.hora_inicio);
+                    const endMin = parseMinutes(r.hora_fin);
+                    const span = endMin > startMin ? Math.max(1, Math.round((endMin - startMin) / 60)) : 1;
+
+                    const slotsArray = MATUTINO_SLOTS.includes(slot) ? MATUTINO_SLOTS : VESPERTINO_SLOTS;
+                    const startIndex = slotsArray.indexOf(slot);
+
+                    for (let i = 0; i < span; i++) {
+                        const idx = startIndex + i;
+                        if (idx < 0 || idx >= slotsArray.length) break;
+                        const targetSlot = slotsArray[idx];
+
+                        if (!classes[targetSlot]) classes[targetSlot] = {};
+                        const item = { s: r.nombre_materia, r: room, c: colorClass, h: r };
+
+                        if (classes[targetSlot][diaKey]) {
+                            const existing = classes[targetSlot][diaKey];
+                            classes[targetSlot][diaKey] = Array.isArray(existing) ? [...existing, item] : [existing, item];
+                        } else {
+                            classes[targetSlot][diaKey] = item;
+                        }
+                    }
+                }
+
+                const finalSlots = tipo === 'matutino' ? MATUTINO_SLOTS : VESPERTINO_SLOTS;
+                setSchedule({ slots: finalSlots, classes });
+            } catch (e) {
+                setErrorHorario(e.message || "Error desconocido");
+                setSchedule({ slots: tipo === "matutino" ? MATUTINO_SLOTS : VESPERTINO_SLOTS, classes: {} });
+            } finally {
+                setCargandoHorario(false);
+            }
+        };
+        cargarHorario();
+    }, [profesorSel, tipo]);
+
     const onChange = (e) => {
         const { name, value } = e.target;
         setForm((f) => ({ ...f, [name]: value }));
     };
 
     const handleSeleccionarProfesor = async (profesor) => {
-        setProfesorSeleccionado(profesor);
-        setForm((f) => ({ ...f, profesorId: profesor.profesor_id }));
-        
-        // Cargar info del profesor automáticamente al seleccionarlo
+        setProfesorSel(profesor);
+        setQuery(`${profesor.nombres} ${profesor.apellidos}`);
+        setActiveTab('horario'); // Reset to default tab on new selection
         await cargarInfoProfesor(profesor.profesor_id);
     };
 
-    const limpiarProfesor = () => {
-        setProfesorSeleccionado(null);
-        setForm((f) => ({ ...f, profesorId: "" }));
-    };
-
-    const validar = () => {
-        if (!form.profesorId) return "Selecciona un profesor.";
+    const validarFormulario = () => {
+        if (!profesorSel) return "Selecciona un profesor.";
         if (!form.materia) return "Selecciona una materia.";
         if (!form.salonId) return "Selecciona un salón.";
         if (!form.dia) return "Selecciona un día.";
         if (!form.inicio) return "Selecciona hora de inicio.";
         if (!form.fin) return "Selecciona hora de fin.";
-        if (toMins(form.inicio) >= toMins(form.fin))
-            return "La hora fin debe ser mayor que la hora inicio.";
-
-        // choques con profesor
-        const sameDay = horarios.filter(
-            (h) => h.dia === form.dia && (editId ? h.id !== editId : true)
-        );
-
-        const choqueProfesor = sameDay.find(
-            (h) =>
-                h.profesorId === form.profesorId &&
-                overlap(form.inicio, form.fin, h.inicio, h.fin)
-        );
-        if (choqueProfesor)
-            return "Choque: el profesor ya tiene un horario en ese rango.";
-
-        // choques con salón
-        const choqueSalon = sameDay.find(
-            (h) =>
-                h.salonId === form.salonId &&
-                overlap(form.inicio, form.fin, h.inicio, h.fin)
-        );
-        if (choqueSalon)
-            return "Choque: el salón ya está ocupado en ese rango.";
-
+        if (toMins(form.inicio) >= toMins(form.fin)) return "La hora fin debe ser mayor que la hora inicio.";
         return null;
     };
 
     const submit = async (e) => {
         e.preventDefault();
         
-        if (cargando) return;
+        if (cargando || validando) return;
 
         try {
             setCargando(true);
 
-            // 1. Validaciones básicas
-            const err = validar();
+            // 1. Validaciones
+            const err = validarFormulario();
             if (err) {
                 notify({ type: 'error', message: err });
                 return;
@@ -166,13 +237,12 @@ export default function Horarios() {
                 return;
             }
 
-            // 3. Validar que el profesor puede impartir la materia (solo en creación)
+            // 2. Validar si el profesor puede impartir la materia (solo en creación)
             if (!editId) {
-                const nombreProfesor = profName(form.profesorId);
                 const puedeAsignar = await validarAsignacion(
-                    form.profesorId,
+                    profesorSel.profesor_id,
                     materiaSeleccionada.materia_id,
-                    nombreProfesor,
+                    `${profesorSel.nombres} ${profesorSel.apellidos}`,
                     form.materia
                 );
 
@@ -181,7 +251,7 @@ export default function Horarios() {
 
             // 4. Preparar datos para el backend
             const horarioData = {
-                profesorId: parseInt(form.profesorId),
+                profesorId: profesorSel.profesor_id,
                 materiaId: materiaSeleccionada.materia_id,
                 salonId: parseInt(form.salonId),
                 diaSemana: form.dia,
@@ -189,63 +259,45 @@ export default function Horarios() {
                 horaFin: form.fin
             };
 
-            // 5. Guardar en el backend
+            // 5. Guardar
+            let response;
             if (editId) {
-                const response = await actualizarHorario(editId, horarioData);
-                    if (response.ok) {
-                    // Recargar horarios
-                    const dataHorarios = await obtenerHorarios();
-                    setHorarios(dataHorarios.horarios || []);
-                    notify({ type: 'success', message: 'Horario actualizado exitosamente' });
-                    setEditId(null);
-                    setForm(emptyForm);
-                    setProfesorSeleccionado(null);
-                } else {
-                    notify({ type: 'error', message: response.mensaje || 'Error al actualizar horario' });
-                }
+                response = await actualizarHorario(editId, horarioData);
             } else {
-                const response = await crearHorario(horarioData);
-                if (response.ok) {
-                    // Recargar horarios
-                    const dataHorarios = await obtenerHorarios();
-                    setHorarios(dataHorarios.horarios || []);
-                    notify({ type: 'success', message: 'Horario creado exitosamente' });
-                    
-                    // MEJORA UX: Limpiar solo campos de horario, mantener profesor seleccionado
-                    setForm({
-                        profesorId: form.profesorId,  // Mantener profesor
-                        materia: "",                   // Limpiar materia
-                        salonId: "",                   // Limpiar salón
-                        dia: "",                       // Limpiar día
-                        inicio: "",                    // Limpiar hora inicio
-                        fin: ""                        // Limpiar hora fin
-                    });
-                    // NO limpiar profesorSeleccionado para que permanezca visible
-                    } else {
-                    notify({ type: 'error', message: response.mensaje || 'Error al crear horario' });
-                }
+                response = await crearHorario(horarioData);
+            }
+
+            if (response.ok) {
+                notify({ type: 'success', message: `Horario ${editId ? 'actualizado' : 'creado'} exitosamente` });
+                setEditId(null);
+                setForm(emptyForm);
+                // Forzar recarga del horario del profesor
+                setProfesorSel(p => ({...p})); 
+            } else {
+                notify({ type: 'error', message: response.mensaje || `Error al ${editId ? 'actualizar' : 'crear'} horario` });
             }
         } catch (error) {
             console.error("Error en submit:", error);
-            notify({ type: 'error', message: error.response?.data?.mensaje || 'Error al guardar horario' });
+            notify({ type: 'error', message: error.response?.data?.mensaje || 'Error de servidor al guardar horario' });
         } finally {
             setCargando(false);
         }
     };
 
     const onEdit = (h) => {
+        const lugar = lugares.find(l => l.edificios.some(e => e.edificio_id === h.edificio_id));
+        if (lugar) {
+            setSelectedLugarId(lugar.lugar_id);
+            setSelectedEdificioId(h.edificio_id);
+        }
+
         setForm({
-            profesorId: h.profesor_id,
             materia: h.nombre_materia,
             salonId: h.salon_id,
             dia: h.dia_semana,
             inicio: h.hora_inicio.substring(0, 5),
             fin: h.hora_fin.substring(0, 5),
         });
-        
-        // Encontrar y establecer el profesor seleccionado para edición
-        const profesor = profesores.find(p => p.profesor_id === h.profesor_id);
-        setProfesorSeleccionado(profesor || null);
         
         setEditId(h.horario_id);
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -259,16 +311,13 @@ export default function Horarios() {
             const response = await eliminarHorario(horarioId);
             
             if (response.ok) {
-                // Recargar horarios
-                const dataHorarios = await obtenerHorarios();
-                setHorarios(dataHorarios.horarios || []);
-                    notify({ type: 'success', message: 'Horario eliminado exitosamente' });
+                notify({ type: 'success', message: 'Horario eliminado exitosamente' });
                 
                 if (editId === horarioId) {
                     setEditId(null);
                     setForm(emptyForm);
-                    setProfesorSeleccionado(null);
                 }
+                setProfesorSel(p => ({...p})); // Forzar recarga
             } else {
                 notify({ type: 'error', message: response.mensaje || 'Error al eliminar horario' });
             }
@@ -278,24 +327,6 @@ export default function Horarios() {
         } finally {
             setCargando(false);
         }
-    };
-
-    // helpers para mostrar nombres
-    const profName = (id) => {
-        const profesor = profesores.find((p) => p.profesor_id === id);
-        return profesor ? `${profesor.nombres} ${profesor.apellidos}` : "";
-    };
-    
-    // Buscar nombre de salón por id en la estructura cargada
-    const salonName = (id) => {
-        for (const lugar of lugares) {
-            for (const edificio of lugar.edificios || []) {
-                for (const s of edificio.salones || []) {
-                    if (s.salon_id === id) return s.nombre_salon;
-                }
-            }
-        }
-        return "";
     };
 
     // Dadas las selecciones, obtener la lista de salones filtrada
@@ -310,288 +341,187 @@ export default function Horarios() {
         return resultados;
     };
 
-    // agrupar por dia para el listado
-    const porDia = useMemo(() => {
-        const map = {};
-        DIAS.forEach((d) => (map[d] = []));
-        horarios.forEach((h) => map[h.dia_semana]?.push(h));
-        // ordenar por inicio
-        Object.values(map).forEach((list) =>
-            list.sort((a, b) => toMins(a.hora_inicio.substring(0, 5)) - toMins(b.hora_inicio.substring(0, 5)))
-        );
-        return map;
-    }, [horarios]);
+    const handleSendEmail = async () => {
+        if (!profesorSel || !schedule) {
+            notify({ type: 'error', message: 'No hay profesor o horario seleccionado.' });
+            return;
+        }
+
+        if (!confirm(`¿Deseas enviar el horario actual por correo a ${profesorSel.nombres} ${profesorSel.apellidos}?`)) {
+            return;
+        }
+
+        try {
+            setCargando(true);
+            const pdfBlob = await HorarioPDFExporter.exportSchedule(schedule, tipo, `${profesorSel.nombres} ${profesorSel.apellidos}`, 'blob');
+            
+            const response = await enviarHorarioPorCorreo(profesorSel.profesor_id, pdfBlob);
+
+            notify({ type: 'success', message: response.mensaje || 'Horario enviado por correo exitosamente.' });
+        } catch (error) {
+            notify({ type: 'error', message: error.message || 'Error al enviar el correo.' });
+        } finally {
+            setCargando(false);
+        }
+    };
 
     return (
         <>
             <div style={{ marginBottom: 16 }}>
-                <h2 className="main__title" style={{ margin: 0 }}>Asignación de Horarios</h2>
+                <h2 className="main__title" style={{ margin: 0 }}>Gestión de Horarios</h2>
                 <p className="main__subtitle" style={{ marginTop: 4 }}>
-                    Crear y gestionar horarios de clases
+                    Asigne y visualice los horarios de los docentes
                 </p>
             </div>
 
-            {/* Formulario */}
+            {/* Panel de Controles Superior */}
             <div className="card" style={{ marginBottom: 16 }}>
-                <h3 style={{ marginTop: 0 }}>{editId ? "Editar Horario" : "Asignar Nuevo Horario"}</h3>
-
-                <form onSubmit={submit}>
-                    <div className="form__row form__row--2">
-                        <div>
-                            <label>Profesor</label>
-                            {profesorSeleccionado ? (
-                                <div>
-                                    <div style={{ 
-                                        display: "flex", 
-                                        alignItems: "center", 
-                                        gap: 8,
-                                        padding: "10px 12px",
-                                        border: "1px solid var(--border)",
-                                        borderRadius: 4,
-                                        backgroundColor: "#f0fdf4"
-                                    }}>
-                                        <span style={{ flex: 1, fontWeight: 600 }}>
-                                            {profesorSeleccionado.nombres} {profesorSeleccionado.apellidos}
-                                        </span>
-                                        <button
-                                            type="button"
-                                            onClick={limpiarProfesor}
-                                            style={{
-                                                background: "transparent",
-                                                border: "none",
-                                                color: "#dc2626",
-                                                cursor: "pointer",
-                                                fontSize: 20,
-                                                padding: "0 4px",
-                                                lineHeight: 1
-                                            }}
-                                            title="Cambiar profesor"
-                                        >
-                                            ×
-                                        </button>
-                                    </div>
-                                </div>
-                            ) : (
+                <div className={styles.controlsGrid}>
+                    {/* Sección de Selección de Docente */}
+                    <div className={styles.teacherSelector}>
+                        <h3 className={styles.panelTitle}>Docente</h3>
+                        {profesorSel ? (
+                            <div className={styles.selectedTeacherBox}>
+                                <span className={styles.selectedTeacherName}>
+                                    {profesorSel.nombres} {profesorSel.apellidos}
+                                </span>
+                                <button onClick={() => setProfesorSel(null)} className={styles.clearButton} title="Limpiar selección">
+                                    &times;
+                                </button>
+                            </div>
+                        ) : (
+                            <div className={styles.searchContainer}>
                                 <AutocompleteInput
                                     items={profesores}
                                     onSelect={handleSeleccionarProfesor}
-                                    placeholder=" Buscar profesor por nombre o apellido..."
+                                    placeholder="Buscar y seleccionar docente..."
                                     disabled={cargando}
                                     getItemKey={(p) => p.profesor_id}
                                     getItemLabel={(p) => `${p.nombres} ${p.apellidos}`}
                                 />
-                            )}
-                            {profesores.length === 0 && !cargando && (
-                                <div className="form__hint" style={{ marginTop: 4 }}>
-                                    No hay profesores registrados. Ve a la sección "Docentes" para agregar.
-                                </div>
-                            )}
-                        </div>
-
-                        <div>
-                            <label>Materia</label>
-                            <select
-                                className="select"
-                                name="materia"
-                                value={form.materia}
-                                onChange={onChange}
-                                required
-                                disabled={cargando}
-                            >
-                                <option value="">Seleccionar materia...</option>
-                                {materias.map((m) => (
-                                    <option key={m.materia_id} value={m.nombre_materia}>
-                                        {m.nombre_materia}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className="form__row form__row--2" style={{ marginTop: 12 }}>
-                        <div>
-                            <label>Salón</label>
-                                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                                    <div style={{ flex: 1 }}>
-                                        <label>Lugar</label>
-                                        <select className="select" value={selectedLugarId} onChange={(e) => { setSelectedLugarId(e.target.value); setSelectedEdificioId(""); }} required>
-                                            <option value="">Seleccionar lugar...</option>
-                                            {lugares.map((l) => (
-                                                <option key={l.lugar_id} value={l.lugar_id}>{l.nombre_lugar}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    <div style={{ flex: 1 }}>
-                                        <label>Edificio</label>
-                                        <select className="select" value={selectedEdificioId} onChange={(e) => setSelectedEdificioId(e.target.value)} required>
-                                            <option value="">Seleccionar edificio...</option>
-                                            {(lugares.find(l => String(l.lugar_id) === String(selectedLugarId))?.edificios || lugares.flatMap(l => l.edificios || [])).map((ed) => (
-                                                <option key={ed.edificio_id} value={ed.edificio_id}>{ed.nombre_edificio}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    <div style={{ flex: 1 }}>
-                                        <label>Salón</label>
-                                        <select
-                                            className="select"
-                                            name="salonId"
-                                            value={form.salonId}
-                                            onChange={onChange}
-                                            required
-                                        >
-                                            <option value="">Seleccionar salón...</option>
-                                            {salonesFiltrados().map((s) => (
-                                                <option key={s.salon_id} value={s.salon_id}>{s.nombre_salon} {s.tipo_salon ? ` - ${s.tipo_salon}` : ""}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
-                        </div>
-
-                        <div>
-                            <label>Día</label>
-                            <select
-                                className="select"
-                                name="dia"
-                                value={form.dia}
-                                onChange={onChange}
-                                required
-                            >
-                                <option value="">Seleccionar día...</option>
-                                {DIAS.map((d) => (
-                                    <option key={d} value={d}>{d}</option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className="form__row form__row--2" style={{ marginTop: 12 }}>
-                        <div>
-                            <label>Hora Inicio</label>
-                            <select
-                                className="select"
-                                name="inicio"
-                                value={form.inicio}
-                                onChange={onChange}
-                                required
-                            >
-                                <option value="">Seleccionar hora...</option>
-                                {horas.map((h) => (
-                                    <option key={h} value={h}>{h}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div>
-                            <label>Hora Fin</label>
-                            <select
-                                className="select"
-                                name="fin"
-                                value={form.fin}
-                                onChange={onChange}
-                                required
-                            >
-                                <option value="">Seleccionar hora...</option>
-                                {horas.map((h) => (
-                                    <option key={h} value={h}>{h}</option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
-                        <button 
-                            type="submit" 
-                            className="btn btn--primary"
-                            disabled={cargando}
-                        >
-                            {cargando ? "Cargando..." : editId ? "Actualizar Horario" : "Asignar Horario"}
-                        </button>
-                        {editId && (
-                            <button
-                                type="button"
-                                className="btn"
-                                onClick={() => {
-                                    setEditId(null);
-                                    setForm(emptyForm);
-                                    setProfesorSeleccionado(null);
-                                }}
-                                disabled={cargando}
-                            >
-                                Cancelar edición
-                            </button>
-                        )}
-                    </div>
-                </form>
-            </div>
-
-            {/* Listado por dia */}
-            <div className="card">
-                <h3 style={{ marginTop: 0 }}>Horarios Registrados</h3>
-
-                {horarios.length === 0 ? (
-                    <div className="form__hint">Aún no hay horarios registrados.</div>
-                ) : (
-                    <div className="grid" style={{ gap: 12 }}>
-                        {DIAS.map((dia) => (
-                            <div key={dia} className="card" style={{ borderColor: "var(--border)" }}>
-                                <div style={{ fontWeight: 700, marginBottom: 8 }}>{dia}</div>
-
-                                {porDia[dia].length === 0 ? (
-                                    <div className="form__hint">Sin clases.</div>
-                                ) : (
-                                    <div style={{ overflowX: "auto" }}>
-                                        <table className="table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Profesor</th>
-                                                    <th>Materia</th>
-                                                    <th>Salón</th>
-                                                    <th>Inicio</th>
-                                                    <th>Fin</th>
-                                                    <th></th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {porDia[dia].map((h) => (
-                                                    <tr key={h.horario_id}>
-                                                        <td>{h.nombres} {h.apellidos}</td>
-                                                        <td>{h.nombre_materia}</td>
-                                                        <td>{salonName(h.salon_id)}</td>
-                                                        <td>{h.hora_inicio.substring(0, 5)}</td>
-                                                        <td>{h.hora_fin.substring(0, 5)}</td>
-                                                        <td style={{ textAlign: "right" }}>
-                                                            <button className="link-btn" onClick={() => onEdit(h)}>
-                                                                Editar
-                                                            </button>
-                                                            <button
-                                                                className="link-btn link-btn--danger"
-                                                                onClick={() => onDelete(h.horario_id)}
-                                                            >
-                                                                Eliminar
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
+                                {profesores.length === 0 && !cargando && (
+                                    <div className="form__hint" style={{ marginTop: 8, textAlign: 'center' }}>
+                                        No hay docentes registrados.
                                     </div>
                                 )}
                             </div>
-                        ))}
+                        )}
+                    </div>
+
+                    {/* Sección de Formulario de Asignación */}
+                    <div className={styles.assignmentForm}>
+                        <h3 className={styles.panelTitle}>{editId ? "Editar Horario" : "Asignar Nuevo Horario"}</h3>
+                        <form onSubmit={submit}>
+                            <div className="form__row form__row--2">
+                                <div>
+                                    <label>Materia</label>
+                                    <select className="select" name="materia" value={form.materia} onChange={onChange} required disabled={cargando || !profesorSel}>
+                                        <option value="">Seleccionar materia...</option>
+                                        {materias.map((m) => (<option key={m.materia_id} value={m.nombre_materia}>{m.nombre_materia}</option>))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label>Día</label>
+                                    <select className="select" name="dia" value={form.dia} onChange={onChange} required disabled={!profesorSel}>
+                                        <option value="">Seleccionar día...</option>
+                                        {DIAS.map((d) => (<option key={d} value={d}>{d}</option>))}
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="form__row form__row--3" style={{ marginTop: 12 }}>
+                                <div>
+                                    <label>Lugar</label>
+                                    <select className="select" value={selectedLugarId} onChange={(e) => { setSelectedLugarId(e.target.value); setSelectedEdificioId(""); }} required disabled={!profesorSel}>
+                                        <option value="">Seleccionar...</option>
+                                        {lugares.map((l) => (<option key={l.lugar_id} value={l.lugar_id}>{l.nombre_lugar}</option>))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label>Edificio</label>
+                                    <select className="select" value={selectedEdificioId} onChange={(e) => setSelectedEdificioId(e.target.value)} required disabled={!profesorSel}>
+                                        <option value="">Seleccionar...</option>
+                                        {(lugares.find(l => String(l.lugar_id) === String(selectedLugarId))?.edificios || []).map((ed) => (<option key={ed.edificio_id} value={ed.edificio_id}>{ed.nombre_edificio}</option>))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label>Salón</label>
+                                    <select className="select" name="salonId" value={form.salonId} onChange={onChange} required disabled={!profesorSel}>
+                                        <option value="">Seleccionar...</option>
+                                        {salonesFiltrados().map((s) => (<option key={s.salon_id} value={s.salon_id}>{s.nombre_salon} {s.tipo_salon ? ` - ${s.tipo_salon}` : ""}</option>))}
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="form__row form__row--2" style={{ marginTop: 12 }}>
+                                <div>
+                                    <label>Hora Inicio</label>
+                                    <select className="select" name="inicio" value={form.inicio} onChange={onChange} required disabled={!profesorSel}>
+                                        <option value="">Seleccionar hora...</option>
+                                        {horas.map((h) => (<option key={h} value={h}>{h}</option>))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label>Hora Fin</label>
+                                    <select className="select" name="fin" value={form.fin} onChange={onChange} required disabled={!profesorSel}>
+                                        <option value="">Seleccionar hora...</option>
+                                        {horas.map((h) => (<option key={h} value={h}>{h}</option>))}
+                                    </select>
+                                </div>
+                            </div>
+                            <div style={{ marginTop: 16, display: "flex", gap: 10 }}>
+                                <button type="submit" className="btn btn--primary" disabled={cargando || validando || !profesorSel}>
+                                    {cargando || validando ? "Cargando..." : editId ? "Actualizar Horario" : "Asignar Horario"}
+                                </button>
+                                {editId && (<button type="button" className="btn" onClick={() => { setEditId(null); setForm(emptyForm); }} disabled={cargando}>Cancelar edición</button>)}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            {/* Contenido principal (Pestañas y Parrilla/Info) */}
+            <div className={styles.mainContentArea}>
+                {!profesorSel ? (
+                    <div className={`${styles.placeholder} card`}>
+                        <p>Seleccione un docente para ver su horario y su información detallada.</p>
+                    </div>
+                ) : (
+                    <div className="fade-in">
+                        <div className={styles.tabsContainer}>
+                            <button className={`${styles.tabButton} ${activeTab === 'horario' ? styles.tabButtonActive : ''}`} onClick={() => setActiveTab('horario')}>
+                                Horario Semanal
+                            </button>
+                            <button className={`${styles.tabButton} ${activeTab === 'info' ? styles.tabButtonActive : ''}`} onClick={() => setActiveTab('info')}>
+                                Información del Docente
+                            </button>
+                        </div>
+
+                        {activeTab === 'horario' && (
+                            <div className="card fade-in">
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                                    <h3 style={{ margin: 0 }}>Horario Semanal de {profesorSel.nombres}</h3>
+                                    <select className="select" value={tipo} onChange={(e) => setTipo(e.target.value)}>
+                                        <option value="matutino">Matutino (07:00 - 14:00)</option>
+                                        <option value="vespertino">Vespertino (15:00 - 22:00)</option>
+                                    </select>
+                                    <button 
+                                        className="btn" 
+                                        onClick={handleSendEmail} 
+                                        disabled={cargando || cargandoHorario || !schedule.slots.length}>
+                                        Enviar por Correo
+                                    </button>
+                                </div>
+                                <ScheduleGrid schedule={schedule} onEdit={onEdit} onDelete={onDelete} cargando={cargandoHorario} error={errorHorario} />
+                            </div>
+                        )}
+
+                        {activeTab === 'info' && infoProfesor && (
+                            <div className="card fade-in">
+                                <ProfesorDetailsContent profesorNombre={`${profesorSel.nombres} ${profesorSel.apellidos}`} infoProfesor={infoProfesor} />
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
-
-            {/* Información del profesor - se muestra automáticamente */}
-            {profesorSeleccionado && infoProfesor && (
-                <InfoProfesorModal
-                    profesorNombre={`${profesorSeleccionado.nombres} ${profesorSeleccionado.apellidos}`}
-                    infoProfesor={infoProfesor}
-                />
-            )}
         </>
     );
 }
