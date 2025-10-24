@@ -18,6 +18,7 @@ import profesorInfoRoutes from "./src/routes/profesorInfoRoutes.js";
 import horarioRoutes from "./src/routes/horarioRoutes.js";
 import lugaresRoutes from './src/routes/lugaresRoutes.js';
 import solicitudRecuperacionRoutes from './src/routes/solicitudRecuperacionRoutes.js';
+import tipoContratoRoutes from './src/routes/tipoContratoRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -63,6 +64,7 @@ app.use("/api", profesorInfoRoutes);
 app.use("/api", horarioRoutes);
 app.use('/api', lugaresRoutes);
 app.use('/api', solicitudRecuperacionRoutes);
+app.use('/api', tipoContratoRoutes);
 // Health-check simple y prueba de conexión
 app.get("/api", async (_req, res) => {
   await pruebaConexion(); // mostrará el resultado en consola

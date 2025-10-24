@@ -7,6 +7,7 @@ import {
     verificarChoqueProfesor,
     verificarChoqueSalon
 } from '../models/horarioModel.js';
+import { obtenerPorId as obtenerProfesorPorId } from '../models/docenteModel.js';
 
 const listarHorarios = async (req, res) => {
     try {
@@ -54,6 +55,14 @@ const registrarHorario = async (req, res) => {
                 mensaje: 'Todos los campos son requeridos' 
             });
         }
+
+        // Opcional: Lógica de negocio basada en prioridad.
+        // Aquí podrías consultar la prioridad del docente y aplicar reglas.
+        // Por ejemplo, si un docente de baja prioridad intenta tomar un horario "prime time".
+        // const profesor = await obtenerProfesorPorId(profesorId);
+        // if (profesor.nivel_prioridad > 2) {
+        //     console.log("Advertencia: Asignando horario a docente con baja prioridad.");
+        // }
 
         // Verificar choques de horario para el profesor
         const choqueProfesor = await verificarChoqueProfesor(profesorId, diaSemana, horaInicio, horaFin);

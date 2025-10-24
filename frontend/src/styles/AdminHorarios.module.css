@@ -20,6 +20,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
+    flex-wrap: wrap;
 }
 
 .selectedTeacherName {
@@ -40,6 +41,16 @@
 .clearButton:hover {
     opacity: 1;
     transform: scale(1.1);
+}
+
+.teacherPriority {
+    width: 100%;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--primary);
+    background-color: #e0f2fe;
+    padding: 4px 8px;
+    border-radius: 6px;
 }
 
 .placeholder {

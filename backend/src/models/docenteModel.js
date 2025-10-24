@@ -4,7 +4,16 @@ import bcrypt from "bcrypt";
 
 const obtenerTodos = async () => {
     try {
-        const docentes = await dbConnection.any('SELECT * FROM profesores ORDER BY profesor_id');
+        const query = `
+            SELECT 
+                p.*, 
+                tc.nombre_tipo, 
+                tc.nivel_prioridad 
+            FROM profesores p
+            LEFT JOIN tipos_contrato tc ON p.tipo_contrato_id = tc.tipo_contrato_id
+            ORDER BY p.nombres, p.apellidos;
+        `;
+        const docentes = await dbConnection.any(query);
         return docentes;
     } catch (error) {
         console.error('Error al obtener docentes:', error);
@@ -14,7 +23,16 @@ const obtenerTodos = async () => {
 
 const obtenerPorId = async (id) => {
     try {
-        const docente = await dbConnection.oneOrNone('SELECT * FROM profesores WHERE profesor_id = $1', [id]);
+        const query = `
+            SELECT 
+                p.*, 
+                tc.nombre_tipo, 
+                tc.nivel_prioridad 
+            FROM profesores p
+            LEFT JOIN tipos_contrato tc ON p.tipo_contrato_id = tc.tipo_contrato_id
+            WHERE p.profesor_id = $1;
+        `;
+        const docente = await dbConnection.oneOrNone(query, [id]);
         return docente;
     } catch (error) {
         console.error('Error al obtener docente por ID:', error);
@@ -37,7 +55,7 @@ const obtenerNombreProfesor = async (id) => {
 
 const insertarDocente = async (docente) => {
     try {
-        const { nombres, apellidos, matricula, grado_academico, numero_plaza, numero_contrato, direccion, telefono, email } = docente;
+        const { nombres, apellidos, matricula, grado_academico, numero_plaza, numero_contrato, direccion, telefono, email, tipo_contrato_id } = docente;
         
         // Verificar si la matrícula ya existe
         const existeMatricula = await dbConnection.oneOrNone(
@@ -75,10 +93,10 @@ const insertarDocente = async (docente) => {
         
         // Insertar profesor
         const resultado = await dbConnection.one(
-            `INSERT INTO profesores (profesor_id, nombres, apellidos, matricula, grado_academico, numero_plaza, numero_contrato, direccion, telefono, email) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+            `INSERT INTO profesores (profesor_id, nombres, apellidos, matricula, grado_academico, numero_plaza, numero_contrato, direccion, telefono, email, tipo_contrato_id) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
              RETURNING *`,
-            [usuario.usuario_id, nombres, apellidos, matricula, grado_academico, numero_plaza, numero_contrato, direccion, telefono, email]
+            [usuario.usuario_id, nombres, apellidos, matricula, grado_academico, numero_plaza, numero_contrato, direccion, telefono, email, tipo_contrato_id]
         );
         
         // Guardar token en la tabla tokens_auth
@@ -100,15 +118,15 @@ const insertarDocente = async (docente) => {
 
 const actualizarDocente = async (id, docente) => {
     try {
-        const { nombres, apellidos, matricula, grado_academico, numero_plaza, numero_contrato, direccion, telefono, email } = docente;
+        const { nombres, apellidos, matricula, grado_academico, numero_plaza, numero_contrato, direccion, telefono, email, tipo_contrato_id } = docente;
         
         const resultado = await dbConnection.one(
             `UPDATE profesores 
              SET nombres = $1, apellidos = $2, matricula = $3, grado_academico = $4, 
-                 numero_plaza = $5, numero_contrato = $6, direccion = $7, telefono = $8, email = $9
-             WHERE profesor_id = $10
+                 numero_plaza = $5, numero_contrato = $6, direccion = $7, telefono = $8, email = $9, tipo_contrato_id = $10
+             WHERE profesor_id = $11
              RETURNING *`,
-            [nombres, apellidos, matricula, grado_academico, numero_plaza, numero_contrato, direccion, telefono, email, id]
+            [nombres, apellidos, matricula, grado_academico, numero_plaza, numero_contrato, direccion, telefono, email, tipo_contrato_id, id]
         );
         
         return resultado;

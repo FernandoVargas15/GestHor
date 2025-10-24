@@ -1,4 +1,5 @@
 import { obtenerTodos, obtenerPorId, obtenerNombreProfesor, insertarDocente, actualizarDocente, eliminarDocente, contarDocentes } from "../models/docenteModel.js";
+import { dbConnection } from "../config/database.js";
 import { enviarCorreoBienvenida, enviarCorreoConAdjunto } from "../services/emailService.js";
 
 const obtenerDocentesController = async (req, res) => {
@@ -89,7 +90,16 @@ const insertarDocenteController = async (req, res) => {
         res.status(201).json({
             ok: true,
             mensaje: "Docente registrado exitosamente. Se ha enviado un correo con la llave de acceso.",
-            docente: resultado
+            // Devolvemos el docente con su tipo de contrato para consistencia en el frontend
+            docente: {
+                ...resultado,
+                nombre_tipo: resultado.tipo_contrato_id 
+                    ? (await dbConnection.oneOrNone('SELECT nombre_tipo FROM tipos_contrato WHERE tipo_contrato_id = $1', [resultado.tipo_contrato_id]))?.nombre_tipo 
+                    : null,
+                nivel_prioridad: resultado.tipo_contrato_id 
+                    ? (await dbConnection.oneOrNone('SELECT nivel_prioridad FROM tipos_contrato WHERE tipo_contrato_id = $1', [resultado.tipo_contrato_id]))?.nivel_prioridad
+                    : null
+            }
         });
     } catch (error) {
         console.error("Error en insertarDocenteController:", error);
@@ -111,7 +121,15 @@ const actualizarDocenteController = async (req, res) => {
         res.json({
             ok: true,
             mensaje: "Docente actualizado exitosamente",
-            docente: resultado
+            docente: {
+                ...resultado,
+                nombre_tipo: resultado.tipo_contrato_id 
+                    ? (await dbConnection.oneOrNone('SELECT nombre_tipo FROM tipos_contrato WHERE tipo_contrato_id = $1', [resultado.tipo_contrato_id]))?.nombre_tipo 
+                    : null,
+                nivel_prioridad: resultado.tipo_contrato_id 
+                    ? (await dbConnection.oneOrNone('SELECT nivel_prioridad FROM tipos_contrato WHERE tipo_contrato_id = $1', [resultado.tipo_contrato_id]))?.nivel_prioridad
+                    : null
+            }
         });
     } catch (error) {
         console.error("Error en actualizarDocenteController:", error);

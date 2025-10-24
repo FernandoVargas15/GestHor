@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { useToast } from "../../components/ui/NotificacionFlotante";
 import { obtenerDocentes, crearDocente, actualizarDocente, eliminarDocente } from "../../services/docenteService";
+import { obtenerTiposContrato } from "./tipoContratoService";
 import SearchInput from "../../components/ui/SearchInput";
 import { useSearch } from "../../hooks/useSearch";
+import TiposContrato from "./TiposContrato"; // Importamos el componente de gestión
 
 function emptyForm() {
     return {
@@ -15,6 +17,7 @@ function emptyForm() {
         numero_contrato: "",
         direccion: "",
         telefono: "",
+        tipo_contrato_id: "", // Campo nuevo para la prioridad
     };
 }
 
@@ -23,6 +26,7 @@ export default function Docentes() {
     const [form, setForm] = useState(emptyForm());
     const [editingId, setEditingId] = useState(null);
     const [busqueda, setBusqueda] = useState("");
+    const [tiposContrato, setTiposContrato] = useState([]);
     const { notify } = useToast();
     
     // Buscar en nombres, apellidos, matricula y email
@@ -30,6 +34,7 @@ export default function Docentes() {
 
     useEffect(() => {
         cargarDocentes();
+        cargarTiposContrato();
     }, []);
 
     const cargarDocentes = async () => {
@@ -41,6 +46,15 @@ export default function Docentes() {
         }
     };
 
+    const cargarTiposContrato = async () => {
+        try {
+            const data = await obtenerTiposContrato();
+            setTiposContrato(data.tiposContrato || []);
+        } catch (error) {
+            console.error("Error al cargar tipos de contrato:", error);
+        }
+    };
+
     const onChange = (e) => {
         const { name, value } = e.target;
         setForm((f) => ({ ...f, [name]: value }));
@@ -49,16 +63,22 @@ export default function Docentes() {
     const onSubmit = async (e) => {
         e.preventDefault();
 
+        const payload = {
+            ...form,
+            tipo_contrato_id: form.tipo_contrato_id ? parseInt(form.tipo_contrato_id) : null,
+        };
+
         try {
             if (editingId) {
-                await actualizarDocente(editingId, form);
+                await actualizarDocente(editingId, payload);
                     notify({ type: 'success', message: 'Docente actualizado' });
                 setEditingId(null);
             } else {
-                await crearDocente(form);
+                await crearDocente(payload);
                     notify({ type: 'success', message: 'Docente creado' });
             }
             setForm(emptyForm());
+            // Recargamos ambos para mantener la consistencia
             cargarDocentes();
         } catch (error) {
             notify({ type: 'error', message: error.response?.data?.mensaje || 'Error' });
@@ -76,6 +96,7 @@ export default function Docentes() {
             numero_contrato: doc.numero_contrato || "",
             direccion: doc.direccion || "",
             telefono: doc.telefono || "",
+            tipo_contrato_id: doc.tipo_contrato_id || "", // Asignamos el tipo de contrato al editar
         });
         setEditingId(doc.profesor_id);
     };
@@ -92,10 +113,15 @@ export default function Docentes() {
 
     return (
         <>
-            <h2>Gestión de Docentes</h2>
-            <div className="grid grid--2">
+            <div style={{ marginBottom: 16 }}>
+                <h2 className="main__title" style={{ margin: 0 }}>Gestión de Docentes</h2>
+                <p className="main__subtitle" style={{ marginTop: 4 }}>
+                    Administra los docentes y sus niveles de prioridad de contratación.
+                </p>
+            </div>
+            <div className="grid grid--2" style={{ marginBottom: 24 }}>
                 <div className="card">
-                    <h3>Formulario</h3>
+                    <h3 style={{ marginTop: 0 }}>{editingId ? "Editar Docente" : "Registrar Docente"}</h3>
                     <form onSubmit={onSubmit}>
                         <div className="form__row form__row--2">
                             <div>
@@ -125,15 +151,34 @@ export default function Docentes() {
                         <div><label>Dirección</label><textarea className="textarea" name="direccion" value={form.direccion} onChange={onChange} /></div>
                         <div><label>Teléfono</label><input type="text" className="input" name="telefono" value={form.telefono} onChange={(e) => {
                             const value = e.target.value;
-                            // Solo permite números y máximo 10 dígitos
                             if (/^\d{0,10}$/.test(value)) {
                                 onChange(e);
                             }
                         }}
                             maxLength={10}
                         /></div>
-                        <button type="submit" className="btn btn--primary">{editingId ? "Actualizar" : "Guardar"}</button>
-                        {editingId && <button type="button" className="btn" onClick={() => { setEditingId(null); setForm(emptyForm()); }}>Cancelar</button>}
+
+                        {/* === CAMPO NUEVO PARA TIPO DE CONTRATO === */}
+                        <div style={{ marginTop: 12 }}>
+                            <label>Tipo de Contrato (Prioridad)</label>
+                            <select
+                                className="select"
+                                name="tipo_contrato_id"
+                                value={form.tipo_contrato_id}
+                                onChange={onChange}
+                            >
+                                <option value="">Sin asignar</option>
+                                {tiposContrato.map((tipo) => (
+                                    <option key={tipo.tipo_contrato_id} value={tipo.tipo_contrato_id}>
+                                        {tipo.nombre_tipo} (Prioridad: {tipo.nivel_prioridad})
+                                    </option>
+                                ))}
+                            </select>
+                            <div className="form__hint">Define la prioridad del docente para la asignación de horarios.</div>
+                        </div>
+
+                        <button type="submit" className="btn btn--primary" style={{ marginTop: 16 }}>{editingId ? "Actualizar" : "Guardar"}</button>
+                        {editingId && <button type="button" className="btn" style={{ marginTop: 16, marginLeft: 8 }} onClick={() => { setEditingId(null); setForm(emptyForm()); }}>Cancelar</button>}
                     </form>
                 </div>
                 <div className="card">
@@ -156,17 +201,24 @@ export default function Docentes() {
                         </div>
                     ) : (
                         docentesFiltrados.map((d) => (
-                            <div key={d.profesor_id} className="card">
+                            <div key={d.profesor_id} className="card" style={{ marginBottom: 8 }}>
                                 <div><strong>{d.nombres} {d.apellidos}</strong></div>
-                                <div>Mat: {d.matricula}</div>
-                                <div>Email: {d.email}</div>
-                                <button className="link-btn" onClick={() => onEdit(d)}>Editar</button>
-                                <button className="link-btn link-btn--danger" onClick={() => onDelete(d.profesor_id)}>Eliminar</button>
+                                <div className="form__hint">Mat: {d.matricula} | Email: {d.email}</div>
+                                {d.nombre_tipo && (
+                                    <div className="form__hint" style={{ color: 'var(--primary)', fontWeight: 500 }}>
+                                        Contrato: {d.nombre_tipo} (Prioridad {d.nivel_prioridad})
+                                    </div>
+                                )}
+                                <div style={{ marginTop: 8 }}>
+                                    <button className="link-btn" onClick={() => onEdit(d)}>Editar</button>
+                                    <button className="link-btn link-btn--danger" onClick={() => onDelete(d.profesor_id)}>Eliminar</button>
+                                </div>
                             </div>
                         ))
                     )}
                 </div>
             </div>
+            <TiposContrato />
         </>
     );
 }

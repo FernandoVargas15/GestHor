@@ -377,7 +377,9 @@ export default function Horarios() {
                     {/* Sección de Selección de Docente */}
                     <div className={styles.teacherSelector}>
                         <h3 className={styles.panelTitle}>Docente</h3>
-                        {profesorSel ? (
+                        {cargando ? (
+                            <div className="form__hint">Cargando docentes...</div>
+                        ) : profesorSel ? (
                             <div className={styles.selectedTeacherBox}>
                                 <span className={styles.selectedTeacherName}>
                                     {profesorSel.nombres} {profesorSel.apellidos}
@@ -385,6 +387,12 @@ export default function Horarios() {
                                 <button onClick={() => setProfesorSel(null)} className={styles.clearButton} title="Limpiar selección">
                                     &times;
                                 </button>
+                                <div className={styles.teacherPriority}>
+                                    {profesorSel.nombre_tipo ? 
+                                        `Prioridad: ${profesorSel.nivel_prioridad} (${profesorSel.nombre_tipo})` :
+                                        'Prioridad: No asignada'
+                                    }
+                                </div>
                             </div>
                         ) : (
                             <div className={styles.searchContainer}>
