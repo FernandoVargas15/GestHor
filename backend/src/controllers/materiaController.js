@@ -202,7 +202,7 @@ const asignarMateriaACarreraController = async (req, res) => {
         if (asignacion === null) {
             return res.status(409).json({
                 ok: false,
-                mensaje: "La materia ya está asignada a esta carrera en ese semestre"
+                mensaje: "La materia ya está asignada a esta carrera"
             });
         }
 

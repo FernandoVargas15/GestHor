@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/RecoveryForm.css';
 import { crearSolicitudRecuperacion } from '../services/solicitudRecuperacionService';
+import { useToast } from '../components/ui/NotificacionFlotante';
 
 const RecoveryForm = () => {
   const navigate = useNavigate();
@@ -27,19 +28,19 @@ const RecoveryForm = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    const { notify } = useToast();
     
     try {
       await crearSolicitudRecuperacion(
         formData.registeredEmail,
         formData.requestReason
       );
-      
-      alert('Solicitud de recuperación enviada exitosamente. El administrador dará respuesta en un máximo de 24 horas hábiles.');
+      notify({ type: 'success', message: 'Solicitud de recuperación enviada exitosamente. El administrador dará respuesta en un máximo de 24 horas hábiles.' });
       navigate('/login');
     } catch (err) {
       const mensaje = err.response?.data?.mensaje || 'Error al enviar la solicitud. Por favor, intente nuevamente.';
       setError(mensaje);
-      alert(mensaje);
+      notify({ type: 'error', message: mensaje });
     } finally {
       setLoading(false);
     }

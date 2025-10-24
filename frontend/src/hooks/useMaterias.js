@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useToast } from "../components/ui/NotificacionFlotante";
 import { 
     obtenerMaterias,
     asignarMateriaACarrera,
@@ -8,6 +9,7 @@ import {
 export function useMaterias() {
     const [catalogoMaterias, setCatalogoMaterias] = useState([]);
     const [cargando, setCargando] = useState(false);
+    const { notify } = useToast();
 
     const cargarMaterias = async () => {
         try {
@@ -16,7 +18,7 @@ export function useMaterias() {
             setCatalogoMaterias(data.materias || []);
         } catch (error) {
             console.error("Error al cargar materias:", error);
-            alert("Error al cargar el catálogo de materias");
+            notify({ type: 'error', message: 'Error al cargar el catálogo de materias' });
         } finally {
             setCargando(false);
         }
@@ -26,10 +28,10 @@ export function useMaterias() {
         try {
             setCargando(true);
             await asignarMateriaACarrera(carreraId, materiaId, semestre);
-            alert("Materia asignada exitosamente");
+            notify({ type: 'success', message: 'Materia asignada exitosamente' });
         } catch (error) {
             console.error("Error al asignar materia:", error);
-            alert(error.response?.data?.mensaje || "Error al asignar materia");
+            notify({ type: 'error', message: error.response?.data?.mensaje || 'Error al asignar materia' });
             throw error;
         } finally {
             setCargando(false);
@@ -42,11 +44,11 @@ export function useMaterias() {
         try {
             setCargando(true);
             await desasignarMateriaDeCarrera(carreraId, materiaId, semestre);
-            alert("Materia desasignada exitosamente");
+            notify({ type: 'success', message: 'Materia desasignada exitosamente' });
             return true;
         } catch (error) {
             console.error("Error al desasignar materia:", error);
-            alert("Error al desasignar materia");
+            notify({ type: 'error', message: 'Error al desasignar materia' });
             return false;
         } finally {
             setCargando(false);

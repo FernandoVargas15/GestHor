@@ -6,6 +6,7 @@ import { obtenerNombreProfesor } from "../../services/docenteService";
 import { HorarioExcelExporter } from "../../utils/excelExportService";
 import { obtenerHorariosProfesor } from "../../services/horarioService";
 import { HorarioPDFExporter } from "../../utils/pdfExportService"; 
+import { useToast } from "../../components/ui/NotificacionFlotante";
   const DAYS = ["lunes", "martes", "miercoles", "jueves", "viernes"];
 
   const normalize = (s) =>
@@ -17,6 +18,7 @@ import { HorarioPDFExporter } from "../../utils/pdfExportService";
 
 export default function MiHorario() {
   const navigate = useNavigate();
+  const { notify } = useToast();
   const [nombreProfesor, setNombreProfesor] = useState("");
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -169,7 +171,7 @@ const exportPDF = () => {
     );
   } catch (error) {
     console.error("Error al exportar PDF:", error);
-    alert("Error al generar el PDF. Por favor, intenta nuevamente.");
+    notify({ type: 'error', message: 'Error al generar el PDF. Por favor, intenta nuevamente.' });
   }
 };
 
@@ -183,7 +185,7 @@ const exportPDF = () => {
       );
     } catch (error) {
       console.error('Error al exportar a Excel:', error);
-      alert('Error al exportar el horario. Por favor, intenta nuevamente.');
+      notify({ type: 'error', message: 'Error al exportar el horario. Por favor, intenta nuevamente.' });
     }
   };
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useToast } from "../../components/ui/NotificacionFlotante";
 import { obtenerDocentes, crearDocente, actualizarDocente, eliminarDocente } from "../../services/docenteService";
 import SearchInput from "../../components/ui/SearchInput";
 import { useSearch } from "../../hooks/useSearch";
@@ -22,6 +23,7 @@ export default function Docentes() {
     const [form, setForm] = useState(emptyForm());
     const [editingId, setEditingId] = useState(null);
     const [busqueda, setBusqueda] = useState("");
+    const { notify } = useToast();
     
     // Buscar en nombres, apellidos, matricula y email
     const docentesFiltrados = useSearch(docentes, busqueda, ["nombres", "apellidos", "matricula", "email"]);
@@ -50,16 +52,16 @@ export default function Docentes() {
         try {
             if (editingId) {
                 await actualizarDocente(editingId, form);
-                alert("Docente actualizado");
+                    notify({ type: 'success', message: 'Docente actualizado' });
                 setEditingId(null);
             } else {
                 await crearDocente(form);
-                alert("Docente creado");
+                    notify({ type: 'success', message: 'Docente creado' });
             }
             setForm(emptyForm());
             cargarDocentes();
         } catch (error) {
-            alert(error.response?.data?.mensaje || "Error");
+            notify({ type: 'error', message: error.response?.data?.mensaje || 'Error' });
         }
     };
 
@@ -84,7 +86,7 @@ export default function Docentes() {
             await eliminarDocente(id);
             cargarDocentes();
         } catch (error) {
-            alert("Error al eliminar");
+            notify({ type: 'error', message: 'Error al eliminar' });
         }
     };
 

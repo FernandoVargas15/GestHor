@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useToast } from "../components/ui/NotificacionFlotante";
 import { 
     obtenerCarreras, 
     crearCarrera, 
@@ -10,6 +11,7 @@ export function useCarreras() {
     const [carreras, setCarreras] = useState([]);
     const [carreraSeleccionada, setCarreraSeleccionada] = useState(null);
     const [cargando, setCargando] = useState(false);
+    const { notify } = useToast();
 
     const cargarCarreras = async () => {
         try {
@@ -18,7 +20,7 @@ export function useCarreras() {
             setCarreras(data.carreras || []);
         } catch (error) {
             console.error("Error al cargar carreras:", error);
-            alert("Error al cargar carreras");
+            notify({ type: 'error', message: 'Error al cargar carreras' });
         } finally {
             setCargando(false);
         }
@@ -28,7 +30,7 @@ export function useCarreras() {
         try {
             setCargando(true);
             const respuesta = await crearCarrera(datosCarrera);
-            alert("Carrera creada exitosamente. Ahora asigna las materias.");
+            notify({ type: 'success', message: 'Carrera creada exitosamente. Ahora asigna las materias.' });
             
             const nuevaCarrera = respuesta.carrera;
             if (nuevaCarrera) {
@@ -44,7 +46,7 @@ export function useCarreras() {
             return nuevaCarrera;
         } catch (error) {
             console.error("Error al crear carrera:", error);
-            alert(error.response?.data?.mensaje || "Error al crear la carrera");
+            notify({ type: 'error', message: error.response?.data?.mensaje || 'Error al crear la carrera' });
             throw error;
         } finally {
             setCargando(false);
@@ -57,7 +59,7 @@ export function useCarreras() {
         try {
             setCargando(true);
             await eliminarCarrera(id);
-            alert("Carrera eliminada exitosamente");
+            notify({ type: 'success', message: 'Carrera eliminada exitosamente' });
             await cargarCarreras();
 
             if (carreraSeleccionada?.carrera_id === id) {
@@ -65,7 +67,7 @@ export function useCarreras() {
             }
         } catch (error) {
             console.error("Error al eliminar carrera:", error);
-            alert("Error al eliminar la carrera");
+            notify({ type: 'error', message: 'Error al eliminar la carrera' });
         } finally {
             setCargando(false);
         }
@@ -78,7 +80,7 @@ export function useCarreras() {
             setCarreraSeleccionada(detalle.carrera);
         } catch (error) {
             console.error("Error al cargar detalle de carrera:", error);
-            alert("Error al cargar la carrera");
+            notify({ type: 'error', message: 'Error al cargar la carrera' });
         } finally {
             setCargando(false);
         }

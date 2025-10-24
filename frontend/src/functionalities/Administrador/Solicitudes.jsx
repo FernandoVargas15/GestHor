@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
+import { useToast } from "../../components/ui/NotificacionFlotante";
 import { 
     obtenerSolicitudesPendientes,
     obtenerEstadisticasSolicitudes,
@@ -25,6 +26,7 @@ export default function Solicitudes() {
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activity, setActivity] = useState([]);
+    const { notify } = useToast();
 
     const [resueltasHoy, setResueltasHoy] = useState(0);
     const totalMes = activity.length + resueltasHoy + requests.length;
@@ -55,7 +57,7 @@ export default function Solicitudes() {
             }
         } catch (error) {
             console.error('Error al cargar solicitudes:', error);
-            alert('Error al cargar las solicitudes');
+            notify({ type: 'error', message: 'Error al cargar las solicitudes' });
         } finally {
             setLoading(false);
         }
@@ -150,15 +152,11 @@ export default function Solicitudes() {
                 removeRequest(req.id);
                 setResueltasHoy((n) => n + 1);
                 cargarActividades();
-                alert(
-                    `✅ Contraseña regenerada exitosamente\n\n` +
-                    `Nueva llave de acceso: ${response.nuevoToken}\n\n` +
-                    `Se ha enviado un correo a ${req.email} con la nueva llave.`
-                );
+                notify({ type: 'success', message: `✅ Contraseña regenerada exitosamente\nNueva llave de acceso: ${response.nuevoToken}\nSe ha enviado un correo a ${req.email} con la nueva llave.` });
             }
         } catch (error) {
             console.error('Error al generar contraseña:', error);
-            alert('Error al procesar la solicitud: ' + (error.response?.data?.mensaje || error.message));
+            notify({ type: 'error', message: 'Error al procesar la solicitud: ' + (error.response?.data?.mensaje || error.message) });
         }
     };
 
@@ -169,7 +167,7 @@ export default function Solicitudes() {
         );
         if (!msg) return;
         addActivity(`Contacto enviado a ${req.nombre}`, "info");
-        alert("Mensaje enviado.");
+        notify({ type: 'success', message: 'Mensaje enviado.' });
     };
 
     const markAllAsRead = async () => {
@@ -185,7 +183,7 @@ export default function Solicitudes() {
             );
         } catch (error) {
             console.error('Error al marcar solicitudes:', error);
-            alert('Error al procesar las solicitudes');
+            notify({ type: 'error', message: 'Error al procesar las solicitudes' });
         }
     };
 

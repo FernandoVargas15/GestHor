@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useToast } from '../components/ui/NotificacionFlotante';
 import { obtenerInfoHorariosProfesor, validarProfesorMateria } from '../services/profesorInfoService';
 
 /**
@@ -9,6 +10,7 @@ import { obtenerInfoHorariosProfesor, validarProfesorMateria } from '../services
 export const useValidacionHorario = () => {
     const [loading, setLoading] = useState(false);
     const [infoProfesor, setInfoProfesor] = useState(null);
+    const { notify } = useToast();
 
     /**
      * Obtener información completa del profesor
@@ -26,7 +28,7 @@ export const useValidacionHorario = () => {
             throw new Error(response.mensaje || 'Error al cargar información del profesor');
         } catch (error) {
             console.error('Error en cargarInfoProfesor:', error);
-            alert('Error al cargar información del profesor: ' + error.message);
+            notify({ type: 'error', message: 'Error al cargar información del profesor: ' + error.message });
             return null;
         } finally {
             setLoading(false);
@@ -62,7 +64,7 @@ export const useValidacionHorario = () => {
             return window.confirm(mensaje);
         } catch (error) {
             console.error('Error en validarAsignacion:', error);
-            alert('Error al validar: ' + error.message);
+            notify({ type: 'error', message: 'Error al validar: ' + error.message });
             return false;
         } finally {
             setLoading(false);

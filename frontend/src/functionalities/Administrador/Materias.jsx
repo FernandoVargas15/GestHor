@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useToast } from "../../components/ui/NotificacionFlotante";
 import { 
     obtenerMaterias, 
     crearMateria, 
@@ -20,6 +21,7 @@ export default function Materias() {
     const [editingId, setEditingId] = useState(null);
     const [cargando, setCargando] = useState(false);
     const [busqueda, setBusqueda] = useState("");
+    const { notify } = useToast();
     
     // Usar el hook de búsqueda
     const materiasFiltradas = useSearch(materias, busqueda, ["nombre_materia"]);
@@ -35,7 +37,7 @@ export default function Materias() {
             setMaterias(data.materias || []);
         } catch (error) {
             console.error("Error al cargar materias:", error);
-            alert("Error al cargar el catálogo de materias");
+            notify({ type: 'error', message: 'Error al cargar el catálogo de materias' });
         } finally {
             setCargando(false);
         }
@@ -50,7 +52,8 @@ export default function Materias() {
         e.preventDefault();
 
         if (!form.nombre_materia.trim()) {
-            return alert("El nombre de la materia es obligatorio");
+            notify({ type: 'error', message: 'El nombre de la materia es obligatorio' });
+            return;
         }
 
         try {
@@ -58,18 +61,18 @@ export default function Materias() {
 
             if (editingId) {
                 await actualizarMateria(editingId, form);
-                alert("Materia actualizada exitosamente");
+                notify({ type: 'success', message: 'Materia actualizada exitosamente' });
                 setEditingId(null);
             } else {
                 await crearMateria(form);
-                alert("Materia agregada al catálogo exitosamente");
+                notify({ type: 'success', message: 'Materia agregada al catálogo exitosamente' });
             }
 
             setForm(emptyForm());
             cargarMaterias();
         } catch (error) {
             console.error("Error al guardar materia:", error);
-            alert(error.response?.data?.mensaje || "Error al guardar la materia");
+            notify({ type: 'error', message: error.response?.data?.mensaje || 'Error al guardar la materia' });
         } finally {
             setCargando(false);
         }
@@ -89,7 +92,7 @@ export default function Materias() {
         try {
             setCargando(true);
             await eliminarMateria(id);
-            alert("Materia eliminada exitosamente");
+            notify({ type: 'success', message: 'Materia eliminada exitosamente' });
             cargarMaterias();
 
             if (editingId === id) {
@@ -98,7 +101,7 @@ export default function Materias() {
             }
         } catch (error) {
             console.error("Error al eliminar materia:", error);
-            alert(error.response?.data?.mensaje || "Error al eliminar la materia");
+            notify({ type: 'error', message: error.response?.data?.mensaje || 'Error al eliminar la materia' });
         } finally {
             setCargando(false);
         }

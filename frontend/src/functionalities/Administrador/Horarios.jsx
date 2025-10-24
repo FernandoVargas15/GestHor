@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
+import { useToast } from "../../components/ui/NotificacionFlotante";
 import { obtenerMaterias } from "../../services/materiaService";
 import { obtenerDocentes } from "../../services/docenteService";
 import { obtenerHorarios, crearHorario, actualizarHorario, eliminarHorario } from "../../services/horarioService";
@@ -52,6 +53,7 @@ export default function Horarios() {
     const [selectedEdificioId, setSelectedEdificioId] = useState("");
     const [cargando, setCargando] = useState(false);
     const [profesorSeleccionado, setProfesorSeleccionado] = useState(null);
+    const { notify } = useToast();
     
     // Hook de validación - Principio: Dependency Inversion
     const { loading: validando, infoProfesor, cargarInfoProfesor, validarAsignacion } = useValidacionHorario();
@@ -81,7 +83,7 @@ export default function Horarios() {
             }
         } catch (error) {
             console.error("Error al cargar datos:", error);
-            alert("Error al cargar datos iniciales");
+            notify({ type: 'error', message: 'Error al cargar datos iniciales' });
         } finally {
             setCargando(false);
         }
@@ -153,14 +155,14 @@ export default function Horarios() {
             // 1. Validaciones básicas
             const err = validar();
             if (err) {
-                alert(err);
+                notify({ type: 'error', message: err });
                 return;
             }
 
             // 2. Obtener la materia seleccionada
             const materiaSeleccionada = materias.find(m => m.nombre_materia === form.materia);
             if (!materiaSeleccionada) {
-                alert("Error: No se encontró la materia seleccionada");
+                notify({ type: 'error', message: 'Error: No se encontró la materia seleccionada' });
                 return;
             }
 
@@ -190,16 +192,16 @@ export default function Horarios() {
             // 5. Guardar en el backend
             if (editId) {
                 const response = await actualizarHorario(editId, horarioData);
-                if (response.ok) {
+                    if (response.ok) {
                     // Recargar horarios
                     const dataHorarios = await obtenerHorarios();
                     setHorarios(dataHorarios.horarios || []);
-                    alert("Horario actualizado exitosamente");
+                    notify({ type: 'success', message: 'Horario actualizado exitosamente' });
                     setEditId(null);
                     setForm(emptyForm);
                     setProfesorSeleccionado(null);
                 } else {
-                    alert(response.mensaje || "Error al actualizar horario");
+                    notify({ type: 'error', message: response.mensaje || 'Error al actualizar horario' });
                 }
             } else {
                 const response = await crearHorario(horarioData);
@@ -207,7 +209,7 @@ export default function Horarios() {
                     // Recargar horarios
                     const dataHorarios = await obtenerHorarios();
                     setHorarios(dataHorarios.horarios || []);
-                    alert("Horario creado exitosamente");
+                    notify({ type: 'success', message: 'Horario creado exitosamente' });
                     
                     // MEJORA UX: Limpiar solo campos de horario, mantener profesor seleccionado
                     setForm({
@@ -219,13 +221,13 @@ export default function Horarios() {
                         fin: ""                        // Limpiar hora fin
                     });
                     // NO limpiar profesorSeleccionado para que permanezca visible
-                } else {
-                    alert(response.mensaje || "Error al crear horario");
+                    } else {
+                    notify({ type: 'error', message: response.mensaje || 'Error al crear horario' });
                 }
             }
         } catch (error) {
             console.error("Error en submit:", error);
-            alert(error.response?.data?.mensaje || "Error al guardar horario");
+            notify({ type: 'error', message: error.response?.data?.mensaje || 'Error al guardar horario' });
         } finally {
             setCargando(false);
         }
@@ -260,7 +262,7 @@ export default function Horarios() {
                 // Recargar horarios
                 const dataHorarios = await obtenerHorarios();
                 setHorarios(dataHorarios.horarios || []);
-                alert("Horario eliminado exitosamente");
+                    notify({ type: 'success', message: 'Horario eliminado exitosamente' });
                 
                 if (editId === horarioId) {
                     setEditId(null);
@@ -268,11 +270,11 @@ export default function Horarios() {
                     setProfesorSeleccionado(null);
                 }
             } else {
-                alert(response.mensaje || "Error al eliminar horario");
+                notify({ type: 'error', message: response.mensaje || 'Error al eliminar horario' });
             }
         } catch (error) {
             console.error("Error al eliminar:", error);
-            alert(error.response?.data?.mensaje || "Error al eliminar horario");
+            notify({ type: 'error', message: error.response?.data?.mensaje || 'Error al eliminar horario' });
         } finally {
             setCargando(false);
         }
@@ -336,7 +338,7 @@ export default function Horarios() {
                 <form onSubmit={submit}>
                     <div className="form__row form__row--2">
                         <div>
-                            <label>Profesor *</label>
+                            <label>Profesor</label>
                             {profesorSeleccionado ? (
                                 <div>
                                     <div style={{ 
@@ -411,7 +413,7 @@ export default function Horarios() {
                             <label>Salón</label>
                                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                                     <div style={{ flex: 1 }}>
-                                        <label>Lugar (opcional)</label>
+                                        <label>Lugar</label>
                                         <select className="select" value={selectedLugarId} onChange={(e) => { setSelectedLugarId(e.target.value); setSelectedEdificioId(""); }} required>
                                             <option value="">Seleccionar lugar...</option>
                                             {lugares.map((l) => (
@@ -421,7 +423,7 @@ export default function Horarios() {
                                     </div>
 
                                     <div style={{ flex: 1 }}>
-                                        <label>Edificio (opcional)</label>
+                                        <label>Edificio</label>
                                         <select className="select" value={selectedEdificioId} onChange={(e) => setSelectedEdificioId(e.target.value)} required>
                                             <option value="">Seleccionar edificio...</option>
                                             {(lugares.find(l => String(l.lugar_id) === String(selectedLugarId))?.edificios || lugares.flatMap(l => l.edificios || [])).map((ed) => (

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useToast } from "../../components/ui/NotificacionFlotante";
 import { obtenerEstadisticasDocentes } from "../../services/docenteService";
 import { obtenerEstadisticasCarreras } from "../../services/carreraService";
 import { HorarioPDFExporter } from "../../utils/pdfExportService";
@@ -57,6 +58,7 @@ function ScheduleTable() {
   const [schedule, setSchedule] = useState({ slots: [], classes: {} });
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState(null);
+  const { notify } = useToast();
 
   // cargar docentes
   useEffect(() => {
@@ -224,7 +226,7 @@ function ScheduleTable() {
       );
     } catch (error) {
       console.error("Error al exportar PDF:", error);
-      alert("Error al generar el PDF. Por favor, intenta nuevamente.");
+      notify({ type: 'error', message: 'Error al generar el PDF. Por favor, intenta nuevamente.' });
     }
   };
 
@@ -242,7 +244,7 @@ function ScheduleTable() {
       );
     } catch (error) {
       console.error("Error al exportar a Excel:", error);
-      alert("Error al exportar el horario. Por favor, intenta nuevamente.");
+      notify({ type: 'error', message: 'Error al exportar el horario. Por favor, intenta nuevamente.' });
     }
   };
 

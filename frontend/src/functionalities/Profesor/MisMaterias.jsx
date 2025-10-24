@@ -6,9 +6,11 @@ import { buscarMaterias } from "../../services/materiaService";
 import { obtenerMateriasProfesor, asignarMateriaProfesor, eliminarMateriaProfesor } from "../../services/profesorMateriaService";
 import { obtenerNombreProfesor } from "../../services/docenteService";
 import AutocompleteInput from "../../components/admin/AutocompleteInput";
+import { useToast } from "../../components/ui/NotificacionFlotante";
 
 export default function MisMaterias() {
     const navigate = useNavigate();
+    const { notify } = useToast();
     const [misMaterias, setMisMaterias] = useState([]);
     const [materiasDisponibles, setMateriasDisponibles] = useState([]);
     const [cargando, setCargando] = useState(false);
@@ -22,9 +24,10 @@ export default function MisMaterias() {
         if (profesorId) {
             cargarDatos();
         } else {
-            alert("No se encontró información del profesor");
+            notify({ type: 'error', message: 'No se encontró información del profesor' });
             navigate("/login");
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [profesorId]);
 
     const cargarDatos = async () => {
@@ -41,7 +44,7 @@ export default function MisMaterias() {
             }
         } catch (error) {
             console.error("Error al cargar datos:", error);
-            alert("Error al cargar las materias");
+            notify({ type: 'error', message: 'Error al cargar las materias' });
         } finally {
             setCargando(false);
         }
@@ -71,9 +74,10 @@ export default function MisMaterias() {
             await asignarMateriaProfesor(profesorId, materia.materia_id);
             setMateriasDisponibles([]);
             cargarDatos();
+            notify({ type: 'success', message: 'Materia agregada correctamente' });
         } catch (error) {
             console.error("Error al agregar materia:", error);
-            alert("Error al agregar la materia");
+            notify({ type: 'error', message: 'Error al agregar la materia' });
         }
     };
 
@@ -83,9 +87,10 @@ export default function MisMaterias() {
         try {
             await eliminarMateriaProfesor(profesorId, materiaId);
             cargarDatos();
+            notify({ type: 'success', message: 'Materia eliminada' });
         } catch (error) {
             console.error("Error al eliminar materia:", error);
-            alert("Error al eliminar la materia");
+            notify({ type: 'error', message: 'Error al eliminar la materia' });
         }
     };
 

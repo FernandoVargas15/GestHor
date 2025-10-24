@@ -1,9 +1,11 @@
 import { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useToast } from "../components/ui/NotificacionFlotante";
 
 function AuthCallback() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { notify } = useToast();
 
   useEffect(() => {
     const token = searchParams.get("token");
@@ -31,7 +33,7 @@ function AuthCallback() {
           errorMessage = "Error desconocido";
       }
       
-      alert(errorMessage);
+  notify({ type: 'error', message: errorMessage });
       navigate("/login");
       return;
     }
@@ -52,7 +54,7 @@ function AuthCallback() {
         navigate(redirectTo);
       } catch (err) {
         console.error("Error al procesar datos del usuario:", err);
-        alert("Error al procesar la información del usuario");
+        notify({ type: 'error', message: 'Error al procesar la información del usuario' });
         navigate("/login");
       }
     } else {

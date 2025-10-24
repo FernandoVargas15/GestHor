@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import * as lugaresService from "../../services/lugaresService";
+import { useToast } from "../../components/ui/NotificacionFlotante";
 
 const TIPOS_EDIFICIO = ["Académico", "Laboratorio", "Administrativo"];
 const TIPOS_SALON = ["Aula", "Laboratorio", "Salas de usos múltiples", "Taller"];
@@ -18,6 +19,8 @@ function emptySalon() {
 
 export default function Lugares() {
     const [lugares, setLugares] = useState([]);
+    const { notify } = useToast();
+
     const [formLugar, setFormLugar] = useState(emptyLugar());
     const [editLugarId, setEditLugarId] = useState(null);
 
@@ -38,7 +41,7 @@ export default function Lugares() {
             setLugares(data.lugares || []);
         } catch (error) {
             console.error("Error al cargar lugares:", error);
-            alert("Error al cargar lugares");
+            notify({ type: 'error', message: 'Error al cargar lugares' });
         }
     };
 
@@ -80,7 +83,10 @@ export default function Lugares() {
     const submitLugar = async (e) => {
         e.preventDefault();
         const err = validarLugar();
-        if (err) return alert(err);
+        if (err) {
+            notify({ type: 'error', message: err });
+            return;
+        }
 
         try {
             if (editLugarId) {
@@ -96,7 +102,7 @@ export default function Lugares() {
             setFormLugar(emptyLugar());
         } catch (error) {
             console.error("Error al guardar lugar:", error);
-            alert(error.message || "Error al guardar lugar");
+            notify({ type: 'error', message: error.message || 'Error al guardar lugar' });
         }
     };
 
@@ -113,7 +119,7 @@ export default function Lugares() {
             setLugares((prev) => prev.filter((l) => l.lugar_id !== id));
         } catch (error) {
             console.error("Error al eliminar lugar:", error);
-            alert("Error al eliminar lugar");
+            notify({ type: 'error', message: 'Error al eliminar lugar' });
         }
     };
 
@@ -121,7 +127,10 @@ export default function Lugares() {
     const submitEdificio = async (e) => {
         e.preventDefault();
         const err = validarEdificio();
-        if (err) return alert(err);
+        if (err) {
+            notify({ type: 'error', message: err });
+            return;
+        }
 
         try {
             if (editEdificioId) {
@@ -142,7 +151,7 @@ export default function Lugares() {
             setFormEdificio(emptyEdificio());
         } catch (error) {
             console.error("Error al guardar edificio:", error);
-            alert(error.message || "Error al guardar edificio");
+            notify({ type: 'error', message: error.message || 'Error al guardar edificio' });
         }
     };
 
@@ -159,7 +168,7 @@ export default function Lugares() {
             await cargarEstructura();
         } catch (error) {
             console.error("Error al eliminar edificio:", error);
-            alert("Error al eliminar edificio");
+            notify({ type: 'error', message: 'Error al eliminar edificio' });
         }
     };
 
@@ -167,7 +176,10 @@ export default function Lugares() {
     const submitSalon = async (e) => {
         e.preventDefault();
         const err = validarSalon();
-        if (err) return alert(err);
+        if (err) {
+            notify({ type: 'error', message: err });
+            return;
+        }
 
         try {
             if (editSalonId) {
@@ -188,7 +200,7 @@ export default function Lugares() {
             setFormSalon(emptySalon());
         } catch (error) {
             console.error("Error al guardar salón:", error);
-            alert(error.message || "Error al guardar salón");
+            notify({ type: 'error', message: error.message || 'Error al guardar salón' });
         }
     };
 
@@ -205,7 +217,7 @@ export default function Lugares() {
             await cargarEstructura();
         } catch (error) {
             console.error("Error al eliminar salón:", error);
-            alert("Error al eliminar salón");
+            notify({ type: 'error', message: 'Error al eliminar salón' });
         }
     };
 

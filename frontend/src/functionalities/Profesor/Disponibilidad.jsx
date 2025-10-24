@@ -9,6 +9,7 @@ import {
     obtenerPreferencias, 
     guardarPreferencias as guardarPreferenciasAPI
 } from "../../services/disponibilidadService";
+    import { useToast } from "../../components/ui/NotificacionFlotante";
 
 const DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
 
@@ -45,6 +46,7 @@ function makeAvailability(slots) {
 export default function Disponibilidad() {
     const navigate = useNavigate();
     const [nombreProfesor, setNombreProfesor] = useState("");
+    const { notify } = useToast();
     
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const profesorId = user.usuario_id;
@@ -178,10 +180,10 @@ export default function Disponibilidad() {
     const guardarDisponibilidad = async () => {
         try {
             await guardarDisponibilidadAPI(profesorId, tipo, availability);
-            alert(`Disponibilidad ${tipo} guardada exitosamente.\nBloques seleccionados: ${totalSeleccionadas}`);
+            notify({ type: 'success', message: `Disponibilidad ${tipo} guardada exitosamente. Bloques seleccionados: ${totalSeleccionadas}` });
         } catch (error) {
             console.error("Error al guardar disponibilidad:", error);
-            alert("Error al guardar la disponibilidad. Intenta nuevamente.");
+            notify({ type: 'error', message: 'Error al guardar la disponibilidad. Intenta nuevamente.' });
         }
     };
 
@@ -194,11 +196,11 @@ export default function Disponibilidad() {
                 prefs.preferencia.charAt(0).toUpperCase() + prefs.preferencia.slice(1),
                 prefs.comentarios
             );
-            alert(`Preferencias guardadas exitosamente:\n- Máx horas/día: ${prefs.maxHorasDia}\n- Preferencia: ${prefs.preferencia}`);
+            notify({ type: 'success', message: `Preferencias guardadas exitosamente:\n- Máx horas/día: ${prefs.maxHorasDia}\n- Preferencia: ${prefs.preferencia}` });
             cargarDatos();
         } catch (error) {
             console.error("Error al guardar preferencias:", error);
-            alert("Error al guardar las preferencias. Intenta nuevamente.");
+            notify({ type: 'error', message: 'Error al guardar las preferencias. Intenta nuevamente.' });
         }
     };
 

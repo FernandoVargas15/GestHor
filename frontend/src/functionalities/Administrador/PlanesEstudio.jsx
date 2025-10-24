@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useToast } from "../../components/ui/NotificacionFlotante";
 import { useCarreras } from "../../hooks/useCarreras";
 import { useMaterias } from "../../hooks/useMaterias";
 import { validarPlanEstudioCompleto } from "../../utils/validaciones";
@@ -16,6 +17,7 @@ const emptyCareer = {
 export default function PlanesEstudio() {
     const [form, setForm] = useState(emptyCareer);
     const [semestreActual, setSemestreActual] = useState(1);
+    const { notify } = useToast();
 
     const {
         carreras,
@@ -46,7 +48,7 @@ export default function PlanesEstudio() {
         e.preventDefault();
 
         if (!form.nombre.trim() || !form.semestres) {
-            return alert("El nombre y número de semestres son obligatorios");
+            return notify({ type: 'error', message: 'El nombre y número de semestres son obligatorios' });
         }
 
         try {
@@ -88,13 +90,13 @@ export default function PlanesEstudio() {
         const validacion = validarPlanEstudioCompleto(carreraSeleccionada);
         
         if (!validacion.valido) {
-            alert(validacion.mensaje);
+            notify({ type: 'error', message: validacion.mensaje });
             return;
         }
 
         if (!confirm("¿Confirmar plan de estudio completo? Todos los semestres tienen materias asignadas.")) return;
 
-        alert("Plan de estudio guardado exitosamente");
+        notify({ type: 'success', message: 'Plan de estudio guardado exitosamente' });
         setCarreraSeleccionada(null);
     };
 
@@ -130,7 +132,7 @@ export default function PlanesEstudio() {
                 <div className="card">
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                         <div style={{ flex: 1 }}>
-                            <h3 style={{ margin: 0 }}>📚 {carreraSeleccionada.nombre_carrera}</h3>
+                            <h3 style={{ margin: 0 }}> {carreraSeleccionada.nombre_carrera}</h3>
                             <div className="form__hint">Asignar materias del catálogo por semestre</div>
                         </div>
                         <div style={{ display: "flex", gap: 8 }}>

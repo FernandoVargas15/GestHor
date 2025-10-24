@@ -108,15 +108,15 @@ const asignarACarrera = async (carreraId, materiaId, numeroSemestre) => {
             throw new Error('La materia especificada no existe en el catálogo');
         }
 
-        // Verificar si ya está asignada en ese semestre
+        // Verificar si la materia ya está asignada a la carrera en cualquier semestre
         const yaAsignada = await dbConnection.oneOrNone(
             `SELECT * FROM carrera_materias 
-             WHERE carrera_id = $1 AND materia_id = $2 AND numero_semestre = $3`,
-            [carreraId, materiaId, numeroSemestre]
+             WHERE carrera_id = $1 AND materia_id = $2`,
+            [carreraId, materiaId]
         );
 
         if (yaAsignada) {
-            return null; // Ya está asignada
+            return null; // Ya está asignada a la carrera
         }
 
         const resultado = await dbConnection.one(
