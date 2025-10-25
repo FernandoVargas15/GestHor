@@ -100,6 +100,7 @@
     border-bottom: 2px solid transparent;
     transition: all 0.2s ease;
 }
+
 .tabButton:hover {
     background-color: var(--hover);
     color: var(--text);
@@ -115,6 +116,7 @@
     .controlsGrid {
         grid-template-columns: 1fr;
     }
+
     .teacherSelector {
         border-right: none;
         padding-right: 0;
