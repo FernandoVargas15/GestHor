@@ -174,3 +174,15 @@ npm install xlsx
 # instalar en backend 
 npm install passport passport-google-oauth20 express-session
 
+26/10/2025
+# Intalar esto en Backend
+npm install multer
+
+# Despues de ejecutar la bd (ejecutar6.sql) y da error, ejecutar lo sig en pgweb
+ALTER TABLE profesores
+ADD COLUMN tipo_contrato_id INTEGER;
+
+ALTER TABLE profesores
+ADD CONSTRAINT fk_profesor_tipo_contrato
+FOREIGN KEY (tipo_contrato_id)
+REFERENCES tipos_contrato(tipo_contrato_id);
