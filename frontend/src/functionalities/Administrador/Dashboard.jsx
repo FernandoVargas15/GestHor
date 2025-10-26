@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import styles from "./Dashboard.module.css";
 import { useToast } from "../../components/ui/NotificacionFlotante";
 import { obtenerEstadisticasDocentes } from "../../services/docenteService";
 import { obtenerEstadisticasCarreras } from "../../services/carreraService";
@@ -8,10 +9,10 @@ import { HorarioExcelExporter } from "../../utils/excelExportService";
 // Tarjeta de stats
 function StatCard({ label, value, loading = false }) {
   return (
-    <div className="card">
-      <div style={{ color: "var(--muted)", fontSize: 14 }}>{label}</div>
-      <div style={{ fontSize: 28, fontWeight: 800, marginTop: 6 }}>
-        {loading ? <span style={{ color: "var(--muted)" }}>...</span> : value}
+    <div className={`card ${styles["dashboard__stat-card"]}`}>
+      <div className={styles["dashboard__stat-card__label"]}>{label}</div>
+      <div className={styles["dashboard__stat-card__value"]}>
+  {loading ? <span className={styles["dashboard__muted"]}>...</span> : value}
       </div>
     </div>
   );
@@ -289,29 +290,19 @@ function ScheduleTable() {
   };
 
   return (
-    <div className="card" style={{ marginTop: 16 }}>
+    <div className={`card ${styles["dashboard__card"]}`}>
       {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 12,
-          gap: 8,
-          flexWrap: "wrap",
-        }}
-      >
-        <div style={{ fontWeight: 700, fontSize: 16, color: "var(--text)" }}>
+      <div className={styles["dashboard__header"]}>
+        <div className={styles["dashboard__header__title"]}>
           Visualización de Horarios
         </div>
 
         {/* Filtros */}
-        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+  <div className={styles["dashboard__filters"]}>
           {/* Buscador por nombre */}
-          <div style={{ position: "relative" }}>
+          <div className={styles["dashboard__search"]}>
             <input
-              className="btn"
-              style={{ minWidth: 260 }}
+              className={`btn ${styles["dashboard__search-input"]}`}
               placeholder="Buscar profesor por nombre…"
               value={query}
               onChange={(e) => {
@@ -320,21 +311,7 @@ function ScheduleTable() {
               }}
             />
             {query && sugerencias.length > 0 && !profesorSel && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: "105%",
-                  left: 0,
-                  right: 0,
-                  background: "white",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: 8,
-                  zIndex: 10,
-                  maxHeight: 260,
-                  overflowY: "auto",
-                  boxShadow: "0 4px 18px rgba(0,0,0,0.08)",
-                }}
-              >
+              <div className={styles["dashboard__suggestions"]}>
                 {sugerencias.map((d) => (
                   <div
                     onMouseDown={(e) => {
@@ -343,17 +320,13 @@ function ScheduleTable() {
                       setQuery(`${d.nombres} ${d.apellidos}`.trim());
                       setSugerencias([]);
                     }}
-                    style={{
-                      padding: "8px 10px",
-                      cursor: "pointer",
-                      borderBottom: "1px solid #f3f4f6",
-                    }}
+                    className={styles["dashboard__suggestion-item"]}
                   >
                     {d.nombres} {d.apellidos}
                   </div>
                 ))}
                 {sugerencias.length === 0 && (
-                  <div style={{ padding: 8, color: "#6b7280" }}>Sin coincidencias</div>
+                  <div className={styles["dashboard__no-matches"]}>Sin coincidencias</div>
                 )}
               </div>
             )}
@@ -400,9 +373,9 @@ function ScheduleTable() {
       </div>
 
       {/* Estado */}
-      {cargando && <p style={{ marginTop: 8 }}>Cargando…</p>}
-      {error && <p style={{ color: "tomato", marginTop: 8 }}>{error}</p>}
-      <div style={{ fontSize: 12, color: "var(--muted)" }}>
+  {cargando && <p className={styles["dashboard__loading"]}>Cargando…</p>}
+  {error && <p className={styles["dashboard__error"]}>{error}</p>}
+  <div className={styles["dashboard__info"]}>
         {profesorSel
           ? `Profesor: ${profesorSel.nombres} ${profesorSel.apellidos}`
           : "Selecciona un profesor…"}
@@ -410,22 +383,22 @@ function ScheduleTable() {
 
       {/* Información del salón seleccionado */}
       {salonSel && (
-        <div style={{ marginTop: 8, padding: 10, border: '1px solid var(--border)', borderRadius: 8 }}>
-          <div style={{ fontWeight: 700 }}>Salón seleccionado</div>
+        <div className={styles["dashboard__salon-info"]}>
+          <div className={styles["dashboard__salon-info__title"]}>Salón seleccionado</div>
           {(() => {
             const info = salonesFlat.find(s => String(s.salon_id) === String(salonSel));
             if (!info) return <div className="form__hint">Información del salón no disponible</div>;
             const profesoresUnicos = Array.from(new Map(salonHorarios.map(h => [h.profesor_id, { profesor_id: h.profesor_id, nombres: h.nombres, apellidos: h.apellidos }])).values());
             return (
-              <div style={{ marginTop: 6 }}>
+              <div className={styles["dashboard__salon-body"]}>
                 <div className="form__hint">Lugar: {info.nombre_lugar}</div>
                 <div className="form__hint">Edificio: {info.nombre_edificio}</div>
                 <div className="form__hint">Salón: {info.nombre_salon} {info.tipo_salon && `(${info.tipo_salon})`}</div>
-                <div style={{ marginTop: 8 }}>
+                <div className={styles["dashboard__salon-professors"]}>
                   <strong>Profesores con clases en este salón ({profesoresUnicos.length}):</strong>
-                  <ul style={{ marginTop: 6 }}>
+                  <ul className={styles["dashboard__prof-list"]}>
                     {profesoresUnicos.map(p => (
-                      <li key={p.profesor_id} style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                      <li key={p.profesor_id} className={styles["dashboard__prof-list-item"]}>
                         <span>{p.nombres} {p.apellidos}</span>
                         <div>
                           <button className="btn" onClick={() => { setProfesorSel(p); setQuery(`${p.nombres} ${p.apellidos}`); }}>Ver horario</button>
@@ -442,7 +415,7 @@ function ScheduleTable() {
       )}
 
       {/* Tabla */}
-      <div style={{ overflowX: "auto", marginTop: 8 }}>
+  <div className={styles["dashboard__table-wrapper"]}>
         {/* Priority: if a professor is selected, show the existing schedule table.
             If no professor but a salon is selected, show the compact materia-docente table. */}
         {profesorSel ? (
@@ -460,7 +433,7 @@ function ScheduleTable() {
             <tbody>
               {schedule.slots.map((slot) => (
                 <tr key={slot}>
-                  <td style={{ fontWeight: 600, background: "#f8fafc" }}>{slot}</td>
+                  <td className={styles["dashboard__slot-cell"]}>{slot}</td>
                   {DAYS.map((dKey) => {
                     const info = schedule.classes[slot]?.[dKey];
                     return (
@@ -469,9 +442,8 @@ function ScheduleTable() {
                           info.map((ev, idx) => (
                             <div
                               key={idx}
-                              className={`pf-event ${ev.c}`}
+                              className={`pf-event ${ev.c} ${styles["dashboard__event"]}`}
                               title={ev.s}
-                              style={{ marginBottom: 6 }}
                             >
                               <div className="pf-event__subject">{ev.s}</div>
                               <div className="pf-event__room">{ev.r}</div>
@@ -479,7 +451,7 @@ function ScheduleTable() {
                           ))
                         ) : (
                           info && (
-                            <div className={`pf-event ${info.c}`} title={info.s}>
+                            <div className={`pf-event ${info.c} ${styles["dashboard__event"]}`} title={info.s}>
                               <div className="pf-event__subject">{info.s}</div>
                               <div className="pf-event__room">{info.r}</div>
                             </div>
@@ -539,13 +511,13 @@ function ScheduleTable() {
 
                 return rows.map((r) => (
                   <tr key={`${r.materia_id}-${r.profesor_id}`}>
-                    <td style={{ fontWeight: 600 }}>{r.nombre_materia}</td>
+                    <td className={styles["dashboard__strong-cell"]}>{r.nombre_materia}</td>
                     <td>{r.docente_nombre}</td>
                     {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'].map((d) => (
                       <td key={d}>
                         {r.byDay[d] && r.byDay[d].length > 0 ? (
                           r.byDay[d].map((t, i) => (
-                            <div key={i} style={{ marginBottom: 6 }}>{t}</div>
+                            <div key={i} className={styles["dashboard__small-mb"]}>{t}</div>
                           ))
                         ) : (
                           <span className="form__hint">-</span>
@@ -558,7 +530,6 @@ function ScheduleTable() {
             </tbody>
           </table>
         ) : (
-          // Default: show empty schedule (no professor selected)
           <table className="table">
             <thead>
               <tr>
@@ -573,7 +544,7 @@ function ScheduleTable() {
             <tbody>
               {schedule.slots.map((slot) => (
                 <tr key={slot}>
-                  <td style={{ fontWeight: 600, background: "#f8fafc" }}>{slot}</td>
+                  <td className={styles["dashboard__slot-cell"]}>{slot}</td>
                   {DAYS.map((dKey) => <td key={dKey}></td>)}
                 </tr>
               ))}
@@ -645,13 +616,13 @@ export default function Dashboard() {
   return (
     <>
       {/* Título */}
-      <div style={{ marginBottom: 16 }}>
-        <h2 className="main__title" style={{ margin: 0 }}> Dashboard Principal </h2>
-        <p className="main__subtitle" style={{ marginTop: 4 }}> Vista general del sistema de horarios </p>
+      <div className={styles["dashboard__page-header"]}>
+        <h2 className={`main__title ${styles["dashboard__main-title"]}`}> Dashboard Principal </h2>
+        <p className={`main__subtitle ${styles["dashboard__main-subtitle"]}`}> Vista general del sistema de horarios </p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid--4" style={{ marginBottom: 16 }}>
+  <div className={`grid grid--4 ${styles["dashboard__stats"]}`}>
         <StatCard label="Total Docentes" value={stats.docentes} loading={cargando} />
         <StatCard label="Carreras" value={stats.carreras} loading={cargando} />
         <StatCard label="Salones" value={stats.salones} />

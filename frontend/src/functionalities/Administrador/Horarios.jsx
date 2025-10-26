@@ -237,15 +237,15 @@ export default function Horarios() {
 
     return (
         <>
-            <div style={{ marginBottom: 16 }}>
-                <h2 className="main__title" style={{ margin: 0 }}>Gestión de Horarios</h2>
-                <p className="main__subtitle" style={{ marginTop: 4 }}>
+            <div className={styles['admin-horarios__header']}>
+                <h2 className={`main__title ${styles['admin-horarios__title']}`}>Gestión de Horarios</h2>
+                <p className={`main__subtitle ${styles['admin-horarios__subtitle']}`}>
                     Asigne y visualice los horarios de los docentes
                 </p>
             </div>
 
             {/* Panel de Controles Superior */}
-            <div className="card" style={{ marginBottom: 16 }}>
+            <div className={`card ${styles['admin-horarios__card']}`}>
                 <div className={styles.controlsGrid}>
                     <HorarioProfessorSearch
                         profesores={profesores}
@@ -321,7 +321,7 @@ function HorarioProfessorSearch({ profesores, profesorSel, onSelect, onClear, ca
                         getItemLabel={(p) => `${p.nombres} ${p.apellidos}`}
                     />
                     {profesores.length === 0 && !cargando && (
-                        <div className="form__hint" style={{ marginTop: 8, textAlign: 'center' }}>
+                        <div className={`form__hint ${styles['admin-horarios__no-docs']}`}>
                             No hay docentes registrados.
                         </div>
                     )}
@@ -579,7 +579,7 @@ function HorarioAssignmentForm({ profesorSel, catalogs, itemToEdit, onHorarioUpd
             <form onSubmit={submit}>
                 <div className="form__row form__row--2">
                     {/* Filtros por Carrera y Semestre */}
-                    <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
+                    <div className={styles['admin-horarios__form-row--flex']}>
                         <select className="select" value={selectedCarreraId} onChange={handleCarreraChange} disabled={!!editId}>
                             <option value="">Filtrar por Carrera (opcional)</option>
                             {carreras.map(c => (<option key={c.carrera_id} value={c.carrera_id}>{c.nombre_carrera}</option>))}
@@ -601,28 +601,28 @@ function HorarioAssignmentForm({ profesorSel, catalogs, itemToEdit, onHorarioUpd
                     <div>
                         <label>Materia</label>
                         <select className="select" value={form.materiaId || ''} onChange={handleMateriaChange} disabled={
-                                        !selectedCarreraId ||
-                                        // Si se filtró por carrera, requiere semestre seleccionado
-                                        (selectedCarreraId && !selectedSemestre) ||
-                                        // Si se filtró por carrera y semestre, y no hay materias para esa combinación
-                                        (selectedCarreraId && selectedSemestre && availableMaterias.length === 0) ||
-                                        // Si no se filtró pero no hay materias en absoluto
-                                        (!selectedCarreraId && materias.length === 0)
-                                    }>
+                            !selectedCarreraId ||
+                            // Si se filtró por carrera, requiere semestre seleccionado
+                            (selectedCarreraId && !selectedSemestre) ||
+                            // Si se filtró por carrera y semestre, y no hay materias para esa combinación
+                            (selectedCarreraId && selectedSemestre && availableMaterias.length === 0) ||
+                            // Si no se filtró pero no hay materias en absoluto
+                            (!selectedCarreraId && materias.length === 0)
+                        }>
                             <option value="">Seleccionar materia...</option>
                             {materiasSource.map(m => (
                                 <option key={m.materia_id} value={m.materia_id}>{m.nombre_materia}</option>
                             ))}
                         </select>
                         {materiasSource.length === 0 && (
-                            <div className="form__hint" style={{ marginTop: 8 }}>
+                            <div className={`form__hint ${styles['admin-horarios__hint-mt8']}`}>
                                 {selectedCarreraId ? 'No hay materias para este filtro' : 'No hay materias registradas'}
                             </div>
                         )}
                     </div>
                 </div>
 
-                <div className="form__row form__row--3" style={{ marginTop: 12 }}>
+                <div className={`form__row form__row--3 ${styles['admin-horarios__form-row--spaced']}`}>
                     <div>
                         <label>Día</label>
                         <select className="select" name="dia" value={form.dia} onChange={onChange} required >
@@ -647,7 +647,7 @@ function HorarioAssignmentForm({ profesorSel, catalogs, itemToEdit, onHorarioUpd
                     </div>
                 </div>
 
-                <div className="form__row form__row--3" style={{ marginTop: 12 }}>
+                <div className={`form__row form__row--3 ${styles['admin-horarios__form-row--spaced']}`}>
                     <div>
                         <label>Lugar</label>
                         <select className="select" value={selectedLugarId} onChange={(e) => { setSelectedLugarId(e.target.value); setSelectedEdificioId(""); }} required >
@@ -671,7 +671,7 @@ function HorarioAssignmentForm({ profesorSel, catalogs, itemToEdit, onHorarioUpd
                     </div>
                 </div>
 
-                <div style={{ marginTop: 16, display: "flex", gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                <div className={styles['admin-horarios__actions']}>
                     <button type="submit" className="btn btn--primary" disabled={cargandoSubmit || validando || !profesorSel}>
                         {cargandoSubmit || validando ? "Cargando..." : editId ? "Actualizar Horario" : "Asignar Horario"}
                     </button>
@@ -691,10 +691,10 @@ function HorarioAssignmentForm({ profesorSel, catalogs, itemToEdit, onHorarioUpd
                 </div>
 
                 {/* Lista de candidatos (sugerencias) */}
-                <div style={{ marginTop: 12 }}>
-                    {errorSugerencias && <div className="form__hint" style={{ color: 'var(--danger)' }}>{errorSugerencias}</div>}
+                <div className={styles['admin-horarios__candidates-wrapper']}>
+                    {errorSugerencias && <div className={`form__hint ${styles['admin-horarios__hint--danger']}`}>{errorSugerencias}</div>}
                     {candidatos.length > 0 && (
-                        <div style={{ border: '1px solid var(--border)', borderRadius: 6, background: 'white', overflow: 'hidden', maxHeight: 200, overflowY: 'auto' }}>
+                        <div className={styles['admin-horarios__candidates']}>
                             {candidatos.map((c) => (
                                 <CandidateRow key={c.profesor_id} candidato={c} onSelect={() => notify({ type: 'info', message: 'Funcionalidad no implementada en este refactor' })} />
                             ))}
@@ -709,16 +709,16 @@ function HorarioAssignmentForm({ profesorSel, catalogs, itemToEdit, onHorarioUpd
 const CandidateRow = ({ candidato, onSelect }) => {
     const horasNum = parseHorasToNumber(candidato.horas_asignadas);
     return (
-        <div onClick={() => onSelect(candidato)} style={{ padding: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', borderBottom: '1px solid var(--border)' }}>
+        <div onClick={() => onSelect(candidato)} className={styles['admin-horarios__candidate']}>
             <div>
-                <div style={{ fontWeight: 600 }}>{candidato.nombres} {candidato.apellidos}</div>
-                <div style={{ fontSize: 12, color: 'var(--muted)' }}>
+                <div className={styles['admin-horarios__candidate__name']}>{candidato.nombres} {candidato.apellidos}</div>
+                <div className={styles['admin-horarios__candidate__meta']}>
                     {candidato.nombre_tipo ? `${candidato.nombre_tipo} (prioridad ${candidato.nivel_prioridad})` : 'Sin contrato'}
                     {' — '}
                     Horas asignadas: <strong>{horasNum} h</strong>
                 </div>
             </div>
-            <div style={{ fontSize: 12, color: 'var(--muted)' }}>Click para seleccionar</div>
+            <div className={styles['admin-horarios__candidate__cta']}>Click para seleccionar</div>
         </div>
     );
 };
@@ -784,9 +784,9 @@ function HorarioTabsContainer({ profesorSel, scheduleData, infoProfesor, tabProp
 
             {activeTab === 'horario' && (
                 <div className="card fade-in">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
-                        <h3 style={{ margin: 0 }}>Horario Semanal de {profesorSel.nombres}</h3>
-                        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                    <div className={styles['admin-horarios__tab-header']}>
+                        <h3 className={styles['admin-horarios__tab-title']}>Horario Semanal de {profesorSel.nombres}</h3>
+                        <div className={styles['admin-horarios__tab-actions']}>
                             <select className="select" value={tipo} onChange={(e) => setTipo(e.target.value)}>
                                 <option value="matutino">Matutino (07:00 - 14:00)</option>
                                 <option value="vespertino">Vespertino (15:00 - 22:00)</option>

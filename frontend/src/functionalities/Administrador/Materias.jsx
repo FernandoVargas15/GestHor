@@ -8,6 +8,7 @@ import {
 } from "../../services/materiaService";
 import SearchInput from "../../components/ui/SearchInput";
 import { useSearch } from "../../hooks/useSearch";
+import styles from "./Materias.module.css";
 
 function emptyForm() {
     return {
@@ -109,23 +110,23 @@ export default function Materias() {
 
     return (
         <>
-            <div style={{ marginBottom: 16 }}>
-                <h2 className="main__title" style={{ margin: 0 }}>Catálogo de Materias</h2>
-                <p className="main__subtitle" style={{ marginTop: 4 }}>
+            <div className={styles['materias__header']}>
+                <h2 className={`main__title ${styles['materias__title']}`}>Catálogo de Materias</h2>
+                <p className={`main__subtitle ${styles['materias__subtitle']}`}>
                     Gestionar materias globales para asignar a carreras
                 </p>
             </div>
 
-            <div className="grid grid--2" style={{ marginBottom: 16, gap: 16 }}>
+            <div className={`grid grid--2 ${styles['materias__grid']}`}>
                 {/* Formulario */}
                 <div className="card">
-                    <h3 style={{ marginTop: 0 }}>
+                    <h3 className={styles['materias__cardTitle']}>
                         {editingId ? "Editar Materia" : "Agregar Nueva Materia"}
                     </h3>
                     
                     <form onSubmit={onSubmit}>
-                        <div style={{ marginBottom: 12 }}>
-                            <label>Nombre de la Materia *</label>
+                        <div className={styles['materias__formRow']}>
+                            <label>Nombre de la Materia </label>
                             <input
                                 className="input"
                                 name="nombre_materia"
@@ -137,7 +138,7 @@ export default function Materias() {
                             />
                         </div>
 
-                        <div style={{ display: "flex", gap: 10 }}>
+                        <div className={styles['materias__actions']}>
                             <button 
                                 type="submit" 
                                 className="btn btn--primary"
@@ -164,12 +165,12 @@ export default function Materias() {
 
                 {/* Listado */}
                 <div className="card">
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                        <h3 style={{ margin: 0 }}>Materias Registradas ({materias.length})</h3>
+                    <div className={styles['materias__listHeader']}>
+                        <h3 className={styles['materias__listTitle']}>Materias Registradas ({materias.length})</h3>
                     </div>
 
                     {/* Buscador */}
-                    <div style={{ marginBottom: 12 }}>
+                    <div className={styles['materias__search']}> 
                         <SearchInput
                             value={busqueda}
                             onChange={setBusqueda}
@@ -181,24 +182,24 @@ export default function Materias() {
                     {cargando ? (
                         <div className="form__hint">Cargando...</div>
                     ) : (
-                        <div style={{ maxHeight: 500, overflowY: "auto" }}>
+                        <div className={styles['materias__listContainer']}>
                             {materiasFiltradas.length === 0 ? (
                                 <div className="form__hint">
                                     {busqueda ? "No se encontraron materias" : "Aún no hay materias en el catálogo"}
                                 </div>
                             ) : (
                                 materiasFiltradas.map((m) => (
-                                    <div key={m.materia_id} className="card" style={{ marginBottom: 8, padding: 12 }}>
-                                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ fontWeight: 600 }}>{m.nombre_materia}</div>
+                                    <div key={m.materia_id} className={`card ${styles['materias__listItem']}`}>
+                                        <div className={styles['materias__listItemInner']}>
+                                            <div className={styles['materias__itemMain']}>
+                                                <div className={styles['materias__itemTitle']}>{m.nombre_materia}</div>
                                                 {m.descripcion && (
-                                                    <div className="form__hint" style={{ marginTop: 4 }}>
+                                                    <div className={`form__hint ${styles['materias__hint']}`}>
                                                         {m.descripcion}
                                                     </div>
                                                 )}
                                             </div>
-                                            <div style={{ display: "flex", gap: 4 }}>
+                                            <div className={styles['materias__itemActions']}>
                                                 <button 
                                                     className="link-btn" 
                                                     onClick={() => onEdit(m)}
@@ -225,8 +226,8 @@ export default function Materias() {
 
             {/* Información adicional */}
             <div className="card">
-                <h3 style={{ marginTop: 0 }}>¿Cómo funciona?</h3>
-                <ul style={{ marginBottom: 0, paddingLeft: 20 }}>
+                <h3 className={styles['materias__cardTitle']}>¿Cómo funciona?</h3>
+                <ul className={styles['materias__howList']}>
                     <li>Agrega materias aquí una sola vez al catálogo global</li>
                     <li>Luego, al crear o editar una carrera, selecciona las materias del catálogo</li>
                     <li>La misma materia puede asignarse a múltiples carreras en diferentes semestres</li>

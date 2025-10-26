@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import styles from "./Docentes.module.css";
 import { useToast } from "../../components/ui/NotificacionFlotante";
 import { obtenerDocentes, crearDocente, actualizarDocente, eliminarDocente } from "../../services/docenteService";
 import { obtenerTiposContrato } from "./tipoContratoService";
@@ -113,15 +114,15 @@ export default function Docentes() {
 
     return (
         <>
-            <div style={{ marginBottom: 16 }}>
-                <h2 className="main__title" style={{ margin: 0 }}>Gestión de Docentes</h2>
-                <p className="main__subtitle" style={{ marginTop: 4 }}>
+            <div className={styles["docentes__page-header"]}>
+                <h2 className={`main__title ${styles["docentes__main-title"]}`}>Gestión de Docentes</h2>
+                <p className={`main__subtitle ${styles["docentes__main-subtitle"]}`}>
                     Administra los docentes y sus niveles de prioridad de contratación.
                 </p>
             </div>
-            <div className="grid grid--2" style={{ marginBottom: 24 }}>
+            <div className={`grid grid--2 ${styles["docentes__grid"]}`}>
                 <div className="card">
-                    <h3 style={{ marginTop: 0 }}>{editingId ? "Editar Docente" : "Registrar Docente"}</h3>
+                    <h3 className={styles["docentes__form-title"]}>{editingId ? "Editar Docente" : "Registrar Docente"}</h3>
                     <form onSubmit={onSubmit}>
                         <div className="form__row form__row--2">
                             <div>
@@ -158,8 +159,7 @@ export default function Docentes() {
                             maxLength={10}
                         /></div>
 
-                        {/* === CAMPO NUEVO PARA TIPO DE CONTRATO === */}
-                        <div style={{ marginTop: 12 }}>
+                        <div className={styles["docentes__form-section"]}>
                             <label>Tipo de Contrato (Prioridad)</label>
                             <select
                                 className="select"
@@ -177,8 +177,8 @@ export default function Docentes() {
                             <div className="form__hint">Define la prioridad del docente para la asignación de horarios.</div>
                         </div>
 
-                        <button type="submit" className="btn btn--primary" style={{ marginTop: 16 }}>{editingId ? "Actualizar" : "Guardar"}</button>
-                        {editingId && <button type="button" className="btn" style={{ marginTop: 16, marginLeft: 8 }} onClick={() => { setEditingId(null); setForm(emptyForm()); }}>Cancelar</button>}
+                        <button type="submit" className={`btn btn--primary ${styles["docentes__submit"]}`}>{editingId ? "Actualizar" : "Guardar"}</button>
+                        {editingId && <button type="button" className={`btn ${styles["docentes__cancel"]}`} onClick={() => { setEditingId(null); setForm(emptyForm()); }}>Cancelar</button>}
                     </form>
                 </div>
                 <div className="card">
@@ -186,7 +186,7 @@ export default function Docentes() {
                     
                     {/* Buscador */}
                     {docentes.length > 0 && (
-                        <div style={{ marginBottom: 12 }}>
+                        <div className={styles["docentes__search-wrapper"]}>
                             <SearchInput
                                 value={busqueda}
                                 onChange={setBusqueda}
@@ -201,15 +201,15 @@ export default function Docentes() {
                         </div>
                     ) : (
                         docentesFiltrados.map((d) => (
-                            <div key={d.profesor_id} className="card" style={{ marginBottom: 8 }}>
+                            <div key={d.profesor_id} className={`card ${styles["docentes__list-item"]}`}>
                                 <div><strong>{d.nombres} {d.apellidos}</strong></div>
                                 <div className="form__hint">Mat: {d.matricula} | Email: {d.email}</div>
                                 {d.nombre_tipo && (
-                                    <div className="form__hint" style={{ color: 'var(--primary)', fontWeight: 500 }}>
+                                    <div className={`form__hint ${styles["docentes__contract-hint"]}`}>
                                         Contrato: {d.nombre_tipo} (Prioridad {d.nivel_prioridad})
                                     </div>
                                 )}
-                                <div style={{ marginTop: 8 }}>
+                                <div className={styles["docentes__item-actions"]}>
                                     <button className="link-btn" onClick={() => onEdit(d)}>Editar</button>
                                     <button className="link-btn link-btn--danger" onClick={() => onDelete(d.profesor_id)}>Eliminar</button>
                                 </div>

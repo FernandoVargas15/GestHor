@@ -19,7 +19,7 @@ export default function CarreraForm({ form, onChange, onSubmit, cargando }) {
                     </div>
 
                     <div>
-                        <label>Número de Semestres *</label>
+                        <label>Número de Semestres</label>
                         <select
                             className="select"
                             name="semestres"

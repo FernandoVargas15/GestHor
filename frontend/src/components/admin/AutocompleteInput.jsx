@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
+import styles from "./AutocompleteInput.module.css";
 
-export default function AutocompleteInput({ 
-    items, 
-    onSelect, 
-    placeholder = "Buscar...", 
+export default function AutocompleteInput({
+    items,
+    onSelect,
+    placeholder = "Buscar...",
     disabled = false,
     getItemKey,
     getItemLabel,
@@ -12,20 +13,19 @@ export default function AutocompleteInput({
     const [busqueda, setBusqueda] = useState("");
     const [mostrarSugerencias, setMostrarSugerencias] = useState(false);
 
-    // Si se proporciona onSearchChange, se llama cuando cambia la búsqueda
     useEffect(() => {
         if (onSearchChange && busqueda) {
             const timer = setTimeout(() => {
                 onSearchChange(busqueda);
-            }, 300); // Debounce de 300ms
-            
+            }, 300);
+
             return () => clearTimeout(timer);
         }
     }, [busqueda, onSearchChange]);
 
-    const itemsFiltrados = onSearchChange 
-        ? items // Si hay búsqueda dinámica, los items ya vienen filtrados
-        : items.filter(item => 
+    const itemsFiltrados = onSearchChange
+        ? items
+        : items.filter(item =>
             getItemLabel(item).toLowerCase().includes(busqueda.toLowerCase())
           );
 
@@ -39,10 +39,12 @@ export default function AutocompleteInput({
         setMostrarSugerencias(false);
     };
 
+    const inputClass = `${styles["autocomplete-input__input"]} ${disabled ? styles["autocomplete-input__input--disabled"] : ""}`.trim();
+
     return (
-        <div style={{ position: "relative" }}>
+        <div className={styles["autocomplete-input"]}>
             <input
-                className="input"
+                className={`${inputClass} input`}
                 placeholder={placeholder}
                 value={busqueda}
                 onChange={(e) => {
@@ -52,26 +54,13 @@ export default function AutocompleteInput({
                 onFocus={() => busqueda.length > 0 && setMostrarSugerencias(true)}
                 disabled={disabled}
             />
-            
+
             {mostrarSugerencias && busqueda && (
-                <div style={{
-                    position: "absolute",
-                    top: "100%",
-                    left: 0,
-                    right: 0,
-                    backgroundColor: "white",
-                    border: "1px solid var(--border)",
-                    borderRadius: 4,
-                    maxHeight: 200,
-                    overflowY: "auto",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                    zIndex: 1000,
-                    marginTop: 4
-                }}>
+                <div className={styles["autocomplete-input__list"]}>
                     {itemsFiltrados.length === 0 ? (
-                        <div style={{ padding: 12, color: "var(--text-muted)", textAlign: "center" }}>
-                            {busqueda.length < 2 
-                                ? "Escribe al menos 2 caracteres..." 
+                        <div className={styles["autocomplete-input__no-results"]}>
+                            {busqueda.length < 2
+                                ? "Escribe al menos 2 caracteres..."
                                 : `No se encontraron resultados con "${busqueda}"`
                             }
                         </div>
@@ -80,14 +69,7 @@ export default function AutocompleteInput({
                             <div
                                 key={getItemKey(item)}
                                 onClick={() => handleSelect(item)}
-                                style={{
-                                    padding: "10px 12px",
-                                    cursor: "pointer",
-                                    borderBottom: "1px solid var(--border)",
-                                    transition: "background-color 0.2s"
-                                }}
-                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--bg-secondary)"}
-                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "white"}
+                                className={styles["autocomplete-input__item"]}
                             >
                                 {getItemLabel(item)}
                             </div>

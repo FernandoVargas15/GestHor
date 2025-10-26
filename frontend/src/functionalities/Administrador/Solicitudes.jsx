@@ -6,6 +6,7 @@ import {
     regenerarPassword,
     obtenerActividadesRecientes
 } from "../../services/solicitudRecuperacionService";
+import styles from "./Solicitudes.module.css";
 
 function calcularTiempoTranscurrido(fechaSolicitud) {
     const ahora = new Date();
@@ -195,55 +196,41 @@ export default function Solicitudes() {
 
     return (
         <>
-            <div style={{ marginBottom: 16 }}>
-                <h2 className="main__title" style={{ margin: 0 }}>
+            <div className={styles['solicitudes__header']}>
+                <h2 className={`main__title ${styles['solicitudes__title']}`}>
                     Solicitudes de ayuda
                 </h2>
-                <p className="main__subtitle" style={{ marginTop: 4 }}>
+                <p className={`main__subtitle ${styles['solicitudes__subtitle']}`}>
                     Gestionar solicitudes de contraseñas perdidas
                 </p>
             </div>
 
             {/*  Stats */}
-            <div
-                className="grid"
-                style={{
-                    gap: 16,
-                    gridTemplateColumns: "repeat(3, minmax(0,1fr))",
-                    marginBottom: 16,
-                }}
-            >
+            <div className={`grid ${styles['solicitudes__statsGrid']}`}>
                 <div className="card">
-                    <div style={{ color: "var(--muted)" }}>Solicitudes Pendientes</div>
-                    <div style={{ fontSize: 26, fontWeight: 800, color: "#ea580c" }}>
+                    <div className={styles['solicitudes__statLabel']}>Solicitudes Pendientes</div>
+                    <div className={`${styles['solicitudes__statValue']} ${styles['solicitudes__statValue--orange']}`}>
                         {stats.pendientes}
                     </div>
                 </div>
                 <div className="card">
-                    <div style={{ color: "var(--muted)" }}>Resueltas Hoy</div>
-                    <div style={{ fontSize: 26, fontWeight: 800, color: "#16a34a" }}>
+                    <div className={styles['solicitudes__statLabel']}>Resueltas Hoy</div>
+                    <div className={`${styles['solicitudes__statValue']} ${styles['solicitudes__statValue--green']}`}>
                         {stats.resueltasHoy}
                     </div>
                 </div>
                 <div className="card">
-                    <div style={{ color: "var(--muted)" }}>Total del Mes</div>
-                    <div style={{ fontSize: 26, fontWeight: 800, color: "#2563eb" }}>
+                    <div className={styles['solicitudes__statLabel']}>Total del Mes</div>
+                    <div className={`${styles['solicitudes__statValue']} ${styles['solicitudes__statValue--blue']}`}>
                         {stats.totalMes}
                     </div>
                 </div>
             </div>
 
             {/* Lista de pendientes */}
-            <div className="card" style={{ marginBottom: 16 }}>
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        marginBottom: 8,
-                    }}
-                >
-                    <h3 style={{ margin: 0 }}>Solicitudes Pendientes</h3>
+            <div className={`card ${styles['solicitudes__pendingCard']}`}>
+                <div className={styles['solicitudes__pendingHeader']}>
+                    <h3 className={styles['solicitudes__pendingTitle']}>Solicitudes Pendientes</h3>
                     <div>
                         <button className="link-btn" onClick={markAllAsRead}>
                             Marcar todas como leídas
@@ -254,54 +241,38 @@ export default function Solicitudes() {
                     </div>
                 </div>
 
-                <div className="grid" style={{ gap: 12 }}>
+                <div className={`grid ${styles['solicitudes__requestsGrid']}`}>
                     {loading ? (
                         <div className="form__hint">Cargando solicitudes...</div>
                     ) : requests.map((req) => {
-                        const s = priorityStyles(req.prioridad);
                         return (
                             <div
                                 key={req.id}
-                                className="card"
-                                style={{ background: s.bg, borderColor: s.border }}
+                                className={`card ${styles['solicitudes__requestCard']} ${styles[`solicitudes__requestCard--${req.prioridad}`]}`}
                             >
-                                <div
-                                    style={{
-                                        display: "flex",
-                                        justifyContent: "space-between",
-                                        alignItems: "flex-start",
-                                        gap: 8,
-                                    }}
-                                >
-                  <div style={{ display: "flex", gap: 12 }}>
-                    <div>
-                      <div style={{ fontWeight: 700 }}>{req.nombre}</div>
-                      <div className="form__hint">Recibido: {req.recibido}</div>
-                    </div>
-                  </div>                                    <span
-                                        style={{
-                                            fontSize: 11,
-                                            padding: "4px 8px",
-                                            borderRadius: 999,
-                                            background: s.pillBg,
-                                            color: s.pillColor,
-                                            fontWeight: 700,
-                                        }}
-                                    >
+                                <div className={styles['solicitudes__requestInner']}>
+                                    <div className={styles['solicitudes__requestMetaWrap']}>
+                                        <div>
+                                            <div className={styles['solicitudes__requestName']}>{req.nombre}</div>
+                                            <div className="form__hint">Recibido: {req.recibido}</div>
+                                        </div>
+                                    </div>
+
+                                    <span className={`${styles['solicitudes__pill']} ${styles[`solicitudes__pill--${req.prioridad}`]}`}>
                                         {req.prioridad}
                                     </span>
                                 </div>
 
-                                <div style={{ marginTop: 8 }}>
-                                    <div style={{ fontSize: 14, color: "var(--text)" }}>
+                                <div className={styles['solicitudes__requestDetails']}>
+                                    <div className={styles['solicitudes__requestText']}>
                                         <strong>Email:</strong> {req.email}
                                     </div>
-                                    <div style={{ fontSize: 14, marginTop: 4 }}>
+                                    <div className={styles['solicitudes__requestText']}>
                                         <strong>Motivo:</strong> {req.motivo}
                                     </div>
                                 </div>
 
-                                <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                                <div className={styles['solicitudes__actions']}>
                                     <button
                                         className="btn btn--primary"
                                         onClick={() => generateNewPassword(req)}
@@ -324,27 +295,16 @@ export default function Solicitudes() {
 
             {/* Actividad reciente */}
             <div className="card">
-                <h3 style={{ marginTop: 0 }}>Actividad Reciente</h3>
+                <h3 className={styles['solicitudes__activityTitle']}>Actividad Reciente</h3>
 
-                <div className="grid" style={{ gap: 8 }}>
+                <div className={`grid ${styles['solicitudes__activityGrid']}`}>
                     {activity.map((a) => (
                         <div
                             key={a.id}
-                            className="card"
-                            style={{
-                                padding: 10,
-                                background: a.type === "success" ? "#ecfdf5" : "#eff6ff",
-                                borderColor: a.type === "success" ? "#a7f3d0" : "#bfdbfe",
-                            }}
+                            className={`card ${styles['solicitudes__activityCard']} ${a.type === "success" ? styles['solicitudes__activityCard--success'] : styles['solicitudes__activityCard--info']}`}
                         >
-                            <div
-                                style={{
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                    alignItems: "center",
-                                }}
-                            >
-                                <div style={{ fontSize: 14 }}>{a.text}</div>
+                            <div className={styles['solicitudes__activityInner']}>
+                                <div className={styles['solicitudes__activityText']}>{a.text}</div>
                                 <div className="form__hint">{a.when}</div>
                             </div>
                         </div>

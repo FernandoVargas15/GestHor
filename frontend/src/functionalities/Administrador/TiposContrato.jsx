@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useToast } from "../../components/ui/NotificacionFlotante";
 import { obtenerTiposContrato, crearTipoContrato, actualizarTipoContrato } from "./tipoContratoService";
+import styles from "./TiposContrato.module.css";
 
 export default function TiposContrato({ bare = false }) {
 	const [tipos, setTipos] = useState([]);
@@ -19,18 +20,18 @@ export default function TiposContrato({ bare = false }) {
 		}
 	};
 
-		useEffect(() => { load(); }, []);
+	useEffect(() => { load(); }, []);
 
 	const onChange = (e) => {
 		const { name, value } = e.target;
 		setForm(f => ({ ...f, [name]: value }));
 	};
 
-		const onEdit = (t) => {
-			setEditingId(t.tipo_contrato_id);
-			setForm({ nombre_tipo: t.nombre_tipo || "", nivel_prioridad: String(t.nivel_prioridad || ""), descripcion: t.descripcion || "" });
-			setOpen(true); // al editar, abrir el panel para mostrar campos
-		};
+	const onEdit = (t) => {
+		setEditingId(t.tipo_contrato_id);
+		setForm({ nombre_tipo: t.nombre_tipo || "", nivel_prioridad: String(t.nivel_prioridad || ""), descripcion: t.descripcion || "" });
+		setOpen(true); // al editar, abrir el panel para mostrar campos
+	};
 
 	const onCancel = () => {
 		setEditingId(null);
@@ -71,78 +72,78 @@ export default function TiposContrato({ bare = false }) {
 		}
 	};
 
-		// If parent requests bare rendering, return only the inner form + list without the card/header wrapper
-		if (bare) {
-			return (
+	// If parent requests bare rendering, return only the inner form + list without the card/header wrapper
+	if (bare) {
+		return (
+			<>
+				<form onSubmit={onSubmit} className={styles['tipos__form']}>
+					<div className={styles['tipos__grid']}>
+						<input className={`input ${styles['tipos__inputFull']}`} name="nombre_tipo" placeholder="Nombre del tipo" value={form.nombre_tipo} onChange={onChange} />
+						<input className={`input ${styles['tipos__inputFull']}`} name="nivel_prioridad" placeholder="Prioridad (1)" value={form.nivel_prioridad} onChange={onChange} />
+					</div>
+					<div className={styles['tipos__mt8']}>
+						<textarea className={`textarea ${styles['tipos__inputFull']}`} name="descripcion" placeholder="Descripción (opcional)" value={form.descripcion} onChange={onChange} />
+					</div>
+					<div className={styles['tipos__actions']}>
+						<button type="submit" className="btn btn--primary" disabled={loading}>{editingId ? 'Actualizar' : 'Agregar'}</button>
+						{editingId && <button type="button" className="btn" onClick={onCancel} disabled={loading}>Cancelar</button>}
+					</div>
+				</form>
+
+				<ul className={styles['tipos__list']}>
+					{tipos.map((t) => (
+						<li key={t.tipo_contrato_id} className={styles['tipos__listItem']}>
+							<div>
+								<strong>{t.nombre_tipo}</strong> <span className="form__hint">(Prioridad: {t.nivel_prioridad})</span>
+								{t.descripcion && <div className={`form__hint ${styles['tipos__hintTop']}`}>{t.descripcion}</div>}
+							</div>
+							<div className={styles['tipos__itemActions']}>
+								<button className="link-btn" onClick={() => onEdit(t)}>Editar</button>
+							</div>
+						</li>
+					))}
+				</ul>
+			</>
+		);
+	}
+
+	return (
+		<div className={`card ${styles['tipos__card']}`}>
+			<h4 className={styles['tipos__toggle']} onClick={() => setOpen(o => !o)}>
+				Tipos de Contrato ({tipos.length}) {open ? '▾' : '▸'}
+			</h4>
+
+			{open && (
 				<>
-					<form onSubmit={onSubmit} style={{ marginBottom: 12, width: '100%' }}>
-						<div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 8, alignItems: 'center' }}>
-							<input className="input" name="nombre_tipo" placeholder="Nombre del tipo" value={form.nombre_tipo} onChange={onChange} style={{ width: '100%' }} />
-							<input className="input" name="nivel_prioridad" placeholder="Prioridad (1)" value={form.nivel_prioridad} onChange={onChange} style={{ width: '100%' }} />
+					<form onSubmit={onSubmit} className={styles['tipos__form']}>
+						<div className={styles['tipos__grid']}>
+							<input className={`input ${styles['tipos__inputFull']}`} name="nombre_tipo" placeholder="Nombre del tipo" value={form.nombre_tipo} onChange={onChange} />
+							<input className={`input ${styles['tipos__inputFull']}`} name="nivel_prioridad" placeholder="Prioridad (1)" value={form.nivel_prioridad} onChange={onChange} />
 						</div>
-						<div style={{ marginTop: 8 }}>
-							<textarea className="textarea" name="descripcion" placeholder="Descripción (opcional)" value={form.descripcion} onChange={onChange} style={{ width: '100%' }} />
+						<div className={styles['tipos__mt8']}>
+							<textarea className={`textarea ${styles['tipos__inputFull']}`} name="descripcion" placeholder="Descripción (opcional)" value={form.descripcion} onChange={onChange} />
 						</div>
-						<div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
+						<div className={styles['tipos__actions']}>
 							<button type="submit" className="btn btn--primary" disabled={loading}>{editingId ? 'Actualizar' : 'Agregar'}</button>
 							{editingId && <button type="button" className="btn" onClick={onCancel} disabled={loading}>Cancelar</button>}
 						</div>
 					</form>
 
-					<ul style={{ margin: 0, paddingLeft: 16 }}>
+					<ul className={styles['tipos__list']}>
 						{tipos.map((t) => (
-							<li key={t.tipo_contrato_id} style={{ marginBottom: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+							<li key={t.tipo_contrato_id} className={styles['tipos__listItem']}>
 								<div>
 									<strong>{t.nombre_tipo}</strong> <span className="form__hint">(Prioridad: {t.nivel_prioridad})</span>
-									{t.descripcion && <div className="form__hint" style={{ marginTop: 4 }}>{t.descripcion}</div>}
+									{t.descripcion && <div className={`form__hint ${styles['tipos__hintTop']}`}>{t.descripcion}</div>}
 								</div>
-								<div style={{ display: 'flex', gap: 8 }}>
+								<div className={styles['tipos__itemActions']}>
 									<button className="link-btn" onClick={() => onEdit(t)}>Editar</button>
 								</div>
 							</li>
 						))}
 					</ul>
 				</>
-			);
-		}
-
-		return (
-			<div className="card" style={{ marginTop: 12 }}>
-				<h4 style={{ marginTop: 0, cursor: 'pointer' }} onClick={() => setOpen(o => !o)}>
-					Tipos de Contrato ({tipos.length}) {open ? '▾' : '▸'}
-				</h4>
-
-				{open && (
-					<>
-						<form onSubmit={onSubmit} style={{ marginBottom: 12 }}>
-							<div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 8, alignItems: 'center' }}>
-								<input className="input" name="nombre_tipo" placeholder="Nombre del tipo" value={form.nombre_tipo} onChange={onChange} />
-								<input className="input" name="nivel_prioridad" placeholder="Prioridad (1)" value={form.nivel_prioridad} onChange={onChange} />
-							</div>
-							<div style={{ marginTop: 8 }}>
-								<textarea className="textarea" name="descripcion" placeholder="Descripción (opcional)" value={form.descripcion} onChange={onChange} />
-							</div>
-							<div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
-								<button type="submit" className="btn btn--primary" disabled={loading}>{editingId ? 'Actualizar' : 'Agregar'}</button>
-								{editingId && <button type="button" className="btn" onClick={onCancel} disabled={loading}>Cancelar</button>}
-							</div>
-						</form>
-
-						<ul style={{ margin: 0, paddingLeft: 16 }}>
-							{tipos.map((t) => (
-								<li key={t.tipo_contrato_id} style={{ marginBottom: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-									<div>
-										<strong>{t.nombre_tipo}</strong> <span className="form__hint">(Prioridad: {t.nivel_prioridad})</span>
-										{t.descripcion && <div className="form__hint" style={{ marginTop: 4 }}>{t.descripcion}</div>}
-									</div>
-									<div style={{ display: 'flex', gap: 8 }}>
-										<button className="link-btn" onClick={() => onEdit(t)}>Editar</button>
-									</div>
-								</li>
-							))}
-						</ul>
-					</>
-				)}
-			</div>
-		);
+			)}
+		</div>
+	);
 }

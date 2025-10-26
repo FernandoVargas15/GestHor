@@ -6,6 +6,7 @@ import {
     eliminarPeriodo,
 } from '../../services/periodoService';
 import TiposContrato from './TiposContrato';
+import styles from "./Periodos.module.css";
 
 export default function Periodos() {
     const [periodos, setPeriodos] = useState([]);
@@ -109,19 +110,19 @@ export default function Periodos() {
 
     return (
         <div>
-            <h2 style={{ marginBottom: 12 }}>Configuración</h2>
+            <h2 className={styles['periodos__title']}>Configuración</h2>
 
-            <div >
-                <div style={{ width: '100%' }}>
+            <div>
+                <div className={styles['periodos__fullWidth']}>
 
-                    <div className="card" style={{ marginBottom: 12 }}>
-                        <h4 style={{ marginTop: 0, cursor: 'pointer' }} onClick={() => setOpenPeriodos(v => !v)}>
+                    <div className={`card ${styles['periodos__card']}`}>
+                        <h4 className={styles['periodos__toggle']} onClick={() => setOpenPeriodos(v => !v)}>
                             Periodos Académicos ({periodos.length}) {openPeriodos ? '▾' : '▸'}
                         </h4>
 
                         {openPeriodos && (
                             <div>
-                                <div style={{ marginBottom: 16 }}>
+                                <div className={styles['periodos__sectionSpacing']}>
                                     <div>
                                         <label className="form__label">Seleccionar periodo</label>
                                         <select className="select" onChange={handleSelectChange} value={editingId || ''}>
@@ -133,34 +134,34 @@ export default function Periodos() {
                                     </div>
                                 </div>
 
-                                <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+                                <form onSubmit={handleSubmit} className={styles['periodos__form']}>
                                     <div className="form__row">
                                         <div>
                                             <label className="form__label">Nombre</label>
-                                            <input className="input" name="nombre" value={form.nombre} onChange={handleChange} required style={{ width: '100%' }} />
+                                            <input className={`input ${styles['periodos__inputFull']}`} name="nombre" value={form.nombre} onChange={handleChange} required />
                                         </div>
-                                        <div className="form__row--2" style={{ marginTop: 8 }}>
+                                        <div className={`form__row--2 ${styles['periodos__row2']}`}>
                                             <div>
                                                 <label className="form__label">Fecha inicio</label>
-                                                <input className="input" type="date" name="fecha_inicio" value={form.fecha_inicio} onChange={handleChange} style={{ width: '100%' }} />
+                                                <input className={`input ${styles['periodos__inputFull']}`} type="date" name="fecha_inicio" value={form.fecha_inicio} onChange={handleChange} />
                                             </div>
                                             <div>
                                                 <label className="form__label">Fecha fin</label>
-                                                <input className="input" type="date" name="fecha_fin" value={form.fecha_fin} onChange={handleChange} style={{ width: '100%' }} />
+                                                <input className={`input ${styles['periodos__inputFull']}`} type="date" name="fecha_fin" value={form.fecha_fin} onChange={handleChange} />
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
+                                    <div className={styles['periodos__actionsRow']}>
                                         <button className="btn btn--primary" type="submit">{editingId ? 'Actualizar' : 'Crear'}</button>
                                         {editingId && <button className="btn" type="button" onClick={() => { setEditingId(null); setForm({ nombre: '', fecha_inicio: '', fecha_fin: '' }); }}>Cancelar</button>}
                                     </div>
 
-                                    {error && <div style={{ color: 'red', marginTop: 8 }}>{error}</div>}
+                                    {error && <div className={styles['periodos__error']}>{error}</div>}
                                     </form>
 
-                                    <div style={{ marginTop: 18 }}>
-                                        <h3 style={{ marginTop: 0 }}>Lista</h3>
+                                    <div className={styles['periodos__listSection']}>
+                                        <h3 className={styles['periodos__listTitle']}>Lista</h3>
                                         {loading ? (
                                             <div>Cargando...</div>
                                         ) : (
@@ -168,9 +169,9 @@ export default function Periodos() {
                                                 <thead>
                                                     <tr>
                                                         <th>Nombre</th>
-                                                        <th style={{ width: 150 }}>Fecha inicio</th>
-                                                        <th style={{ width: 150 }}>Fecha fin</th>
-                                                        <th style={{ width: 180 }}>Acciones</th>
+                                                        <th className={styles['periodos__thSmall']}>Fecha inicio</th>
+                                                        <th className={styles['periodos__thSmall']}>Fecha fin</th>
+                                                        <th className={styles['periodos__thMed']}>Acciones</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -198,12 +199,12 @@ export default function Periodos() {
                             )}
                     </div>
 
-                    <div className="card" style={{ width: '100%' }}>
-                        <h4 style={{ marginTop: 0, cursor: 'pointer' }} onClick={() => setOpenTipos(v => !v)}>
+                    <div className={`card ${styles['periodos__cardFull']}`}>
+                        <h4 className={styles['periodos__toggle']} onClick={() => setOpenTipos(v => !v)}>
                             Tipos de Contrato ({tiposCount}) {openTipos ? '▾' : '▸'}
                         </h4>
                         {openTipos && (
-                            <div style={{ paddingTop: 8 }}>
+                            <div className={styles['periodos__tiposPadding']}>
                                 <TiposContrato bare={true} />
                             </div>
                         )}
