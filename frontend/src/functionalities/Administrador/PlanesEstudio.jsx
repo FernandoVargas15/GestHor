@@ -16,7 +16,6 @@ const emptyCareer = {
 
 export default function PlanesEstudio() {
     const [form, setForm] = useState(emptyCareer);
-    const [semestreActual, setSemestreActual] = useState(1);
     const { notify } = useToast();
 
     const {
@@ -57,30 +56,29 @@ export default function PlanesEstudio() {
                 total_semestres: form.semestres
             });
             setForm(emptyCareer);
-            setSemestreActual(1);
         } catch (error) {
         }
     };
 
-    const handleSeleccionarMateria = async (materia) => {
+    const handleAsignarMateria = async (materia, semestre) => {
         try {
             await asignarMateria(
                 carreraSeleccionada.carrera_id,
                 materia.materia_id,
-                semestreActual
+                semestre
             );
             await recargarCarreraSeleccionada();
         } catch (error) {
         }
     };
 
-    const handleDesasignarMateria = async (materiaId) => {
+    const handleDesasignarMateria = async (materiaId, semestre) => {
         const exito = await desasignarMateria(
             carreraSeleccionada.carrera_id,
             materiaId,
-            semestreActual
+            semestre
         );
-        
+
         if (exito) {
             await recargarCarreraSeleccionada();
         }
@@ -88,7 +86,7 @@ export default function PlanesEstudio() {
 
     const guardarPlanEstudio = () => {
         const validacion = validarPlanEstudioCompleto(carreraSeleccionada);
-        
+
         if (!validacion.valido) {
             notify({ type: 'error', message: validacion.mensaje });
             return;
@@ -100,7 +98,19 @@ export default function PlanesEstudio() {
         setCarreraSeleccionada(null);
     };
 
-    const materiasDelSemestre = carreraSeleccionada?.materias?.[semestreActual] || [];
+    if (carreraSeleccionada) {
+        return (
+            <EditorPlanEstudio
+                carrera={carreraSeleccionada}
+                onClose={() => setCarreraSeleccionada(null)}
+                onSavePlan={guardarPlanEstudio}
+                catalogoMaterias={catalogoMaterias}
+                onAsignarMateria={handleAsignarMateria}
+                onDesasignarMateria={handleDesasignarMateria}
+                cargando={cargando}
+            />
+        );
+    }
 
     return (
         <>
@@ -111,7 +121,7 @@ export default function PlanesEstudio() {
                 </p>
             </div>
 
-            <CarreraForm 
+            <CarreraForm
                 form={form}
                 onChange={onChange}
                 onSubmit={onSubmitCarrera}
@@ -120,88 +130,110 @@ export default function PlanesEstudio() {
 
             <div className="card" style={{ marginBottom: 16 }}>
                 <h3 style={{ marginTop: 0 }}>Carreras Registradas ({carreras.length})</h3>
-                <CarreraList 
+                <CarreraList
                     carreras={carreras}
                     onSelect={seleccionarCarrera}
                     onDelete={eliminarCarreraById}
                     cargando={cargando}
                 />
             </div>
+        </>
+    );
+}
 
-            {carreraSeleccionada && (
-                <div className="card">
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                        <div style={{ flex: 1 }}>
-                            <h3 style={{ margin: 0 }}> {carreraSeleccionada.nombre_carrera}</h3>
-                            <div className="form__hint">Asignar materias del catálogo por semestre</div>
-                        </div>
-                        <div style={{ display: "flex", gap: 8 }}>
-                            <button 
-                                className="btn btn--primary" 
-                                onClick={guardarPlanEstudio}
-                                disabled={cargando}
-                            >
-                                 Guardar Plan
-                            </button>
-                            <button 
-                                className="btn" 
-                                onClick={() => setCarreraSeleccionada(null)}
-                            >
-                                ← Volver
-                            </button>
-                        </div>
-                    </div>
+function EditorPlanEstudio({
+    carrera,
+    onClose,
+    onSavePlan,
+    catalogoMaterias,
+    onAsignarMateria,
+    onDesasignarMateria,
+    cargando
+}) {
+    const [semestreActual, setSemestreActual] = useState(1);
 
-                    <SemesterSelector 
-                        totalSemestres={carreraSeleccionada.total_semestres}
-                        semestreActual={semestreActual}
-                        onSemestreChange={setSemestreActual}
-                        materiasAsignadas={carreraSeleccionada.materias}
-                    />
+    const materiasDelSemestre = carrera.materias?.[semestreActual] || [];
 
-                    <div className="grid grid--2" style={{ gap: 16 }}>
-                        <div className="card" style={{ borderColor: "var(--border)" }}>
-                            <h4 style={{ marginTop: 0 }}>Agregar Materia al {semestreActual}° Semestre</h4>
+    const handleSeleccionarMateria = (materia) => {
+        onAsignarMateria(materia, semestreActual);
+    };
 
-                            <div style={{ marginBottom: 12 }}>
-                                <label>Buscar y Seleccionar Materia del Catálogo:</label>
-                                <AutocompleteInput 
-                                    items={catalogoMaterias}
-                                    onSelect={handleSeleccionarMateria}
-                                    placeholder=" Escribe para buscar materia..."
-                                    disabled={cargando}
-                                    getItemKey={(m) => m.materia_id}
-                                    getItemLabel={(m) => m.nombre_materia}
-                                />
-                                {catalogoMaterias.length === 0 && (
-                                    <div className="form__hint" style={{ marginTop: 8 }}>
-                                        No hay materias en el catálogo. Ve a la sección "Materias" para agregar.
-                                    </div>
-                                )}
+    const handleDesasignarMateria = (materiaId) => {
+        onDesasignarMateria(materiaId, semestreActual);
+    };
+
+    return (
+        <div className="card">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                <div style={{ flex: 1 }}>
+                    <h3 style={{ margin: 0 }}> {carrera.nombre_carrera}</h3>
+                    <div className="form__hint">Asignar materias del catálogo por semestre</div>
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                    <button
+                        className="btn btn--primary"
+                        onClick={onSavePlan}
+                        disabled={cargando}
+                    >
+                        Guardar Plan
+                    </button>
+                    <button
+                        className="btn"
+                        onClick={onClose}
+                    >
+                        ← Volver
+                    </button>
+                </div>
+            </div>
+
+            <SemesterSelector
+                totalSemestres={carrera.total_semestres}
+                semestreActual={semestreActual}
+                onSemestreChange={setSemestreActual}
+                materiasAsignadas={carrera.materias}
+            />
+
+            <div className="grid grid--2" style={{ gap: 16 }}>
+                <div className="card" style={{ borderColor: "var(--border)" }}>
+                    <h4 style={{ marginTop: 0 }}>Agregar Materia al {semestreActual}° Semestre</h4>
+
+                    <div style={{ marginBottom: 12 }}>
+                        <label>Buscar y Seleccionar Materia del Catálogo:</label>
+                        <AutocompleteInput
+                            items={catalogoMaterias}
+                            onSelect={handleSeleccionarMateria}
+                            placeholder=" Escribe para buscar materia..."
+                            disabled={cargando}
+                            getItemKey={(m) => m.materia_id}
+                            getItemLabel={(m) => m.nombre_materia}
+                        />
+                        {catalogoMaterias.length === 0 && (
+                            <div className="form__hint" style={{ marginTop: 8 }}>
+                                No hay materias en el catálogo. Ve a la sección "Materias" para agregar.
                             </div>
-                        </div>
-
-                        <div className="card" style={{ borderColor: "var(--border)" }}>
-                            <h4 style={{ marginTop: 0 }}>Materias del {semestreActual}° Semestre</h4>
-
-                            {materiasDelSemestre.length === 0 ? (
-                                <div className="form__hint">Sin materias asignadas en este semestre.</div>
-                            ) : (
-                                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                                    {materiasDelSemestre.map((m) => (
-                                        <MateriaCard 
-                                            key={m.id}
-                                            materia={m}
-                                            onRemove={handleDesasignarMateria}
-                                            disabled={cargando}
-                                        />
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                        )}
                     </div>
                 </div>
-            )}
-        </>
+
+                <div className="card" style={{ borderColor: "var(--border)" }}>
+                    <h4 style={{ marginTop: 0 }}>Materias del {semestreActual}° Semestre</h4>
+
+                    {materiasDelSemestre.length === 0 ? (
+                        <div className="form__hint">Sin materias asignadas en este semestre.</div>
+                    ) : (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                            {materiasDelSemestre.map((m) => (
+                                <MateriaCard
+                                    key={m.id}
+                                    materia={m}
+                                    onRemove={handleDesasignarMateria}
+                                    disabled={cargando}
+                                />
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
     );
 }

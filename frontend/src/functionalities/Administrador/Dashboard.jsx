@@ -524,7 +524,7 @@ function ScheduleTable() {
                   const entry = groups.get(key);
                   const day = h.dia_semana || '';
                   const dayNorm = day === 'Miercoles' ? 'Miércoles' : day; // normalize possible accent
-                  const time = `${String(h.hora_inicio || '').substring(0,5)} - ${String(h.hora_fin || '').substring(0,5)}`;
+                  const time = `${String(h.hora_inicio || '').substring(0, 5)} - ${String(h.hora_fin || '').substring(0, 5)}`;
                   if (entry.byDay[dayNorm]) entry.byDay[dayNorm].push(time);
                 }
 
@@ -591,8 +591,8 @@ export default function Dashboard() {
   const [stats, setStats] = useState({
     docentes: 0,
     carreras: 0,
-    salones: 45, //falta conectar con bd  
-    activos: 156, //falta conectar con bd
+    salones: 0,
+    activos: 0,
   });
   const [cargando, setCargando] = useState(true);
 
@@ -601,21 +601,44 @@ export default function Dashboard() {
     const cargar = async () => {
       try {
         setCargando(true);
+
         const [estadisticasDocentes, estadisticasCarreras] = await Promise.all([
           obtenerEstadisticasDocentes(),
           obtenerEstadisticasCarreras(),
         ]);
-        setStats((prev) => ({
-          ...prev,
+
+        const respLugares = await fetch("http://localhost:3000/api/lugares");
+        const dataLugares = await respLugares.json();
+        const estructura = Array.isArray(dataLugares)
+          ? dataLugares
+          : dataLugares.lugares || [];
+
+        let totalSalones = 0;
+        for (const lugar of estructura) {
+          for (const edificio of lugar.edificios || []) {
+            totalSalones += (edificio.salones || []).length;
+          }
+        }
+
+        const respHorarios = await fetch("http://localhost:3000/api/horarios");
+        const dataHorarios = await respHorarios.json();
+        const totalActivos = Array.isArray(dataHorarios)
+          ? dataHorarios.length
+          : dataHorarios.horarios?.length || 0;
+
+        setStats({
           docentes: estadisticasDocentes.estadisticas.totalDocentes,
           carreras: estadisticasCarreras.estadisticas.totalCarreras,
-        }));
+          salones: totalSalones,
+          activos: totalActivos,
+        });
       } catch (e) {
         console.error("Error al cargar estadísticas:", e);
       } finally {
         setCargando(false);
       }
     };
+
     cargar();
   }, []);
 
