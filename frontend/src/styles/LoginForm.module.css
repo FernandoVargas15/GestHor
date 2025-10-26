@@ -171,17 +171,6 @@
   transition: all 0.3s ease;
 }
 
-.loginCard::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 6px;
-  background: linear-gradient(90deg, #298ce7, #1a5fb4, #3598db);
-  background-size: 200% 100%;
-  animation: gradientShift 3s ease infinite;
-}
 
 .loginCard:hover {
   box-shadow: 0 0 15px gray;

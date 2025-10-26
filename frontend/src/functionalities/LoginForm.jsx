@@ -111,6 +111,7 @@ function LoginForm() {
           <h3 className={styles.systemSubtitle}>Gestión escolar - UNACH</h3>
           <p className={styles.infoText}>
             Bienvenido al sistema para administrar y consultar los horarios de clase.
+            <br />
             Inicia sesión para continuar.
           </p>
         </div>
@@ -146,7 +147,7 @@ function LoginForm() {
               />
 
               <div className={styles.forgotPasswordLink}>
-                <Link to="/recovery">¿Olvidaste tu contraseña?</Link>
+                <Link to="/recovery">¿Necesitas Ayuda?</Link>
               </div>
 
               {error && <div className={styles.errorMsg}>{error}</div>}

@@ -27,6 +27,14 @@ const obtenerMateriasPorCarrera = async (carreraId) => {
 };
 
 /**
+ * Obtener materias asignadas a una carrera y semestre específico
+ */
+const obtenerMateriasPorCarreraYSemestre = async (carreraId, semestre) => {
+    const response = await axios.get(`${API_URL}/materias/carrera/${carreraId}/semestre/${semestre}`);
+    return response.data;
+};
+
+/**
  * Obtener una materia por ID
  */
 const obtenerMateriaPorId = async (id) => {
@@ -84,6 +92,7 @@ export {
     obtenerMaterias,
     buscarMaterias,
     obtenerMateriasPorCarrera,
+    obtenerMateriasPorCarreraYSemestre,
     obtenerMateriaPorId,
     crearMateria,
     actualizarMateria,

@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { useToast } from "../../components/ui/NotificacionFlotante";
-import { obtenerMaterias } from "../../services/materiaService";
+import { obtenerMaterias, obtenerMateriasPorCarreraYSemestre } from "../../services/materiaService";
+import { obtenerCarreras } from "../../services/carreraService";
 import { obtenerDocentes as fetchDocentes, enviarHorarioPorCorreo, sugerirDocentes } from "../../services/docenteService";
 import { HorarioPDFExporter } from "../../utils/pdfExportService";
 import { obtenerHorariosProfesor, crearHorario, actualizarHorario, eliminarHorario } from "../../services/horarioService";
@@ -56,16 +57,22 @@ const normalize = (s) =>
 
 const emptyForm = {
     materia: "",
+    materiaId: "",
     salonId: "",
     dia: "",
     inicio: "",
     fin: "",
 };
+// Note: ahora guardamos también materiaId en el form cuando se selecciona desde el select
 
 export default function Horarios() {
     const [form, setForm] = useState(emptyForm);
     const [editId, setEditId] = useState(null);
     const [materias, setMaterias] = useState([]);
+    const [carreras, setCarreras] = useState([]);
+    const [selectedCarreraId, setSelectedCarreraId] = useState("");
+    const [selectedSemestre, setSelectedSemestre] = useState("");
+    const [availableMaterias, setAvailableMaterias] = useState([]);
     const [profesores, setProfesores] = useState([]);
     const [lugares, setLugares] = useState([]);
     const [selectedLugarId, setSelectedLugarId] = useState("");
@@ -104,6 +111,14 @@ export default function Horarios() {
             setMaterias(dataMaterias.materias || []);
             setProfesores(dataDocentes.docentes || []);
             setLugares(dataLugares.lugares || []);
+            // Cargar carreras para el filtrado por carrera/semestre
+            try {
+                const respCarreras = await obtenerCarreras();
+                setCarreras(respCarreras.carreras || []);
+            } catch (e) {
+                console.warn('No se pudieron cargar las carreras:', e);
+                setCarreras([]);
+            }
         } catch (error) {
             console.error("Error al cargar datos:", error);
             notify({ type: 'error', message: 'Error al cargar datos iniciales' });
@@ -228,7 +243,6 @@ export default function Horarios() {
         return 0;
     };
 
-    // Presentational component para un candidato (mantiene Single Responsibility)
     const CandidateRow = ({ candidato, onSelect }) => {
         const horasNum = parseHorasToNumber(candidato.horas_asignadas);
 
@@ -249,7 +263,7 @@ export default function Horarios() {
 
     const validarFormulario = () => {
         if (!profesorSel) return "Selecciona un profesor.";
-        if (!form.materia) return "Selecciona una materia.";
+        if (!form.materiaId) return "Selecciona una materia.";
         if (!form.salonId) return "Selecciona un salón.";
         if (!form.dia) return "Selecciona un día.";
         if (!form.inicio) return "Selecciona hora de inicio.";
@@ -273,8 +287,9 @@ export default function Horarios() {
                 return;
             }
 
-            // 2. Obtener la materia seleccionada
-            const materiaSeleccionada = materias.find(m => m.nombre_materia === form.materia);
+            // 2. Obtener la materia seleccionada (por id)
+            const pool = availableMaterias.length > 0 ? availableMaterias : materias;
+            const materiaSeleccionada = pool.find(m => String(m.materia_id) === String(form.materiaId));
             if (!materiaSeleccionada) {
                 notify({ type: 'error', message: 'Error: No se encontró la materia seleccionada' });
                 return;
@@ -336,6 +351,7 @@ export default function Horarios() {
 
         setForm({
             materia: h.nombre_materia,
+            materiaId: h.materia_id,
             salonId: h.salon_id,
             dia: h.dia_semana,
             inicio: h.hora_inicio.substring(0, 5),
@@ -464,18 +480,84 @@ export default function Horarios() {
                         <h3 className={styles.panelTitle}>{editId ? "Editar Horario" : "Asignar Nuevo Horario"}</h3>
                         <form onSubmit={submit}>
                             <div className="form__row form__row--2">
+                                {/* Filtros por Carrera y Semestre */}
+                                <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
+                                    <select className="select" value={selectedCarreraId} onChange={async (e) => {
+                                        const val = e.target.value;
+                                        setSelectedCarreraId(val);
+                                        setSelectedSemestre("");
+                                        setAvailableMaterias([]);
+                                        setForm(f => ({ ...f, materia: '', materiaId: '' }));
+                                    }}>
+                                        <option value="">Filtrar por Carrera (opcional)</option>
+                                        {carreras.map(c => (<option key={c.carrera_id} value={c.carrera_id}>{c.nombre_carrera}</option>))}
+                                    </select>
+
+                                    <select className="select" value={selectedSemestre} onChange={async (e) => {
+                                        const sem = e.target.value;
+                                        setSelectedSemestre(sem);
+                                        setAvailableMaterias([]);
+                                        setForm(f => ({ ...f, materia: '', materiaId: '' }));
+                                        // Si hay carrera y semestre, obtener materias filtradas
+                                        if (selectedCarreraId && sem) {
+                                            try {
+                                                setCargandoSugerencias(true);
+                                                const resp = await obtenerMateriasPorCarreraYSemestre(selectedCarreraId, sem);
+                                                if (resp && resp.materias) {
+                                                    setAvailableMaterias(resp.materias);
+                                                    if ((resp.materias || []).length === 0) {
+                                                        notify({ type: 'error', message: 'No hay materias asignadas a este semestre de la carrera seleccionada.' });
+                                                    }
+                                                } else {
+                                                    setAvailableMaterias([]);
+                                                    notify({ type: 'error', message: 'No hay materias asignadas a este semestre de la carrera seleccionada.' });
+                                                }
+                                            } catch (err) {
+                                                console.error('Error al cargar materias filtradas:', err);
+                                                setAvailableMaterias([]);
+                                                notify({ type: 'error', message: 'Error al cargar materias filtradas' });
+                                            } finally {
+                                                setCargandoSugerencias(false);
+                                            }
+                                        }
+                                    }} disabled={!selectedCarreraId}>
+                                        <option value="">Semestre</option>
+                                        {/* Mostrar 1..max si carrera tiene total_semestres info */}
+                                        {(() => {
+                                            if (!selectedCarreraId) return null;
+                                            const carrera = carreras.find(c => String(c.carrera_id) === String(selectedCarreraId));
+                                            const max = carrera?.total_semestres || 10;
+                                            const opts = [];
+                                            for (let i = 1; i <= max; i++) opts.push(<option key={i} value={i}>{i}</option>);
+                                            return opts;
+                                        })()}
+                                    </select>
+                                </div>
+
                                 <div>
                                     <label>Materia</label>
-                                    <AutocompleteInput
-                                        items={materias}
-                                        onSelect={(m) => setForm(f => ({ ...f, materia: m.nombre_materia }))}
-                                        placeholder="Buscar y seleccionar materia..."
-                                        disabled={cargando }
-                                        getItemKey={(m) => m.materia_id}
-                                        getItemLabel={(m) => m.nombre_materia}
-                                    />
-                                    {/* El botón de sugerir ahora está al lado de "Asignar Horario". */}
-                                    {materias.length === 0 && !cargando && (
+                                    <select className="select" value={form.materiaId || ''} onChange={(e) => {
+                                        const id = e.target.value;
+                                        const pool = availableMaterias.length > 0 ? availableMaterias : materias;
+                                        const m = pool.find(x => String(x.materia_id) === String(id));
+                                        setForm(f => ({ ...f, materia: m ? m.nombre_materia : '', materiaId: id }));
+                                    }} disabled={
+                                        cargando ||
+                                        // Si se filtró por carrera, requiere semestre seleccionado
+                                        (selectedCarreraId && !selectedSemestre) ||
+                                        // Si se filtró por carrera y semestre, y no hay materias para esa combinación
+                                        (selectedCarreraId && selectedSemestre && availableMaterias.length === 0) ||
+                                        // Si no se filtró pero no hay materias en absoluto
+                                        (!selectedCarreraId && materias.length === 0)
+                                    }>
+                                        <option value="">Seleccionar materia...</option>
+                                        {(availableMaterias.length > 0 ? availableMaterias : materias).map(m => (
+                                            <option key={m.materia_id} value={m.materia_id}>{m.nombre_materia}</option>
+                                        ))}
+                                    </select>
+
+
+                                    {!selectedCarreraId && materias.length === 0 && !cargando && (
                                         <div className="form__hint" style={{ marginTop: 8, textAlign: 'center' }}>
                                             No hay materias registradas.
                                         </div>
@@ -492,21 +574,21 @@ export default function Horarios() {
                             <div className="form__row form__row--3" style={{ marginTop: 12 }}>
                                 <div>
                                     <label>Lugar</label>
-                                    <select className="select" value={selectedLugarId} onChange={(e) => { setSelectedLugarId(e.target.value); setSelectedEdificioId(""); }} required >
+                                    <select className="select" value={selectedLugarId} onChange={(e) => { setSelectedLugarId(e.target.value); setSelectedEdificioId(""); }} required disabled ={!form.materiaId}>
                                         <option value="">Seleccionar...</option>
                                         {lugares.map((l) => (<option key={l.lugar_id} value={l.lugar_id}>{l.nombre_lugar}</option>))}
                                     </select>
                                 </div>
                                 <div>
                                     <label>Edificio</label>
-                                    <select className="select" value={selectedEdificioId} onChange={(e) => setSelectedEdificioId(e.target.value)} required disabled={!profesorSel}>
+                                    <select className="select" value={selectedEdificioId} onChange={(e) => setSelectedEdificioId(e.target.value)} required disabled={!selectedLugarId} >
                                         <option value="">Seleccionar...</option>
                                         {(lugares.find(l => String(l.lugar_id) === String(selectedLugarId))?.edificios || []).map((ed) => (<option key={ed.edificio_id} value={ed.edificio_id}>{ed.nombre_edificio}</option>))}
                                     </select>
                                 </div>
                                 <div>
                                     <label>Salón</label>
-                                    <select className="select" name="salonId" value={form.salonId} onChange={onChange} required disabled={!profesorSel}>
+                                    <select className="select" name="salonId" value={form.salonId} onChange={onChange} required disabled={!selectedEdificioId} >
                                         <option value="">Seleccionar...</option>
                                         {salonesFiltrados().map((s) => (<option key={s.salon_id} value={s.salon_id}>{s.nombre_salon} {s.tipo_salon ? ` - ${s.tipo_salon}` : ""}</option>))}
                                     </select>
@@ -515,14 +597,14 @@ export default function Horarios() {
                             <div className="form__row form__row--2" style={{ marginTop: 12 }}>
                                 <div>
                                     <label>Hora Inicio</label>
-                                    <select className="select" name="inicio" value={form.inicio} onChange={onChange} required >
+                                    <select className="select" name="inicio" value={form.inicio} onChange={onChange} required disabled = {!form.materiaId} >
                                         <option value="">Seleccionar hora...</option>
                                         {horas.map((h) => (<option key={h} value={h}>{h}</option>))}
                                     </select>
                                 </div>
                                 <div>
                                     <label>Hora Fin</label>
-                                    <select className="select" name="fin" value={form.fin} onChange={onChange} required >
+                                    <select className="select" name="fin" value={form.fin} onChange={onChange} required disabled = {!form.inicio} >
                                         <option value="">Seleccionar hora...</option>
                                         {horas.map((h) => (<option key={h} value={h}>{h}</option>))}
                                     </select>
@@ -538,7 +620,8 @@ export default function Horarios() {
                                     try {
                                         setErrorSugerencias(null);
                                         setCandidatos([]);
-                                        const materiaSeleccionada = materias.find(m => m.nombre_materia === form.materia);
+                                        const pool = availableMaterias.length > 0 ? availableMaterias : materias;
+                                        const materiaSeleccionada = pool.find(m => String(m.materia_id) === String(form.materiaId));
                                         if (!materiaSeleccionada) {
                                             notify({ type: 'error', message: 'Selecciona primero una materia válida' });
                                             return;

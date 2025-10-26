@@ -52,15 +52,13 @@ const RecoveryForm = () => {
       <div className="info-column">
         <h1 className="system-title">SISTEMA DE HORARIOS</h1>
         <p className="system-subtitle">Gestión escolar · UNACH</p>
-        <p className="recovery-info">
-          Solicite la recuperación de su contraseña. El administrador dará respuesta en un máximo de 24 horas hábiles.
-        </p>
+        
       </div>
 
       {/* Tarjeta del Formulario */}
       <div className="form-card-wrapper">
         <div className="form-card">
-          <h2 className="card-title">Recuperar Contraseña</h2>
+          <h2 className="card-title">Contactar Administrador</h2>
           <p className="card-subtitle">Complete los siguientes campos para enviar su solicitud</p>
 
           <form onSubmit={handleSubmit} className="recovery-form">
@@ -85,7 +83,7 @@ const RecoveryForm = () => {
                 name="registeredEmail"
                 value={formData.registeredEmail}
                 onChange={handleChange}
-                placeholder="correo@ejemplo.com"
+                placeholder="correo123@unach.mx"
                 required
               />
             </div>
@@ -98,15 +96,16 @@ const RecoveryForm = () => {
                 name="requestReason"
                 value={formData.requestReason}
                 onChange={handleChange}
-                placeholder="Explique brevemente por qué necesita recuperar su contraseña"
+                placeholder="Explique brevemente en que lo puede ayudar el administrador..."
                 rows="3" // Ajusta la altura
                 required
+                className="textarea-input"
               ></textarea>
             </div>
 
             {/* Mensaje Importante */}
             <p className="important-note">
-              Importante: Su solicitud será enviada al administrador del sistema. Recibirá una respuesta en un plazo máximo de 24 horas hábiles.
+              Importante: Su solicitud será enviada al administrador del sistema. Recibirá una respuesta en su correo en un plazo máximo de 24 horas hábiles.
             </p>
 
             {/* Botón de Enviar */}

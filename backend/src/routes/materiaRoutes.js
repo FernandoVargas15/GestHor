@@ -2,6 +2,7 @@ import express from "express";
 import { 
     obtenerMateriasController, 
     obtenerMateriasPorCarreraController,
+    obtenerMateriasPorCarreraYSemestreController,
     obtenerMateriaPorIdController, 
     insertarMateriaController, 
     actualizarMateriaController, 
@@ -17,6 +18,7 @@ const router = express.Router();
 router.get('/materias', obtenerMateriasController);
 router.get('/materias/buscar', buscarMateriasController); // ?q=matematicas
 router.get('/materias/carrera/:carreraId', obtenerMateriasPorCarreraController);
+router.get('/materias/carrera/:carreraId/semestre/:semestre', obtenerMateriasPorCarreraYSemestreController);
 router.get('/materias/:id', obtenerMateriaPorIdController);
 router.post('/materias', insertarMateriaController); // Agregar al catálogo
 router.put('/materias/:id', actualizarMateriaController);

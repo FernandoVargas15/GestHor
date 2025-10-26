@@ -246,9 +246,30 @@ const buscarPorNombre = async (termino) => {
     }
 };
 
+/**
+ * Obtener materias asignadas a una carrera en un semestre específico
+ */
+const obtenerPorCarreraYSemestre = async (carreraId, numeroSemestre) => {
+    try {
+        const materias = await dbConnection.any(
+            `SELECT mc.materia_id, mc.nombre_materia
+             FROM carrera_materias cm
+             JOIN materias_catalogo mc ON cm.materia_id = mc.materia_id
+             WHERE cm.carrera_id = $1 AND cm.numero_semestre = $2
+             ORDER BY mc.nombre_materia`,
+            [carreraId, numeroSemestre]
+        );
+        return materias;
+    } catch (error) {
+        console.error('Error al obtener materias por carrera y semestre:', error);
+        throw error;
+    }
+};
+
 export { 
     obtenerTodas, 
     obtenerPorCarrera, 
+    obtenerPorCarreraYSemestre,
     obtenerPorId, 
     insertar, 
     asignarACarrera,

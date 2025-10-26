@@ -1,6 +1,7 @@
 import { 
     obtenerTodas, 
     obtenerPorCarrera, 
+    obtenerPorCarreraYSemestre,
     obtenerPorId, 
     insertar, 
     actualizar, 
@@ -42,6 +43,25 @@ const obtenerMateriasPorCarreraController = async (req, res) => {
             mensaje: "Error al obtener materias de la carrera", 
             error: error.message 
         });
+    }
+};
+
+/**
+ * Obtener materias por carrera y semestre
+ */
+const obtenerMateriasPorCarreraYSemestreController = async (req, res) => {
+    try {
+        const { carreraId, semestre } = req.params;
+        const cId = parseInt(carreraId, 10);
+        const sem = parseInt(semestre, 10);
+        if (Number.isNaN(cId) || Number.isNaN(sem)) {
+            return res.status(400).json({ ok: false, mensaje: 'Parámetros inválidos' });
+        }
+        const materias = await obtenerPorCarreraYSemestre(cId, sem);
+        res.json({ ok: true, materias });
+    } catch (error) {
+        console.error('Error en obtenerMateriasPorCarreraYSemestreController:', error);
+        res.status(500).json({ ok: false, mensaje: 'Error al obtener materias', error: error.message });
     }
 };
 
@@ -288,6 +308,7 @@ const buscarMateriasController = async (req, res) => {
 export { 
     obtenerMateriasController, 
     obtenerMateriasPorCarreraController,
+    obtenerMateriasPorCarreraYSemestreController,
     obtenerMateriaPorIdController, 
     insertarMateriaController, 
     actualizarMateriaController, 
