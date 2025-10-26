@@ -20,6 +20,7 @@ import PlanesEstudio from "./functionalities/Administrador/PlanesEstudio.jsx";
 import Lugares from "./functionalities/Administrador/Lugares.jsx";
 import Horarios from "./functionalities/Administrador/Horarios.jsx";
 import Solicitudes from "./functionalities/Administrador/Solicitudes.jsx";
+import Periodos from "./functionalities/Administrador/Periodos.jsx";
 
 import "./App.css";
 
@@ -47,6 +48,7 @@ function App() {
           <Route path="materias" element={<Materias />} />
           <Route path="planes" element={<PlanesEstudio />} />
           <Route path="lugares" element={<Lugares />} />
+          <Route path="periodos" element={<Periodos />} />
           <Route path="horarios" element={<Horarios />} />
           <Route path="solicitudes" element={<Solicitudes />} />
         </Route>

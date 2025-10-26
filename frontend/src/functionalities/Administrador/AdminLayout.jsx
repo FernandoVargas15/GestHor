@@ -1,10 +1,12 @@
 // src/functionalities/Administrador/AdminLayout.jsx
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import "../../styles/admin.css";
 
 export default function AdminLayout() {
     const navigate = useNavigate();
     const linkClass = ({ isActive }) => `sidebar__link${isActive ? " active" : ""}`;
+    const [cfgOpen, setCfgOpen] = useState(false);
 
     return (
         <div className="admin">
@@ -24,6 +26,29 @@ export default function AdminLayout() {
                         <li className="sidebar__item"><NavLink to="/admin/solicitudes" className={linkClass}>Solicitudes</NavLink></li>
                     </ul>
                 </nav>
+
+                <div style={{ padding: '12px 16px' }}>
+                    {/* Configuración siempre al final, encima del footer */}
+                    <div>
+                        <button
+                            className={`sidebar__link`}
+                            onClick={() => setCfgOpen(v => !v)}
+                            aria-expanded={cfgOpen}
+                            style={{ justifyContent: 'space-between', background: 'transparent', border: '1px solid transparent' }}
+                        >
+                            <span>Configuración</span>
+                            <span style={{ fontSize: 12 }}>{cfgOpen ? '▾' : '▸'}</span>
+                        </button>
+                        {cfgOpen && (
+                            <ul style={{ listStyle: 'none', paddingLeft: 12, marginTop: 8 }}>
+                                <li style={{ marginBottom: 6 }}>
+                                    <NavLink to="/admin/periodos" className={linkClass}>Periodos</NavLink>
+                                </li>
+                            </ul>
+                        )}
+                    </div>
+                </div>
+
                 <div className="sidebar__footer">
                     <button className="sidebar__logout" onClick={() => navigate("/")}>Cerrar sesión</button>
                 </div>

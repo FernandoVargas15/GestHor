@@ -20,6 +20,8 @@ import lugaresRoutes from './src/routes/lugaresRoutes.js';
 import solicitudRecuperacionRoutes from './src/routes/solicitudRecuperacionRoutes.js';
 import tipoContratoRoutes from './src/routes/tipoContratoRoutes.js';
 import sugerenciaRoutes from './src/routes/sugerenciaRoutes.js';
+import periodoRoutes from './src/routes/periodoRoutes.js';
+import { sanitize } from './src/utils/sanitizeJson.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -40,6 +42,8 @@ app.use(
 // Inicializar passport
 app.use(passport.initialize());
 app.use(passport.session());
+
+
 
 // Rutas base:
 //  - POST /api/login              (desde authRout.js)
@@ -67,6 +71,7 @@ app.use('/api', lugaresRoutes);
 app.use('/api', solicitudRecuperacionRoutes);
 app.use('/api', tipoContratoRoutes);
 app.use('/api', sugerenciaRoutes);
+app.use('/api', periodoRoutes);
 // Health-check simple y prueba de conexión
 app.get("/api", async (_req, res) => {
   await pruebaConexion(); // mostrará el resultado en consola
