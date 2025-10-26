@@ -1,4 +1,5 @@
 import { useState } from "react";
+import styles from './SearchInput.module.css';
 
 export default function SearchInput({
     value = "",
@@ -20,40 +21,23 @@ export default function SearchInput({
         }
     };
 
+    const fieldClass = `${className} input ${styles['search-input__field']} ${showClearButton && value ? styles['search-input__field--with-clear'] : ''}`;
+
     return (
-        <div style={{ position: "relative", width: "100%" }}>
+        <div className={styles['search-input']}>
             <input
                 type="text"
-                className={`input ${className}`}
+                className={fieldClass}
                 placeholder={placeholder}
                 value={value}
                 onChange={handleChange}
                 disabled={disabled}
-                style={{
-                    width: "100%",
-                    paddingRight: showClearButton && value ? "40px" : undefined
-                }}
             />
             {showClearButton && value && !disabled && (
                 <button
                     type="button"
                     onClick={handleClear}
-                    style={{
-                        position: "absolute",
-                        right: "8px",
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        background: "transparent",
-                        border: "none",
-                        color: "var(--muted)",
-                        cursor: "pointer",
-                        fontSize: "18px",
-                        padding: "4px 8px",
-                        lineHeight: 1,
-                        transition: "color 0.2s"
-                    }}
-                    onMouseEnter={(e) => e.target.style.color = "var(--text)"}
-                    onMouseLeave={(e) => e.target.style.color = "var(--muted)"}
+                    className={styles['search-input__clear']}
                     title="Limpiar búsqueda"
                 >
                     ×

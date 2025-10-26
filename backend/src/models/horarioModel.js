@@ -1,4 +1,25 @@
-import { dbConnection } from "../config/database.js";
+import { dbConnection } from '../config/database.js';
+
+
+const contarHorasAsignadasSemana = async (profesorId) => {
+    try {
+        // Consulta mínima solicitada por el usuario: devolver la suma de intervalos
+        // tal cual como Postgres lo entrega (por ejemplo '01:00:00').
+        const query = `
+            SELECT SUM(hora_fin - hora_inicio) AS horas_totales
+            FROM horarios
+            WHERE profesor_id = $1
+        `;
+
+        const result = await dbConnection.one(query, [profesorId]);
+        // Devolvemos el valor tal cual (puede ser NULL o una cadena/intervalo)
+        return { horas_totales: result.horas_totales };
+    } catch (error) {
+        console.error('Error en contarHorasAsignadasSemana:', error);
+        throw error;
+    }
+};
+
 
 /**
  * Obtener todos los horarios
@@ -119,12 +140,12 @@ const verificarChoqueProfesor = async (profesorId, diaSemana, horaInicio, horaFi
         )
     `;
     const params = [profesorId, diaSemana, horaInicio, horaFin];
-    
+
     if (horarioIdExcluir) {
         query += ` AND horario_id != $5`;
         params.push(horarioIdExcluir);
     }
-    
+
     return await dbConnection.any(query, params);
 };
 
@@ -142,24 +163,15 @@ const verificarChoqueSalon = async (salonId, diaSemana, horaInicio, horaFin, hor
         )
     `;
     const params = [salonId, diaSemana, horaInicio, horaFin];
-    
+
     if (horarioIdExcluir) {
         query += ` AND horario_id != $5`;
         params.push(horarioIdExcluir);
     }
-    
+
     return await dbConnection.any(query, params);
 };
 
-export {
-    obtenerHorarios,
-    obtenerHorariosPorProfesor,
-    crearHorario,
-    actualizarHorario,
-    eliminarHorario,
-    verificarChoqueProfesor,
-    verificarChoqueSalon
-};
 
 /**
  * Obtener horarios por salón (incluye información del profesor, materia y jerarquía salon->edificio->lugar)
@@ -205,5 +217,14 @@ const obtenerHorariosPorSalon = async (salonId) => {
     return await dbConnection.any(query, [salonId]);
 };
 
-// export adicional
-export { obtenerHorariosPorSalon };
+export {
+    obtenerHorarios,
+    obtenerHorariosPorProfesor,
+    contarHorasAsignadasSemana,
+    crearHorario,
+    actualizarHorario,
+    eliminarHorario,
+    verificarChoqueProfesor,
+    verificarChoqueSalon,
+    obtenerHorariosPorSalon
+};

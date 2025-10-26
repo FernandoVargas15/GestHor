@@ -157,5 +157,41 @@ const eliminarDocente = async (id) => {
     }
 };
 
-export { obtenerTodos, obtenerPorId, obtenerNombreProfesor, insertarDocente, actualizarDocente, eliminarDocente, contarDocentes };
+/**
+ * Buscar candidatos (docentes) que pueden impartir una materia y están disponibles
+ * en un bloque horario dado. Ordena por nivel_prioridad ASC NULLS LAST, apellidos, nombres.
+ */
+const findCandidatosDocentes = async (materiaId, diaSemana, horaInicio, horaFin) => {
+    try {
+        const query = `
+            SELECT DISTINCT
+                p.profesor_id,
+                p.nombres,
+                p.apellidos,
+                tc.nivel_prioridad,
+                tc.nombre_tipo
+            FROM profesores p
+            JOIN profesor_materias pm ON pm.profesor_id = p.profesor_id
+            JOIN profesor_disponibilidad pd ON pd.profesor_id = p.profesor_id
+            LEFT JOIN tipos_contrato tc ON p.tipo_contrato_id = tc.tipo_contrato_id
+            WHERE pm.materia_id = $1
+              AND TRIM(pd.dia_semana) = $2
+              AND pd.activo IS DISTINCT FROM false
+              -- Solapamiento explícito: la disponibilidad empieza antes del fin requerido
+              -- y termina después del inicio requerido
+              AND pd.hora_inicio < $4::time
+              AND pd.hora_fin > $3::time
+            ORDER BY tc.nivel_prioridad ASC NULLS LAST, p.apellidos, p.nombres
+        `;
+
+        // Pasamos las horas como strings 'HH:MM' o 'HH:MM:SS' aceptadas por Postgres time
+        const candidatos = await dbConnection.any(query, [materiaId, diaSemana, horaInicio, horaFin]);
+        return candidatos;
+    } catch (error) {
+        console.error('Error en findCandidatosDocentes:', error);
+        throw error;
+    }
+};
+
+export { obtenerTodos, obtenerPorId, obtenerNombreProfesor, insertarDocente, actualizarDocente, eliminarDocente, contarDocentes, findCandidatosDocentes };
 export default insertarDocente;

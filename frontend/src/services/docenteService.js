@@ -47,4 +47,11 @@ const enviarHorarioPorCorreo = async (profesorId, pdfBlob) => {
     return response.data;
 };
 
-export { obtenerDocentes, obtenerDocentePorId, obtenerNombreProfesor, crearDocente, actualizarDocente, eliminarDocente, obtenerEstadisticasDocentes, enviarHorarioPorCorreo };
+const sugerirDocentes = async ({ materiaId, dia, inicio, fin }) => {
+    const response = await axios.get(`${API_URL}/sugerencias/docentes`, {
+        params: { materiaId, dia, inicio, fin }
+    });
+    return response.data;
+};
+
+export { obtenerDocentes, obtenerDocentePorId, obtenerNombreProfesor, crearDocente, actualizarDocente, eliminarDocente, obtenerEstadisticasDocentes, enviarHorarioPorCorreo, sugerirDocentes };

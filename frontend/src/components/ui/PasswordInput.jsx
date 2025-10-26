@@ -17,22 +17,22 @@ const PasswordInput = ({
     };
 
     return (
-        <div className={styles.passwordContainer}>
-            {label && <label htmlFor={id}>{label}</label>}
-            <div className={styles.passwordInputWrapper}>
+        <div className={styles['password-input']}>
+            {label && <label htmlFor={id} className={styles['password-input__label']}>{label}</label>}
+            <div className={styles['password-input__wrapper']}>
                 <input
                     type={mostrarPassword ? "text" : "password"}
                     id={id}
                     value={value}
                     onChange={onChange}
                     required={required}
-                    className={styles.passwordInput}
+                    className={styles['password-input__field']}
                     placeholder={placeholder}
                 />
                 <button
                     type="button"
                     onClick={togglePasswordVisibility}
-                    className={styles.toggleButton}
+                    className={styles['password-input__toggle']}
                     aria-label={mostrarPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                     tabIndex="-1"
                 >

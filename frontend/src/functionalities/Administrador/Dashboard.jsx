@@ -386,7 +386,7 @@ function ScheduleTable() {
               }
             }}
           >
-            <option value="">Filtrar por salón (opcional)</option>
+            <option value="">Filtrar por salón </option>
             {salonesFlat.map((s) => (
               <option key={s.salon_id} value={s.salon_id}>
                 {s.nombre_lugar} / {s.nombre_edificio} / {s.nombre_salon}

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useToast } from '../components/ui/NotificacionFlotante';
 import { obtenerInfoHorariosProfesor, validarProfesorMateria } from '../services/profesorInfoService';
+import showConfirm from '../components/ui/ConfirmModal';
 
 /**
  * Hook personalizado para validar asignación de horarios
@@ -55,13 +56,20 @@ export const useValidacionHorario = () => {
             }
 
             // Si NO puede, mostrar advertencia y pedir confirmación
-            const mensaje = `⚠️ ADVERTENCIA\n\n` +
+            const mensaje = `ADVERTENCIA\n\n` +
                 `La materia "${nombreMateria}" NO está registrada en el perfil del profesor "${nombreProfesor}".\n\n` +
                 `El profesor no ha declarado que puede impartir esta materia.\n\n` +
                 `¿Deseas asignarla de todas formas?\n\n` +
                 `Sugerencia: Primero puedes agregar la materia al perfil del profesor en la sección "Docentes".`;
 
-            return window.confirm(mensaje);
+            // Mostrar modal visual atractivo en lugar de window.confirm
+            try {
+                const acepto = await showConfirm(mensaje);
+                return Boolean(acepto);
+            } catch (e) {
+                console.error('Error mostrando modal de confirmación:', e);
+                return false;
+            }
         } catch (error) {
             console.error('Error en validarAsignacion:', error);
             notify({ type: 'error', message: 'Error al validar: ' + error.message });
@@ -93,7 +101,7 @@ export const useValidacionHorario = () => {
         });
 
         if (!tieneDisponibilidad) {
-            const mensaje = `⚠️ ADVERTENCIA\n\n` +
+            const mensaje = `ADVERTENCIA\n\n` +
                 `El profesor no ha marcado disponibilidad para:\n` +
                 `${diaSemana} de ${horaInicio} a ${horaFin}\n\n` +
                 `¿Deseas asignar el horario de todas formas?`;

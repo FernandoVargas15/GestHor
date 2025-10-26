@@ -3,13 +3,13 @@ import "../../styles/profesor.css";
 import ProfesorTabs from "../../components/Profesor/ProfesorTabs";
 import { useNavigate } from "react-router-dom";
 import { obtenerNombreProfesor } from "../../services/docenteService";
-import { 
-    obtenerDisponibilidad, 
-    guardarDisponibilidad as guardarDisponibilidadAPI, 
-    obtenerPreferencias, 
+import {
+    obtenerDisponibilidad,
+    guardarDisponibilidad as guardarDisponibilidadAPI,
+    obtenerPreferencias,
     guardarPreferencias as guardarPreferenciasAPI
 } from "../../services/disponibilidadService";
-    import { useToast } from "../../components/ui/NotificacionFlotante";
+import { useToast } from "../../components/ui/NotificacionFlotante";
 
 const DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
 
@@ -47,7 +47,7 @@ export default function Disponibilidad() {
     const navigate = useNavigate();
     const [nombreProfesor, setNombreProfesor] = useState("");
     const { notify } = useToast();
-    
+
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const profesorId = user.usuario_id;
 
@@ -89,12 +89,12 @@ export default function Disponibilidad() {
 
             if (dataDisponibilidad.disponibilidad && dataDisponibilidad.disponibilidad.length > 0) {
                 const disponibilidadCargada = { matutino: {}, vespertino: {} };
-                
+
                 dataDisponibilidad.disponibilidad.forEach(slot => {
                     const turno = slot.turno;
                     const horario = `${slot.hora_inicio.slice(0, 5)} - ${slot.hora_fin.slice(0, 5)}`;
                     const diaIndex = DIAS.indexOf(slot.dia_semana);
-                    
+
                     if (!disponibilidadCargada[turno][horario]) {
                         disponibilidadCargada[turno][horario] = Array(DIAS.length).fill(false);
                     }
@@ -191,8 +191,8 @@ export default function Disponibilidad() {
         e.preventDefault();
         try {
             await guardarPreferenciasAPI(
-                profesorId, 
-                parseInt(prefs.maxHorasDia), 
+                profesorId,
+                parseInt(prefs.maxHorasDia),
                 prefs.preferencia.charAt(0).toUpperCase() + prefs.preferencia.slice(1),
                 prefs.comentarios
             );
@@ -215,7 +215,7 @@ export default function Disponibilidad() {
             <div className="pf-container">
                 {/* Header */}
                 <div className="pf-header">
-                                        <div className="pf-header__left">
+                    <div className="pf-header__left">
                         <span className="pf-header__title">Disponibilidad de Horarios</span>
                         <span className="pf-header__caption">Bienvenido, Prof. {nombreProfesor || "Cargando..."}</span>
                     </div>
@@ -316,9 +316,13 @@ export default function Disponibilidad() {
                                     value={prefs.maxHorasDia}
                                     onChange={(e) => setPrefs({ ...prefs, maxHorasDia: e.target.value })}
                                 >
+                                    <option value="1">1 hora</option>
                                     <option value="2">2 horas</option>
+                                    <option value="3">3 horas</option>
                                     <option value="4">4 horas</option>
+                                    <option value="5">5 horas</option>
                                     <option value="6">6 horas</option>
+                                    <option value="7">7 horas</option>
                                     <option value="8">8 horas</option>
                                 </select>
                             </div>

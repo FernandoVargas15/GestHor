@@ -31,7 +31,11 @@ export default function AutocompleteInput({
 
     const handleSelect = (item) => {
         onSelect(item);
-        setBusqueda("");
+        try {
+            setBusqueda(getItemLabel(item));
+        } catch (e) {
+            setBusqueda("");
+        }
         setMostrarSugerencias(false);
     };
 

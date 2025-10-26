@@ -24,11 +24,11 @@ export const ToastProvider = ({ children }) => {
     return (
         <ToastContext.Provider value={{ notify }}>
             {children}
-            <div className={styles.container} aria-live="polite">
+            <div className={styles['toasts__container']} aria-live="polite">
                 {toasts.map((t) => (
-                    <div key={t.id} className={`${styles.toast} ${t.type === 'error' ? styles.error : styles.success}`}>
-                        <div className={styles.message}>{t.message}</div>
-                        <button className={styles.close} onClick={() => remove(t.id)} aria-label="Cerrar">×</button>
+                    <div key={t.id} className={`${styles['toasts__item']} ${t.type === 'error' ? styles['toasts__item--error'] : styles['toasts__item--success']}`}>
+                        <div className={styles['toasts__message']}>{t.message}</div>
+                        <button className={styles['toasts__close']} onClick={() => remove(t.id)} aria-label="Cerrar">×</button>
                     </div>
                 ))}
             </div>

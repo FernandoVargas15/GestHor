@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { useToast } from "../../components/ui/NotificacionFlotante";
 import { obtenerMaterias } from "../../services/materiaService";
-import { obtenerDocentes as fetchDocentes, enviarHorarioPorCorreo } from "../../services/docenteService";
+import { obtenerDocentes as fetchDocentes, enviarHorarioPorCorreo, sugerirDocentes } from "../../services/docenteService";
 import { HorarioPDFExporter } from "../../utils/pdfExportService";
 import { obtenerHorariosProfesor, crearHorario, actualizarHorario, eliminarHorario } from "../../services/horarioService";
 import { obtenerEstructura } from "../../services/lugaresService";
@@ -49,10 +49,10 @@ const timeRange = (start = "07:00", end = "22:00", step = 60) => {
 
 const normalize = (s) =>
     String(s || "")
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase()
-      .trim();
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
 
 const emptyForm = {
     materia: "",
@@ -79,13 +79,16 @@ export default function Horarios() {
     const [activeTab, setActiveTab] = useState('horario');
     const [schedule, setSchedule] = useState({ slots: [], classes: {} });
     const { notify } = useToast();
-    
+
     const { loading: validando, infoProfesor, cargarInfoProfesor, validarAsignacion } = useValidacionHorario();
+    const [candidatos, setCandidatos] = useState([]);
+    const [cargandoSugerencias, setCargandoSugerencias] = useState(false);
+    const [errorSugerencias, setErrorSugerencias] = useState(null);
 
     useEffect(() => {
         cargarDatos();
     }, []);
-    
+
     const cargarDatos = async () => {
         try {
             setCargando(true);
@@ -108,7 +111,7 @@ export default function Horarios() {
             setCargando(false);
         }
     };
-    
+
     const horas = useMemo(() => timeRange("07:00", "22:00", 60), []);
 
     const sugerencias = useMemo(() => {
@@ -201,6 +204,49 @@ export default function Horarios() {
         await cargarInfoProfesor(profesor.profesor_id);
     };
 
+    // Helper: parsear distintos formatos de `horas_asignadas` a número entero de horas
+    const parseHorasToNumber = (v) => {
+        if (v == null) return 0;
+        if (typeof v === 'number') return Math.floor(v);
+        if (typeof v === 'string') {
+            const parts = v.split(':');
+            const h = parseInt(parts[0], 10);
+            return Number.isNaN(h) ? 0 : h;
+        }
+        if (typeof v === 'object') {
+            if ('hours' in v && typeof v.hours === 'number') return Math.floor(v.hours);
+            if ('hour' in v && typeof v.hour === 'number') return Math.floor(v.hour);
+            try {
+                const s = String(v);
+                const parts = s.split(':');
+                const h = parseInt(parts[0], 10);
+                return Number.isNaN(h) ? 0 : h;
+            } catch (_) {
+                return 0;
+            }
+        }
+        return 0;
+    };
+
+    // Presentational component para un candidato (mantiene Single Responsibility)
+    const CandidateRow = ({ candidato, onSelect }) => {
+        const horasNum = parseHorasToNumber(candidato.horas_asignadas);
+
+        return (
+            <div onClick={() => onSelect(candidato)} style={{ padding: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', borderBottom: '1px solid var(--border)' }}>
+                <div>
+                    <div style={{ fontWeight: 600 }}>{candidato.nombres} {candidato.apellidos}</div>
+                    <div style={{ fontSize: 12, color: 'var(--muted)' }}>
+                        {candidato.nombre_tipo ? `${candidato.nombre_tipo} (prioridad ${candidato.nivel_prioridad})` : 'Sin contrato'}
+                        {' — '}
+                        Horas asignadas: <strong>{horasNum} h</strong>
+                    </div>
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--muted)' }}>Click para seleccionar</div>
+            </div>
+        );
+    };
+
     const validarFormulario = () => {
         if (!profesorSel) return "Selecciona un profesor.";
         if (!form.materia) return "Selecciona una materia.";
@@ -214,7 +260,7 @@ export default function Horarios() {
 
     const submit = async (e) => {
         e.preventDefault();
-        
+
         if (cargando || validando) return;
 
         try {
@@ -269,7 +315,7 @@ export default function Horarios() {
                 setEditId(null);
                 setForm(emptyForm);
                 // Forzar recarga del horario del profesor
-                setProfesorSel(p => ({...p})); 
+                setProfesorSel(p => ({ ...p }));
             } else {
                 notify({ type: 'error', message: response.mensaje || `Error al ${editId ? 'actualizar' : 'crear'} horario` });
             }
@@ -295,26 +341,26 @@ export default function Horarios() {
             inicio: h.hora_inicio.substring(0, 5),
             fin: h.hora_fin.substring(0, 5),
         });
-        
+
         setEditId(h.horario_id);
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
     const onDelete = async (horarioId) => {
         if (!confirm("¿Eliminar este horario?")) return;
-        
+
         try {
             setCargando(true);
             const response = await eliminarHorario(horarioId);
-            
+
             if (response.ok) {
                 notify({ type: 'success', message: 'Horario eliminado exitosamente' });
-                
+
                 if (editId === horarioId) {
                     setEditId(null);
                     setForm(emptyForm);
                 }
-                setProfesorSel(p => ({...p})); // Forzar recarga
+                setProfesorSel(p => ({ ...p })); // Forzar recarga
             } else {
                 notify({ type: 'error', message: response.mensaje || 'Error al eliminar horario' });
             }
@@ -351,7 +397,7 @@ export default function Horarios() {
         try {
             setCargando(true);
             const pdfBlob = HorarioPDFExporter.exportSchedule(schedule, tipo, `${profesorSel.nombres} ${profesorSel.apellidos}`, 'blob');
-            
+
             const response = await enviarHorarioPorCorreo(profesorSel.profesor_id, pdfBlob);
 
             notify({ type: 'success', message: response.mensaje || 'Horario enviado por correo exitosamente.' });
@@ -388,7 +434,7 @@ export default function Horarios() {
                                     &times;
                                 </button>
                                 <div className={styles.teacherPriority}>
-                                    {profesorSel.nombre_tipo ? 
+                                    {profesorSel.nombre_tipo ?
                                         `Prioridad: ${profesorSel.nivel_prioridad} (${profesorSel.nombre_tipo})` :
                                         'Prioridad: No asignada'
                                     }
@@ -420,14 +466,24 @@ export default function Horarios() {
                             <div className="form__row form__row--2">
                                 <div>
                                     <label>Materia</label>
-                                    <select className="select" name="materia" value={form.materia} onChange={onChange} required disabled={cargando || !profesorSel}>
-                                        <option value="">Seleccionar materia...</option>
-                                        {materias.map((m) => (<option key={m.materia_id} value={m.nombre_materia}>{m.nombre_materia}</option>))}
-                                    </select>
+                                    <AutocompleteInput
+                                        items={materias}
+                                        onSelect={(m) => setForm(f => ({ ...f, materia: m.nombre_materia }))}
+                                        placeholder="Buscar y seleccionar materia..."
+                                        disabled={cargando }
+                                        getItemKey={(m) => m.materia_id}
+                                        getItemLabel={(m) => m.nombre_materia}
+                                    />
+                                    {/* El botón de sugerir ahora está al lado de "Asignar Horario". */}
+                                    {materias.length === 0 && !cargando && (
+                                        <div className="form__hint" style={{ marginTop: 8, textAlign: 'center' }}>
+                                            No hay materias registradas.
+                                        </div>
+                                    )}
                                 </div>
                                 <div>
                                     <label>Día</label>
-                                    <select className="select" name="dia" value={form.dia} onChange={onChange} required disabled={!profesorSel}>
+                                    <select className="select" name="dia" value={form.dia} onChange={onChange} required >
                                         <option value="">Seleccionar día...</option>
                                         {DIAS.map((d) => (<option key={d} value={d}>{d}</option>))}
                                     </select>
@@ -436,7 +492,7 @@ export default function Horarios() {
                             <div className="form__row form__row--3" style={{ marginTop: 12 }}>
                                 <div>
                                     <label>Lugar</label>
-                                    <select className="select" value={selectedLugarId} onChange={(e) => { setSelectedLugarId(e.target.value); setSelectedEdificioId(""); }} required disabled={!profesorSel}>
+                                    <select className="select" value={selectedLugarId} onChange={(e) => { setSelectedLugarId(e.target.value); setSelectedEdificioId(""); }} required >
                                         <option value="">Seleccionar...</option>
                                         {lugares.map((l) => (<option key={l.lugar_id} value={l.lugar_id}>{l.nombre_lugar}</option>))}
                                     </select>
@@ -459,24 +515,81 @@ export default function Horarios() {
                             <div className="form__row form__row--2" style={{ marginTop: 12 }}>
                                 <div>
                                     <label>Hora Inicio</label>
-                                    <select className="select" name="inicio" value={form.inicio} onChange={onChange} required disabled={!profesorSel}>
+                                    <select className="select" name="inicio" value={form.inicio} onChange={onChange} required >
                                         <option value="">Seleccionar hora...</option>
                                         {horas.map((h) => (<option key={h} value={h}>{h}</option>))}
                                     </select>
                                 </div>
                                 <div>
                                     <label>Hora Fin</label>
-                                    <select className="select" name="fin" value={form.fin} onChange={onChange} required disabled={!profesorSel}>
+                                    <select className="select" name="fin" value={form.fin} onChange={onChange} required >
                                         <option value="">Seleccionar hora...</option>
                                         {horas.map((h) => (<option key={h} value={h}>{h}</option>))}
                                     </select>
                                 </div>
                             </div>
-                            <div style={{ marginTop: 16, display: "flex", gap: 10 }}>
+                            <div style={{ marginTop: 16, display: "flex", gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
                                 <button type="submit" className="btn btn--primary" disabled={cargando || validando || !profesorSel}>
                                     {cargando || validando ? "Cargando..." : editId ? "Actualizar Horario" : "Asignar Horario"}
                                 </button>
+
+                                <button type="button" className="btn btn--primary" onClick={async () => {
+                                    // trigger suggestion fetch
+                                    try {
+                                        setErrorSugerencias(null);
+                                        setCandidatos([]);
+                                        const materiaSeleccionada = materias.find(m => m.nombre_materia === form.materia);
+                                        if (!materiaSeleccionada) {
+                                            notify({ type: 'error', message: 'Selecciona primero una materia válida' });
+                                            return;
+                                        }
+                                        if (!form.dia || !form.inicio || !form.fin) {
+                                            notify({ type: 'error', message: 'Selecciona día, inicio y fin para buscar sugerencias' });
+                                            return;
+                                        }
+                                        setCargandoSugerencias(true);
+                                        const resp = await sugerirDocentes({ materiaId: materiaSeleccionada.materia_id, dia: form.dia, inicio: form.inicio, fin: form.fin });
+                                        if (resp && resp.ok) {
+                                            // Normalizar y ordenar por prioridad ASC (nulls last) y luego por menor horas asignadas
+                                            const rawCandidates = resp.candidatos || [];
+                                            const normalized = rawCandidates.map(c => ({ ...c, __horas_num: parseHorasToNumber(c.horas_asignadas) }));
+                                            normalized.sort((a, b) => {
+                                                const pa = (a.nivel_prioridad == null) ? Number.POSITIVE_INFINITY : Number(a.nivel_prioridad);
+                                                const pb = (b.nivel_prioridad == null) ? Number.POSITIVE_INFINITY : Number(b.nivel_prioridad);
+                                                if (pa !== pb) return pa - pb;
+                                                if (a.__horas_num !== b.__horas_num) return a.__horas_num - b.__horas_num;
+                                                if (a.apellidos !== b.apellidos) return a.apellidos.localeCompare(b.apellidos);
+                                                return a.nombres.localeCompare(b.nombres);
+                                            });
+                                            setCandidatos(normalized);
+                                        } else {
+                                            setErrorSugerencias(resp?.mensaje || 'No se encontraron candidatos');
+                                            setCandidatos([]);
+                                        }
+                                    } catch (e) {
+                                        console.error('Error al solicitar sugerencias:', e);
+                                        setErrorSugerencias(e.message || 'Error al buscar sugerencias');
+                                        setCandidatos([]);
+                                    } finally {
+                                        setCargandoSugerencias(false);
+                                    }
+                                }} disabled={cargando || cargandoSugerencias}>
+                                    {cargandoSugerencias ? 'Buscando...' : 'Sugerir docentes'}
+                                </button>
+
                                 {editId && (<button type="button" className="btn" onClick={() => { setEditId(null); setForm(emptyForm); }} disabled={cargando}>Cancelar edición</button>)}
+                            </div>
+
+                            {/* Lista de candidatos mostrada debajo de los botones */}
+                            <div style={{ marginTop: 12 }}>
+                                {errorSugerencias && <div className="form__hint" style={{ color: 'var(--danger)' }}>{errorSugerencias}</div>}
+                                {candidatos.length > 0 && (
+                                    <div style={{ border: '1px solid var(--border)', borderRadius: 6, background: 'white', overflow: 'hidden' }}>
+                                        {candidatos.map((c) => (
+                                            <CandidateRow key={c.profesor_id} candidato={c} onSelect={handleSeleccionarProfesor} />
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </form>
                     </div>
@@ -508,9 +621,9 @@ export default function Horarios() {
                                         <option value="matutino">Matutino (07:00 - 14:00)</option>
                                         <option value="vespertino">Vespertino (15:00 - 22:00)</option>
                                     </select>
-                                    <button 
-                                        className="btn" 
-                                        onClick={handleSendEmail} 
+                                    <button
+                                        className="btn"
+                                        onClick={handleSendEmail}
                                         disabled={cargando || cargandoHorario || !schedule.slots.length}>
                                         Enviar por Correo
                                     </button>

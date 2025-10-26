@@ -1,4 +1,4 @@
-.container {
+.notificacion__container {
     position: fixed;
     right: 16px;
     bottom: 16px;
@@ -8,7 +8,7 @@
     z-index: 9999;
 }
 
-.toast {
+.notificacion__item {
     min-width: 280px;
     max-width: 360px;
     color: white;
@@ -20,13 +20,13 @@
     justify-content: space-between;
 }
 
-.message {
+.notificacion__message {
     flex: 1;
     margin-right: 8px;
     font-size: 14px;
 }
 
-.close {
+.notificacion__close {
     background: transparent;
     border: none;
     color: rgba(255, 255, 255, 0.9);
@@ -34,10 +34,10 @@
     cursor: pointer;
 }
 
-.success {
+.notificacion__item--success {
     background: #255ce0;
 }
 
-.error {
+.notificacion__item--error {
     background: #dc3545;
 }
