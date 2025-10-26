@@ -255,17 +255,15 @@ export default function Horarios() {
                         cargando={cargandoCatalogos}
                     />
 
-                    {profesorSel && (
-                        <HorarioAssignmentForm
-                            key={profesorSel.profesor_id} // Resetear estado interno si cambia el profe
-                            profesorSel={profesorSel}
-                            catalogs={catalogs}
-                            itemToEdit={itemToEdit}
-                            onHorarioUpdated={handleHorarioUpdated}
-                            onClearEdit={() => setItemToEdit(null)}
-                            validacionHook={validacionHook}
-                        />
-                    )}
+                    <HorarioAssignmentForm
+                        key={profesorSel ? profesorSel.profesor_id : 'assignment-form'}
+                        profesorSel={profesorSel}
+                        catalogs={catalogs}
+                        itemToEdit={itemToEdit}
+                        onHorarioUpdated={handleHorarioUpdated}
+                        onClearEdit={() => setItemToEdit(null)}
+                        validacionHook={validacionHook}
+                    />
                 </div>
             </div>
 
@@ -602,7 +600,15 @@ function HorarioAssignmentForm({ profesorSel, catalogs, itemToEdit, onHorarioUpd
 
                     <div>
                         <label>Materia</label>
-                        <select className="select" value={form.materiaId || ''} onChange={handleMateriaChange} disabled={cargandoSugerencias || !!editId}>
+                        <select className="select" value={form.materiaId || ''} onChange={handleMateriaChange} disabled={
+                                        !selectedCarreraId ||
+                                        // Si se filtró por carrera, requiere semestre seleccionado
+                                        (selectedCarreraId && !selectedSemestre) ||
+                                        // Si se filtró por carrera y semestre, y no hay materias para esa combinación
+                                        (selectedCarreraId && selectedSemestre && availableMaterias.length === 0) ||
+                                        // Si no se filtró pero no hay materias en absoluto
+                                        (!selectedCarreraId && materias.length === 0)
+                                    }>
                             <option value="">Seleccionar materia...</option>
                             {materiasSource.map(m => (
                                 <option key={m.materia_id} value={m.materia_id}>{m.nombre_materia}</option>
@@ -626,7 +632,8 @@ function HorarioAssignmentForm({ profesorSel, catalogs, itemToEdit, onHorarioUpd
                     </div>
                     <div>
                         <label>Hora Inicio</label>
-                        <select className="select" name="inicio" value={form.inicio} onChange={onChange} required >
+                        <select className="select" name="inicio" value={form.inicio} onChange={onChange} required disabled={!form.materiaId
+                        } >
                             <option value="">Seleccionar hora...</option>
                             {horas.map((h) => (<option key={h} value={h}>{h}</option>))}
                         </select>

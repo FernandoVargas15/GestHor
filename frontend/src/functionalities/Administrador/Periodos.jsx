@@ -5,6 +5,7 @@ import {
     actualizarPeriodo,
     eliminarPeriodo,
 } from '../../services/periodoService';
+import TiposContrato from './TiposContrato';
 
 export default function Periodos() {
     const [periodos, setPeriodos] = useState([]);
@@ -12,8 +13,27 @@ export default function Periodos() {
     const [form, setForm] = useState({ nombre: '', fecha_inicio: '', fecha_fin: '' });
     const [editingId, setEditingId] = useState(null);
     const [error, setError] = useState(null);
-    const [filterStart, setFilterStart] = useState('');
-    const [filterEnd, setFilterEnd] = useState('');
+    
+    const [openPeriodos, setOpenPeriodos] = useState(false); // collapse state for the Periodos panel
+    const [openTipos, setOpenTipos] = useState(false); // collapse state for Tipos de Contrato
+    const [tiposCount, setTiposCount] = useState(0);
+
+    // fetch tipos count for header display
+    useEffect(() => {
+        let mounted = true;
+        const fetchTiposCount = async () => {
+            try {
+                const svc = await import('./tipoContratoService');
+                const data = await svc.obtenerTiposContrato();
+                if (!mounted) return;
+                setTiposCount((data.tiposContrato || []).length);
+            } catch (err) {
+                // ignore
+            }
+        };
+        fetchTiposCount();
+        return () => { mounted = false; };
+    }, []);
 
     const fetchPeriodos = async () => {
         setLoading(true);
@@ -28,18 +48,7 @@ export default function Periodos() {
         }
     };
 
-    const fetchWithFilters = async () => {
-        setLoading(true);
-        try {
-            const res = await obtenerPeriodos({ start: filterStart || undefined, end: filterEnd || undefined });
-            setPeriodos(res.periodos || []);
-        } catch (err) {
-            console.error(err);
-            setError('No se pudieron obtener los periodos');
-        } finally {
-            setLoading(false);
-        }
-    };
+    
 
     useEffect(() => {
         fetchPeriodos();
@@ -99,94 +108,107 @@ export default function Periodos() {
     };
 
     return (
-        <div className="card">
-            <h2 style={{ marginBottom: 12 }}>Periodos Académicos</h2>
+        <div>
+            <h2 style={{ marginBottom: 12 }}>Configuración</h2>
 
-            <div className="form__row form__row--2" style={{ marginBottom: 16 }}>
-                <div>
-                    <label className="form__label">Seleccionar periodo</label>
-                    <select className="select" onChange={handleSelectChange} value={editingId || ''}>
-                        <option value="">-- Nuevo periodo --</option>
-                        {periodos.map((p) => (
-                            <option key={p.id_periodo} value={p.id_periodo}>{p.nombre}</option>
-                        ))}
-                    </select>
-                </div>
-                <div>
-                    <label className="form__label">Filtro: Fecha inicio desde</label>
-                    <input className="input" type="date" value={filterStart || ''} onChange={(e) => setFilterStart(e.target.value)} />
-                </div>
-                <div>
-                    <label className="form__label">Filtro: Fecha fin hasta</label>
-                    <input className="input" type="date" value={filterEnd || ''} onChange={(e) => setFilterEnd(e.target.value)} />
-                </div>
-                <div style={{ alignSelf: 'end' }}>
-                    <button className="btn" type="button" onClick={() => fetchWithFilters()}>Aplicar filtros</button>
-                    <button className="btn" type="button" onClick={() => { setFilterStart(''); setFilterEnd(''); fetchPeriodos(); }}>Limpiar</button>
-                </div>
-            </div>
+            <div >
+                <div style={{ width: '100%' }}>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '360px 1fr', gap: 20 }}>
-                <form onSubmit={handleSubmit} className="card">
-                    <div className="form__row">
-                        <div>
-                            <label className="form__label">Nombre</label>
-                            <input className="input" name="nombre" value={form.nombre} onChange={handleChange} required />
-                        </div>
-                        <div className="form__row--2" style={{ marginTop: 8 }}>
+                    <div className="card" style={{ marginBottom: 12 }}>
+                        <h4 style={{ marginTop: 0, cursor: 'pointer' }} onClick={() => setOpenPeriodos(v => !v)}>
+                            Periodos Académicos ({periodos.length}) {openPeriodos ? '▾' : '▸'}
+                        </h4>
+
+                        {openPeriodos && (
                             <div>
-                                <label className="form__label">Fecha inicio</label>
-                                <input className="input" type="date" name="fecha_inicio" value={form.fecha_inicio} onChange={handleChange} />
-                            </div>
-                            <div>
-                                <label className="form__label">Fecha fin</label>
-                                <input className="input" type="date" name="fecha_fin" value={form.fecha_fin} onChange={handleChange} />
-                            </div>
-                        </div>
+                                <div style={{ marginBottom: 16 }}>
+                                    <div>
+                                        <label className="form__label">Seleccionar periodo</label>
+                                        <select className="select" onChange={handleSelectChange} value={editingId || ''}>
+                                            <option value="">-- Nuevo periodo --</option>
+                                            {periodos.map((p) => (
+                                                <option key={p.id_periodo} value={p.id_periodo}>{p.nombre}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <form onSubmit={handleSubmit} style={{ width: '100%' }}>
+                                    <div className="form__row">
+                                        <div>
+                                            <label className="form__label">Nombre</label>
+                                            <input className="input" name="nombre" value={form.nombre} onChange={handleChange} required style={{ width: '100%' }} />
+                                        </div>
+                                        <div className="form__row--2" style={{ marginTop: 8 }}>
+                                            <div>
+                                                <label className="form__label">Fecha inicio</label>
+                                                <input className="input" type="date" name="fecha_inicio" value={form.fecha_inicio} onChange={handleChange} style={{ width: '100%' }} />
+                                            </div>
+                                            <div>
+                                                <label className="form__label">Fecha fin</label>
+                                                <input className="input" type="date" name="fecha_fin" value={form.fecha_fin} onChange={handleChange} style={{ width: '100%' }} />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
+                                        <button className="btn btn--primary" type="submit">{editingId ? 'Actualizar' : 'Crear'}</button>
+                                        {editingId && <button className="btn" type="button" onClick={() => { setEditingId(null); setForm({ nombre: '', fecha_inicio: '', fecha_fin: '' }); }}>Cancelar</button>}
+                                    </div>
+
+                                    {error && <div style={{ color: 'red', marginTop: 8 }}>{error}</div>}
+                                    </form>
+
+                                    <div style={{ marginTop: 18 }}>
+                                        <h3 style={{ marginTop: 0 }}>Lista</h3>
+                                        {loading ? (
+                                            <div>Cargando...</div>
+                                        ) : (
+                                            <table className="table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Nombre</th>
+                                                        <th style={{ width: 150 }}>Fecha inicio</th>
+                                                        <th style={{ width: 150 }}>Fecha fin</th>
+                                                        <th style={{ width: 180 }}>Acciones</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {periodos.map((p) => (
+                                                        <tr key={p.id_periodo}>
+                                                            <td>{p.nombre}</td>
+                                                            <td>{p.fecha_inicio || '-'}</td>
+                                                            <td>{p.fecha_fin || '-'}</td>
+                                                            <td>
+                                                                <button className="link-btn" onClick={() => handleEdit(p)}>Editar</button>
+                                                                <button className="link-btn link-btn--danger" onClick={() => handleDelete(p.id_periodo)}>Eliminar</button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                    {periodos.length === 0 && (
+                                                        <tr>
+                                                            <td colSpan={4}>No hay periodos</td>
+                                                        </tr>
+                                                    )}
+                                                </tbody>
+                                            </table>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                     </div>
 
-                    <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-                        <button className="btn btn--primary" type="submit">{editingId ? 'Actualizar' : 'Crear'}</button>
-                        {editingId && <button className="btn" type="button" onClick={() => { setEditingId(null); setForm({ nombre: '', fecha_inicio: '', fecha_fin: '' }); }}>Cancelar</button>}
+                    <div className="card" style={{ width: '100%' }}>
+                        <h4 style={{ marginTop: 0, cursor: 'pointer' }} onClick={() => setOpenTipos(v => !v)}>
+                            Tipos de Contrato ({tiposCount}) {openTipos ? '▾' : '▸'}
+                        </h4>
+                        {openTipos && (
+                            <div style={{ paddingTop: 8 }}>
+                                <TiposContrato bare={true} />
+                            </div>
+                        )}
                     </div>
 
-                    {error && <div style={{ color: 'red', marginTop: 8 }}>{error}</div>}
-                </form>
-
-                <div>
-                    <h3 style={{ marginTop: 0 }}>Lista</h3>
-                    {loading ? (
-                        <div>Cargando...</div>
-                    ) : (
-                        <table className="table">
-                            <thead>
-                                <tr>
-                                    <th>Nombre</th>
-                                    <th style={{ width: 150 }}>Fecha inicio</th>
-                                    <th style={{ width: 150 }}>Fecha fin</th>
-                                    <th style={{ width: 180 }}>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {periodos.map((p) => (
-                                    <tr key={p.id_periodo}>
-                                        <td>{p.nombre}</td>
-                                        <td>{p.fecha_inicio || '-'}</td>
-                                        <td>{p.fecha_fin || '-'}</td>
-                                        <td>
-                                            <button className="link-btn" onClick={() => handleEdit(p)}>Editar</button>
-                                            <button className="link-btn link-btn--danger" onClick={() => handleDelete(p.id_periodo)}>Eliminar</button>
-                                        </td>
-                                    </tr>
-                                ))}
-                                {periodos.length === 0 && (
-                                    <tr>
-                                        <td colSpan={4}>No hay periodos</td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    )}
                 </div>
             </div>
         </div>

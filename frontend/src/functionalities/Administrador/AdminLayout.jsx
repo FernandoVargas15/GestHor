@@ -28,24 +28,8 @@ export default function AdminLayout() {
                 </nav>
 
                 <div style={{ padding: '12px 16px' }}>
-                    {/* Configuración siempre al final, encima del footer */}
                     <div>
-                        <button
-                            className={`sidebar__link`}
-                            onClick={() => setCfgOpen(v => !v)}
-                            aria-expanded={cfgOpen}
-                            style={{ justifyContent: 'space-between', background: 'transparent', border: '1px solid transparent' }}
-                        >
-                            <span>Configuración</span>
-                            <span style={{ fontSize: 12 }}>{cfgOpen ? '▾' : '▸'}</span>
-                        </button>
-                        {cfgOpen && (
-                            <ul style={{ listStyle: 'none', paddingLeft: 12, marginTop: 8 }}>
-                                <li style={{ marginBottom: 6 }}>
-                                    <NavLink to="/admin/periodos" className={linkClass}>Periodos</NavLink>
-                                </li>
-                            </ul>
-                        )}
+                        <NavLink to="/admin/configuracion" className={linkClass} style={{ display: 'flex', justifyContent: 'space-between' }}>Configuración</NavLink>
                     </div>
                 </div>
 

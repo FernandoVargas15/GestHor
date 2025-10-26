@@ -48,7 +48,9 @@ function App() {
           <Route path="materias" element={<Materias />} />
           <Route path="planes" element={<PlanesEstudio />} />
           <Route path="lugares" element={<Lugares />} />
-          <Route path="periodos" element={<Periodos />} />
+          <Route path="configuracion" element={<Periodos />} />
+          {/* legacy route: redirect periodos to configuracion */}
+          <Route path="periodos" element={<Navigate to="/admin/configuracion" replace />} />
           <Route path="horarios" element={<Horarios />} />
           <Route path="solicitudes" element={<Solicitudes />} />
         </Route>

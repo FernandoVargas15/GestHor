@@ -218,7 +218,6 @@ export default function Docentes() {
                     )}
                 </div>
             </div>
-            <TiposContrato />
         </>
     );
 }

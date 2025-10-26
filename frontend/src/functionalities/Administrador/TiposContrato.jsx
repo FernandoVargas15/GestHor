@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useToast } from "../../components/ui/NotificacionFlotante";
 import { obtenerTiposContrato, crearTipoContrato, actualizarTipoContrato } from "./tipoContratoService";
 
-export default function TiposContrato() {
+export default function TiposContrato({ bare = false }) {
 	const [tipos, setTipos] = useState([]);
 	const [loading, setLoading] = useState(false);
 	const [form, setForm] = useState({ nombre_tipo: "", nivel_prioridad: "", descripcion: "" });
@@ -71,6 +71,41 @@ export default function TiposContrato() {
 		}
 	};
 
+		// If parent requests bare rendering, return only the inner form + list without the card/header wrapper
+		if (bare) {
+			return (
+				<>
+					<form onSubmit={onSubmit} style={{ marginBottom: 12, width: '100%' }}>
+						<div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 8, alignItems: 'center' }}>
+							<input className="input" name="nombre_tipo" placeholder="Nombre del tipo" value={form.nombre_tipo} onChange={onChange} style={{ width: '100%' }} />
+							<input className="input" name="nivel_prioridad" placeholder="Prioridad (1)" value={form.nivel_prioridad} onChange={onChange} style={{ width: '100%' }} />
+						</div>
+						<div style={{ marginTop: 8 }}>
+							<textarea className="textarea" name="descripcion" placeholder="Descripción (opcional)" value={form.descripcion} onChange={onChange} style={{ width: '100%' }} />
+						</div>
+						<div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
+							<button type="submit" className="btn btn--primary" disabled={loading}>{editingId ? 'Actualizar' : 'Agregar'}</button>
+							{editingId && <button type="button" className="btn" onClick={onCancel} disabled={loading}>Cancelar</button>}
+						</div>
+					</form>
+
+					<ul style={{ margin: 0, paddingLeft: 16 }}>
+						{tipos.map((t) => (
+							<li key={t.tipo_contrato_id} style={{ marginBottom: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+								<div>
+									<strong>{t.nombre_tipo}</strong> <span className="form__hint">(Prioridad: {t.nivel_prioridad})</span>
+									{t.descripcion && <div className="form__hint" style={{ marginTop: 4 }}>{t.descripcion}</div>}
+								</div>
+								<div style={{ display: 'flex', gap: 8 }}>
+									<button className="link-btn" onClick={() => onEdit(t)}>Editar</button>
+								</div>
+							</li>
+						))}
+					</ul>
+				</>
+			);
+		}
+
 		return (
 			<div className="card" style={{ marginTop: 12 }}>
 				<h4 style={{ marginTop: 0, cursor: 'pointer' }} onClick={() => setOpen(o => !o)}>
@@ -80,34 +115,34 @@ export default function TiposContrato() {
 				{open && (
 					<>
 						<form onSubmit={onSubmit} style={{ marginBottom: 12 }}>
-				<div style={{ display: 'grid', gridTemplateColumns: '1fr 120px', gap: 8, alignItems: 'center' }}>
-					<input className="input" name="nombre_tipo" placeholder="Nombre del tipo" value={form.nombre_tipo} onChange={onChange} />
-					<input className="input" name="nivel_prioridad" placeholder="Prioridad (1)" value={form.nivel_prioridad} onChange={onChange} />
-				</div>
-				<div style={{ marginTop: 8 }}>
-					<textarea className="textarea" name="descripcion" placeholder="Descripción (opcional)" value={form.descripcion} onChange={onChange} />
-				</div>
-				<div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
-					<button type="submit" className="btn btn--primary" disabled={loading}>{editingId ? 'Actualizar' : 'Agregar'}</button>
-					{editingId && <button type="button" className="btn" onClick={onCancel} disabled={loading}>Cancelar</button>}
-				</div>
-							</form>
+							<div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 8, alignItems: 'center' }}>
+								<input className="input" name="nombre_tipo" placeholder="Nombre del tipo" value={form.nombre_tipo} onChange={onChange} />
+								<input className="input" name="nivel_prioridad" placeholder="Prioridad (1)" value={form.nivel_prioridad} onChange={onChange} />
+							</div>
+							<div style={{ marginTop: 8 }}>
+								<textarea className="textarea" name="descripcion" placeholder="Descripción (opcional)" value={form.descripcion} onChange={onChange} />
+							</div>
+							<div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
+								<button type="submit" className="btn btn--primary" disabled={loading}>{editingId ? 'Actualizar' : 'Agregar'}</button>
+								{editingId && <button type="button" className="btn" onClick={onCancel} disabled={loading}>Cancelar</button>}
+							</div>
+						</form>
 
-							<ul style={{ margin: 0, paddingLeft: 16 }}>
-				{tipos.map((t) => (
-					<li key={t.tipo_contrato_id} style={{ marginBottom: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-						<div>
-							<strong>{t.nombre_tipo}</strong> <span className="form__hint">(Prioridad: {t.nivel_prioridad})</span>
-							{t.descripcion && <div className="form__hint" style={{ marginTop: 4 }}>{t.descripcion}</div>}
-						</div>
-						<div style={{ display: 'flex', gap: 8 }}>
-							<button className="link-btn" onClick={() => onEdit(t)}>Editar</button>
-						</div>
-					</li>
-				))}
-							</ul>
-						</>
-					)}
-		</div>
-	);
+						<ul style={{ margin: 0, paddingLeft: 16 }}>
+							{tipos.map((t) => (
+								<li key={t.tipo_contrato_id} style={{ marginBottom: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+									<div>
+										<strong>{t.nombre_tipo}</strong> <span className="form__hint">(Prioridad: {t.nivel_prioridad})</span>
+										{t.descripcion && <div className="form__hint" style={{ marginTop: 4 }}>{t.descripcion}</div>}
+									</div>
+									<div style={{ display: 'flex', gap: 8 }}>
+										<button className="link-btn" onClick={() => onEdit(t)}>Editar</button>
+									</div>
+								</li>
+							))}
+						</ul>
+					</>
+				)}
+			</div>
+		);
 }
