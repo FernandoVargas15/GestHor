@@ -20,6 +20,10 @@ function emptySalon() {
 export default function Lugares() {
     const [lugares, setLugares] = useState([]);
     const { notify } = useToast();
+    const [expandedLugares, setExpandedLugares] = useState(new Set());
+    const [expandedEdificios, setExpandedEdificios] = useState(new Set());
+    const [filterText, setFilterText] = useState("");
+    const [filterTipoSalon, setFilterTipoSalon] = useState("");
 
     const [formLugar, setFormLugar] = useState(emptyLugar());
     const [editLugarId, setEditLugarId] = useState(null);
@@ -223,6 +227,46 @@ export default function Lugares() {
 
     const optionsLugares = useMemo(() => lugares.map((l) => ({ value: l.lugar_id, label: l.nombre_lugar })), [lugares]);
 
+    // Helpers: expand/collapse
+    const toggleLugar = (id) => {
+        setExpandedLugares((prev) => {
+            const copy = new Set(prev);
+            if (copy.has(id)) copy.delete(id);
+            else copy.add(id);
+            return copy;
+        });
+    };
+
+    const toggleEdificio = (id) => {
+        setExpandedEdificios((prev) => {
+            const copy = new Set(prev);
+            if (copy.has(id)) copy.delete(id);
+            else copy.add(id);
+            return copy;
+        });
+    };
+
+    const aplicarFiltro = (lugar) => {
+        // filtro por texto (nombre de lugar/edificio/salón) y por tipo de salón
+        if (!filterText && !filterTipoSalon) return true;
+        const txt = filterText.toLowerCase();
+        if (filterText) {
+            if ((lugar.nombre_lugar || "").toLowerCase().includes(txt)) return true;
+            for (const ed of lugar.edificios || []) {
+                if ((ed.nombre_edificio || "").toLowerCase().includes(txt)) return true;
+                for (const s of ed.salones || []) if ((s.nombre_salon || "").toLowerCase().includes(txt)) return true;
+            }
+            return false;
+        }
+        if (filterTipoSalon) {
+            for (const ed of lugar.edificios || []) {
+                for (const s of ed.salones || []) if ((s.tipo_salon || "") === filterTipoSalon) return true;
+            }
+            return false;
+        }
+        return true;
+    };
+
     // ======= RENDER =======
     return (
         <>
@@ -233,6 +277,16 @@ export default function Lugares() {
                 <p className="main__subtitle" style={{ marginTop: 4 }}>
                     Administrar edificios y salones
                 </p>
+            </div>
+
+            {/* Filtros y búsqueda */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center' }}>
+                <input className="input" placeholder="Buscar por nombre (lugar, edificio, salón)..." value={filterText} onChange={(e) => setFilterText(e.target.value)} />
+                <select className="select" value={filterTipoSalon} onChange={(e) => setFilterTipoSalon(e.target.value)}>
+                    <option value="">Filtrar por tipo de salón</option>
+                    {TIPOS_SALON.map((t) => (<option key={t} value={t}>{t}</option>))}
+                </select>
+                <button className="btn" onClick={() => { setFilterText(''); setFilterTipoSalon(''); }}>Limpiar</button>
             </div>
 
             <div className="grid grid--2" style={{ marginBottom: 16 }}>
@@ -330,53 +384,70 @@ export default function Lugares() {
                     {lugares.length === 0 && (
                         <div className="form__hint">Aún no hay lugares.</div>
                     )}
-
-                    {lugares.map((lugar) => (
+                    {lugares.filter(aplicarFiltro).map((lugar) => (
                         <div key={lugar.lugar_id} className="card" style={{ borderColor: "var(--border)" }}>
-                            <div style={{ marginBottom: 8 }}>
-                                <div style={{ fontWeight: 700 }}>{lugar.nombre_lugar}</div>
-                                {lugar.tipo_lugar && <div className="form__hint">{lugar.tipo_lugar}</div>}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }} onClick={() => toggleLugar(lugar.lugar_id)}>
+                                <div>
+                                    <div style={{ fontWeight: 700 }}>{lugar.nombre_lugar}</div>
+                                    {lugar.tipo_lugar && <div className="form__hint">{lugar.tipo_lugar}</div>}
+                                    <div className="form__hint">{(lugar.edificios || []).length} edificio(s) • {(lugar.edificios || []).reduce((acc, e) => acc + ((e.salones || []).length || 0), 0)} salón(es)</div>
+                                </div>
+
+                                <div style={{ display: 'flex', gap: 8 }}>
+                                    <button className="btn" onClick={(e) => { e.stopPropagation(); setFormEdificio((f) => ({ ...f, lugar_id: lugar.lugar_id })); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>Agregar edificio</button>
+                                    <button className="btn" onClick={(e) => { e.stopPropagation(); setFormSalon((f) => ({ ...f, edificio_id: (lugar.edificios && lugar.edificios[0] && lugar.edificios[0].edificio_id) || '' })); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>Agregar salón</button>
+                                    <button className="link-btn" onClick={(e) => { e.stopPropagation(); editarLugar(lugar); }}>Editar</button>
+                                    <button className="link-btn link-btn--danger" onClick={(e) => { e.stopPropagation(); eliminarLugar(lugar.lugar_id); }}>Eliminar</button>
+                                </div>
                             </div>
 
-                            {(lugar.edificios || []).length === 0 && (
-                                <div className="form__hint">Sin edificios registrados en este lugar.</div>
-                            )}
+                            {!expandedLugares.has(lugar.lugar_id) ? null : (
+                                <div style={{ marginTop: 12 }}>
+                                    {(lugar.edificios || []).length === 0 && (
+                                        <div className="form__hint">Sin edificios registrados en este lugar.</div>
+                                    )}
 
-                            {(lugar.edificios || []).map((ed) => (
-                                <div key={ed.edificio_id} className="card" style={{ marginBottom: 10, padding: 12 }}>
-                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-                                        <div>
-                                            <div style={{ fontWeight: 700 }}>{ed.nombre_edificio}</div>
-                                            {ed.tipo_edificio && <div className="form__hint">{ed.tipo_edificio}</div>}
-                                        </div>
-                                        <div>
-                                            <button className="link-btn" onClick={() => editarEdificio(lugar.lugar_id, ed)}>Editar</button>
-                                            <button className="link-btn link-btn--danger" onClick={() => eliminarEdificio(ed.edificio_id)}>Eliminar</button>
-                                        </div>
-                                    </div>
-
-                                    {/* Salones */}
-                                    <div className="grid" style={{ gap: 8, marginTop: 10 }}>
-                                        {(ed.salones || []).length === 0 && (
-                                            <div className="form__hint">Sin salones registrados.</div>
-                                        )}
-                                        {(ed.salones || []).map((s) => (
-                                            <div key={s.salon_id} className="card" style={{ padding: 10 }}>
-                                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-                                                    <div>
-                                                        <div style={{ fontWeight: 600 }}>{s.nombre_salon}</div>
-                                                        <div className="form__hint">{s.tipo_salon || ""}</div>
-                                                    </div>
-                                                    <div>
-                                                        <button className="link-btn" onClick={() => editarSalon(ed.edificio_id, s)}>Editar</button>
-                                                        <button className="link-btn link-btn--danger" onClick={() => eliminarSalon(s.salon_id)}>Eliminar</button>
-                                                    </div>
+                                    {(lugar.edificios || []).map((ed) => (
+                                        <div key={ed.edificio_id} className="card" style={{ marginBottom: 10, padding: 12 }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, cursor: 'pointer' }} onClick={() => toggleEdificio(ed.edificio_id)}>
+                                                <div>
+                                                    <div style={{ fontWeight: 700 }}>{ed.nombre_edificio}</div>
+                                                    {ed.tipo_edificio && <div className="form__hint">{ed.tipo_edificio}</div>}
+                                                    <div className="form__hint">{(ed.salones || []).length} salón(es)</div>
+                                                </div>
+                                                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                                    <button className="btn" onClick={(e) => { e.stopPropagation(); setFormSalon((f) => ({ ...f, edificio_id: ed.edificio_id })); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>Agregar salón</button>
+                                                    <button className="link-btn" onClick={(e) => { e.stopPropagation(); editarEdificio(lugar.lugar_id, ed); }}>Editar</button>
+                                                    <button className="link-btn link-btn--danger" onClick={(e) => { e.stopPropagation(); eliminarEdificio(ed.edificio_id); }}>Eliminar</button>
                                                 </div>
                                             </div>
-                                        ))}
-                                    </div>
+
+                                            {/* Salones */}
+                                            {expandedEdificios.has(ed.edificio_id) && (
+                                                <div className="grid" style={{ gap: 8, marginTop: 10 }}>
+                                                    {(ed.salones || []).length === 0 && (
+                                                        <div className="form__hint">Sin salones registrados.</div>
+                                                    )}
+                                                    {(ed.salones || []).map((s) => (
+                                                        <div key={s.salon_id} className="card" style={{ padding: 10 }}>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+                                                                <div>
+                                                                    <div style={{ fontWeight: 600 }}>{s.nombre_salon}</div>
+                                                                    <div className="form__hint">{s.tipo_salon || ''}</div>
+                                                                </div>
+                                                                <div>
+                                                                    <button className="link-btn" onClick={() => editarSalon(ed.edificio_id, s)}>Editar</button>
+                                                                    <button className="link-btn link-btn--danger" onClick={() => eliminarSalon(s.salon_id)}>Eliminar</button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
+                            )}
                         </div>
                     ))}
                 </div>
