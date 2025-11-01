@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import * as lugaresService from "../../services/lugaresService";
 import { useToast } from "../../components/ui/NotificacionFlotante";
+import usePageTitle from "../../hooks/usePageTitle";
 
 const TIPOS_EDIFICIO = ["Académico", "Laboratorio", "Administrativo"];
 const TIPOS_SALON = ["Aula", "Laboratorio", "Salas de usos múltiples", "Taller"];
@@ -18,6 +19,7 @@ function emptySalon() {
 }
 
 export default function Lugares() {
+    usePageTitle("Lugares");
     const [lugares, setLugares] = useState([]);
     const { notify } = useToast();
     const [expandedLugares, setExpandedLugares] = useState(new Set());

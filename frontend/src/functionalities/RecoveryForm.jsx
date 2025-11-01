@@ -3,8 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import '../styles/RecoveryForm.css';
 import { crearSolicitudRecuperacion } from '../services/solicitudRecuperacionService';
 import { useToast } from '../components/ui/NotificacionFlotante';
+import usePageTitle from "../hooks/usePageTitle";
 
 const RecoveryForm = () => {
+  usePageTitle("Ayuda");
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

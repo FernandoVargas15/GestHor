@@ -10,6 +10,7 @@ import {
     guardarPreferencias as guardarPreferenciasAPI
 } from "../../services/disponibilidadService";
 import { useToast } from "../../components/ui/NotificacionFlotante";
+import usePageTitle from "../../hooks/usePageTitle";
 
 const DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
 
@@ -44,6 +45,7 @@ function makeAvailability(slots) {
 }
 
 export default function Disponibilidad() {
+    usePageTitle("Disponibilidad");
     const navigate = useNavigate();
     const [nombreProfesor, setNombreProfesor] = useState("");
     const { notify } = useToast();

@@ -7,6 +7,7 @@ import {
     obtenerActividadesRecientes
 } from "../../services/solicitudRecuperacionService";
 import styles from "./Solicitudes.module.css";
+import usePageTitle from "../../hooks/usePageTitle";
 
 function calcularTiempoTranscurrido(fechaSolicitud) {
     const ahora = new Date();
@@ -24,6 +25,7 @@ function calcularTiempoTranscurrido(fechaSolicitud) {
 }
 
 export default function Solicitudes() {
+    usePageTitle("Solicitudes");
     const [requests, setRequests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activity, setActivity] = useState([]);

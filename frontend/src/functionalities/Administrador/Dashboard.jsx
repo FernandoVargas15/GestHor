@@ -5,6 +5,7 @@ import { obtenerEstadisticasDocentes } from "../../services/docenteService";
 import { obtenerEstadisticasCarreras } from "../../services/carreraService";
 import { HorarioPDFExporter } from "../../utils/pdfExportService";
 import { HorarioExcelExporter } from "../../utils/excelExportService";
+import usePageTitle from "../../hooks/usePageTitle";
 
 // Tarjeta de stats
 function StatCard({ label, value, loading = false }) {
@@ -558,6 +559,8 @@ function ScheduleTable() {
 
 // Pagina completa del Dashboard 
 export default function Dashboard() {
+  usePageTitle("Dashboard");
+
   // Estados de stats
   const [stats, setStats] = useState({
     docentes: 0,

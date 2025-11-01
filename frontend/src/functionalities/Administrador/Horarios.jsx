@@ -12,6 +12,7 @@ import ProfesorDetailsContent from "../../components/admin/ProfesorDetailsConten
 import { useValidacionHorario } from "../../hooks/useValidacionHorario";
 import ScheduleGrid from "../../components/admin/ScheduleGrid";
 import styles from "../../styles/AdminHorarios.module.css";
+import usePageTitle from "../../hooks/usePageTitle";
 
 const DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
 const DAY_KEYS = ["lunes", "martes", "miercoles", "jueves", "viernes"];
@@ -83,6 +84,7 @@ const parseHorasToNumber = (v) => {
 
 // --- Componente Principal 
 export default function Horarios() {
+    usePageTitle("Horarios");
     // --- ESTADO PRINCIPAL ---
     // Catalogos
     const [materias, setMaterias] = useState([]);

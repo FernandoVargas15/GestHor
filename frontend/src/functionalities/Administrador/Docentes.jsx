@@ -6,6 +6,7 @@ import { obtenerTiposContrato } from "./tipoContratoService";
 import SearchInput from "../../components/ui/SearchInput";
 import { useSearch } from "../../hooks/useSearch";
 import TiposContrato from "./TiposContrato"; // Importamos el componente de gestión
+import usePageTitle from "../../hooks/usePageTitle";
 
 function emptyForm() {
     return {
@@ -29,6 +30,7 @@ export default function Docentes() {
     const [busqueda, setBusqueda] = useState("");
     const [tiposContrato, setTiposContrato] = useState([]);
     const { notify } = useToast();
+    usePageTitle("Docentes");
     
     // Buscar en nombres, apellidos, matricula y email
     const docentesFiltrados = useSearch(docentes, busqueda, ["nombres", "apellidos", "matricula", "email"]);

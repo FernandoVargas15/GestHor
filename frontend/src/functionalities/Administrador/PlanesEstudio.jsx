@@ -8,6 +8,7 @@ import CarreraList from "../../components/admin/CarreraList";
 import SemesterSelector from "../../components/admin/SemesterSelector";
 import AutocompleteInput from "../../components/admin/AutocompleteInput";
 import MateriaCard from "../../components/admin/MateriaCard";
+import usePageTitle from "../../hooks/usePageTitle";
 
 const emptyCareer = {
     nombre: "",
@@ -15,6 +16,7 @@ const emptyCareer = {
 };
 
 export default function PlanesEstudio() {
+    usePageTitle("Planes de estudio");
     const [form, setForm] = useState(emptyCareer);
     const { notify } = useToast();
 

@@ -8,6 +8,7 @@ import { obtenerHorariosProfesor } from "../../services/horarioService";
 import { HorarioPDFExporter } from "../../utils/pdfExportService"; 
 import { useToast } from "../../components/ui/NotificacionFlotante";
   const DAYS = ["lunes", "martes", "miercoles", "jueves", "viernes"];
+import usePageTitle from "../../hooks/usePageTitle";
 
   const normalize = (s) =>
     String(s || "")
@@ -17,6 +18,7 @@ import { useToast } from "../../components/ui/NotificacionFlotante";
       .trim();
 
 export default function MiHorario() {
+  usePageTitle("Mi horario");
   const navigate = useNavigate();
   const { notify } = useToast();
   const [nombreProfesor, setNombreProfesor] = useState("");

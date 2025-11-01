@@ -9,6 +9,7 @@ import {
 import SearchInput from "../../components/ui/SearchInput";
 import { useSearch } from "../../hooks/useSearch";
 import styles from "./Materias.module.css";
+import usePageTitle from "../../hooks/usePageTitle";
 
 function emptyForm() {
     return {
@@ -23,6 +24,7 @@ export default function Materias() {
     const [cargando, setCargando] = useState(false);
     const [busqueda, setBusqueda] = useState("");
     const { notify } = useToast();
+    usePageTitle("Materias");
     
     // Usar el hook de búsqueda
     const materiasFiltradas = useSearch(materias, busqueda, ["nombre_materia"]);

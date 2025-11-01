@@ -2,8 +2,11 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import styles from "../styles/LoginForm.module.css";
 import PasswordInput from "../components/ui/PasswordInput";
+import usePageTitle from "../hooks/usePageTitle";
+
 
 function LoginForm() {
+   usePageTitle("Ingresar al sitio");
   const [correo, setCorreo] = useState("");
   const [contraseña, setContraseña] = useState("");
   const [tipoUsuario, setTipoUsuario] = useState("");

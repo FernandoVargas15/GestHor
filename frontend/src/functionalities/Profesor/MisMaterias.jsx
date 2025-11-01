@@ -7,8 +7,10 @@ import { obtenerMateriasProfesor, asignarMateriaProfesor, eliminarMateriaProfeso
 import { obtenerNombreProfesor } from "../../services/docenteService";
 import AutocompleteInput from "../../components/admin/AutocompleteInput";
 import { useToast } from "../../components/ui/NotificacionFlotante";
+import usePageTitle from "../../hooks/usePageTitle";
 
 export default function MisMaterias() {
+    usePageTitle("Mis materias");
     const navigate = useNavigate();
     const { notify } = useToast();
     const [misMaterias, setMisMaterias] = useState([]);

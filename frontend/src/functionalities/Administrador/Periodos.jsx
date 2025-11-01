@@ -7,8 +7,10 @@ import {
 } from '../../services/periodoService';
 import TiposContrato from './TiposContrato';
 import styles from "./Periodos.module.css";
+import usePageTitle from "../../hooks/usePageTitle";
 
 export default function Periodos() {
+    usePageTitle("Configuración");
     const [periodos, setPeriodos] = useState([]);
     const [loading, setLoading] = useState(false);
     const [form, setForm] = useState({ nombre: '', fecha_inicio: '', fecha_fin: '' });
