@@ -13,7 +13,7 @@ function StatCard({ label, value, loading = false }) {
     <div className={`card ${styles["dashboard__stat-card"]}`}>
       <div className={styles["dashboard__stat-card__label"]}>{label}</div>
       <div className={styles["dashboard__stat-card__value"]}>
-  {loading ? <span className={styles["dashboard__muted"]}>...</span> : value}
+        {loading ? <span className={styles["dashboard__muted"]}>...</span> : value}
       </div>
     </div>
   );
@@ -266,6 +266,7 @@ function ScheduleTable() {
           ? `${profesorSel.nombres} ${profesorSel.apellidos}`
           : "Profesor"
       );
+      notify({ type: 'success', message: 'Horario guardado correctamente en PDF.', duration: 5000 });
     } catch (error) {
       console.error("Error al exportar PDF:", error);
       notify({ type: 'error', message: 'Error al generar el PDF. Por favor, intenta nuevamente.' });
@@ -275,15 +276,16 @@ function ScheduleTable() {
   /**
    * Exporta el horario actual a Excel
    */
-  const exportExcel = () => {
+  const exportExcel = async () => {
     try {
-      HorarioExcelExporter.exportSchedule(
+      await Promise.resolve(HorarioExcelExporter.exportSchedule(
         schedule,
         tipo,
         profesorSel
           ? `${profesorSel.nombres} ${profesorSel.apellidos}`
           : "Profesor"
-      );
+      ));
+      notify({ type: 'success', message: 'Horario guardado correctamente en Excel.', duration: 5000 });
     } catch (error) {
       console.error("Error al exportar a Excel:", error);
       notify({ type: 'error', message: 'Error al exportar el horario. Por favor, intenta nuevamente.' });
@@ -299,7 +301,7 @@ function ScheduleTable() {
         </div>
 
         {/* Filtros */}
-  <div className={styles["dashboard__filters"]}>
+        <div className={styles["dashboard__filters"]}>
           {/* Buscador por nombre */}
           <div className={styles["dashboard__search"]}>
             <input
@@ -374,9 +376,9 @@ function ScheduleTable() {
       </div>
 
       {/* Estado */}
-  {cargando && <p className={styles["dashboard__loading"]}>Cargando…</p>}
-  {error && <p className={styles["dashboard__error"]}>{error}</p>}
-  <div className={styles["dashboard__info"]}>
+      {cargando && <p className={styles["dashboard__loading"]}>Cargando…</p>}
+      {error && <p className={styles["dashboard__error"]}>{error}</p>}
+      <div className={styles["dashboard__info"]}>
         {profesorSel
           ? `Profesor: ${profesorSel.nombres} ${profesorSel.apellidos}`
           : "Selecciona un profesor…"}
@@ -416,7 +418,7 @@ function ScheduleTable() {
       )}
 
       {/* Tabla */}
-  <div className={styles["dashboard__table-wrapper"]}>
+      <div className={styles["dashboard__table-wrapper"]}>
         {/* Priority: if a professor is selected, show the existing schedule table.
             If no professor but a salon is selected, show the compact materia-docente table. */}
         {profesorSel ? (
@@ -625,7 +627,7 @@ export default function Dashboard() {
       </div>
 
       {/* Stats */}
-  <div className={`grid grid--4 ${styles["dashboard__stats"]}`}>
+      <div className={`grid grid--4 ${styles["dashboard__stats"]}`}>
         <StatCard label="Total Docentes" value={stats.docentes} loading={cargando} />
         <StatCard label="Carreras" value={stats.carreras} loading={cargando} />
         <StatCard label="Salones" value={stats.salones} />

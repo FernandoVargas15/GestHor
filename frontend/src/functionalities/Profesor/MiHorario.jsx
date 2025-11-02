@@ -5,17 +5,17 @@ import { useNavigate } from "react-router-dom";
 import { obtenerNombreProfesor } from "../../services/docenteService";
 import { HorarioExcelExporter } from "../../utils/excelExportService";
 import { obtenerHorariosProfesor } from "../../services/horarioService";
-import { HorarioPDFExporter } from "../../utils/pdfExportService"; 
+import { HorarioPDFExporter } from "../../utils/pdfExportService";
 import { useToast } from "../../components/ui/NotificacionFlotante";
-  const DAYS = ["lunes", "martes", "miercoles", "jueves", "viernes"];
+const DAYS = ["lunes", "martes", "miercoles", "jueves", "viernes"];
 import usePageTitle from "../../hooks/usePageTitle";
 
-  const normalize = (s) =>
-    String(s || "")
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase()
-      .trim();
+const normalize = (s) =>
+  String(s || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
 
 export default function MiHorario() {
   usePageTitle("Mi horario");
@@ -70,12 +70,12 @@ export default function MiHorario() {
 
         const horaToSlot = (hora) => {
           if (!hora) return null;
-          const h = hora.substring(0,5);
+          const h = hora.substring(0, 5);
           for (const s of matutinoSlots) if (s.startsWith(h)) return s;
           for (const s of vespertinoSlots) if (s.startsWith(h)) return s;
           const [hh, mm] = h.split(":").map(Number);
-          const hh2 = String((hh + 1)).padStart(2,'0');
-          return `${h} - ${hh2}:${String(mm).padStart(2,'0')}`;
+          const hh2 = String((hh + 1)).padStart(2, '0');
+          return `${h} - ${hh2}:${String(mm).padStart(2, '0')}`;
         };
 
         const classes = {};
@@ -111,7 +111,7 @@ export default function MiHorario() {
           // calculate duration in 1-hour slots
           const parseMinutes = (timeStr) => {
             if (!timeStr) return 0;
-            const t = String(timeStr).substring(0,5);
+            const t = String(timeStr).substring(0, 5);
             const [hh, mm] = t.split(':').map(Number);
             return hh * 60 + (mm || 0);
           };
@@ -164,27 +164,29 @@ export default function MiHorario() {
   /**
    * Exporta el horario actual a PDF
    */
-const exportPDF = () => {
-  try {
-    HorarioPDFExporter.exportSchedule(
-      schedule,
-      tipo,
-      nombreProfesor || "Profesor"
-    );
-  } catch (error) {
-    console.error("Error al exportar PDF:", error);
-    notify({ type: 'error', message: 'Error al generar el PDF. Por favor, intenta nuevamente.' });
-  }
-};
-
-
-  const exportExcel = () => {
+  const exportPDF = async () => {
     try {
-      HorarioExcelExporter.exportSchedule(
+      await Promise.resolve(HorarioPDFExporter.exportSchedule(
+        schedule,
+        tipo,
+        nombreProfesor || "Profesor"
+      ));
+      notify({ type: 'success', message: 'Horario guardado correctamente en PDF.', duration: 5000 });
+    } catch (error) {
+      console.error("Error al exportar PDF:", error);
+      notify({ type: 'error', message: 'Error al generar el PDF. Por favor, intenta nuevamente.' });
+    }
+  };
+
+
+  const exportExcel = async () => {
+    try {
+      await Promise.resolve(HorarioExcelExporter.exportSchedule(
         schedule,
         tipo,
         nombreProfesor || 'Profesor'
-      );
+      ));
+      notify({ type: 'success', message: 'Horario guardado correctamente en Excel.', duration: 5000 });
     } catch (error) {
       console.error('Error al exportar a Excel:', error);
       notify({ type: 'error', message: 'Error al exportar el horario. Por favor, intenta nuevamente.' });
@@ -202,11 +204,11 @@ const exportPDF = () => {
       <div className="pf-container">
         {/* Header */}
         <div className="pf-header">
-                    <div className="pf-header__left">
+          <div className="pf-header__left">
             <span className="pf-header__title">Mi Horario</span>
             <span className="pf-header__caption">Bienvenido, Prof. {nombreProfesor || "Cargando..."}</span>
           </div>
-          <button className="pf-btn" onClick={handleLogout}>
+          <button className="pf-logout" onClick={handleLogout}>
             Cerrar Sesión
           </button>
         </div>

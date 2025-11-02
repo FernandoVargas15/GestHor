@@ -267,6 +267,31 @@ body {
     color: var(--pf-text);
 }
 
+.pf-logout {
+  border: 1px solid var(--pf-border);
+  background: #fff;
+  color: var(--pf-text);
+  padding: 12px 16px;
+  border-radius: var(--pf-radius);
+  cursor: pointer;
+  font-weight: 500;
+  transition: var(--pf-transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  box-shadow: var(--pf-shadow);
+}
+
+.pf-logout:hover {
+  background: #fef2f2;     
+  color: #dc2626;          
+  border-color: #fecaca;    
+  transform: translateY(-1px);
+  box-shadow: var(--pf-shadow-md);
+}
+
 /* ====== Bloques de clase (eventos)  ====== */
 .pf-event {
     border-radius: 10px;
