@@ -190,3 +190,6 @@ REFERENCES tipos_contrato(tipo_contrato_id);
 01/11/2025
 # Se cambio en formato de excel, instalar esto en frontend
 npm i exceljs@4.4.0
+
+# Instalar lo siguiente en frontend para iconos
+npm i react-icons

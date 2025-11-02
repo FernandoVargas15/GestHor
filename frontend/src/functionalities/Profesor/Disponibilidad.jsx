@@ -12,6 +12,10 @@ import {
 import { useToast } from "../../components/ui/NotificacionFlotante";
 import usePageTitle from "../../hooks/usePageTitle";
 
+import { MdEventAvailable } from "react-icons/md";
+import { FiLogOut } from "react-icons/fi";
+import { FaRegClock, FaSave, FaBroom, FaCheckSquare, FaClipboardList, FaCommentDots } from "react-icons/fa";
+
 const DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
 
 const SLOTS = {
@@ -218,10 +222,14 @@ export default function Disponibilidad() {
                 {/* Header */}
                 <div className="pf-header">
                     <div className="pf-header__left">
-                        <span className="pf-header__title">Disponibilidad de Horarios</span>
+                        <span className="pf-header__title" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                            <MdEventAvailable size={22} aria-hidden="true" />
+                            Disponibilidad de Horarios
+                        </span>
                         <span className="pf-header__caption">Bienvenido, Prof. {nombreProfesor || "Cargando..."}</span>
                     </div>
-                    <button className="pf-btn" onClick={handleLogout}>
+                    <button className="pf-logout" onClick={handleLogout}>
+                        <FiLogOut aria-hidden="true" />
                         Cerrar Sesión
                     </button>
                 </div>
@@ -233,14 +241,20 @@ export default function Disponibilidad() {
                 <div className="pf-card" style={{ marginBottom: 16 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
                         <div>
-                            <div className="pf-title">Configurar Mi Disponibilidad Horaria</div>
+                            <div className="pf-title" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                                <FaClipboardList size={18} aria-hidden="true" />
+                                Configurar Mi Disponibilidad Horaria
+                            </div>
                             <p className="pf-subtitle" style={{ marginTop: 6 }}>
                                 Marca los horarios en los que estás disponible para impartir clases. Esta información ayudará al administrador a asignar tus horarios.
                             </p>
                         </div>
 
                         <div className="pf-schedule-actions">
-                            <label style={{ fontSize: 12, color: "var(--pf-muted)" }}>Tipo de Horario</label>
+                            <label style={{ fontSize: 12, color: "var(--pf-muted)", display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                <FaRegClock size={14} aria-hidden="true" />
+                                Tipo de Horario
+                            </label>
                             <select
                                 className="pf-select"
                                 value={tipo}
@@ -256,7 +270,10 @@ export default function Disponibilidad() {
                         <table className="pf-table">
                             <thead>
                                 <tr>
-                                    <th className="pf-time">Horario</th>
+                                    <th className="pf-time" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                        <FaRegClock size={14} aria-hidden="true" />
+                                        Horario
+                                    </th>
                                     {DIAS.map((d) => (
                                         <th key={d}>{d}</th>
                                     ))}
@@ -285,18 +302,21 @@ export default function Disponibilidad() {
                     {/* acciones inferiores */}
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12, flexWrap: "wrap", gap: 10 }}>
                         <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-                            <label style={{ cursor: "pointer" }}>
+                            <label style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>
                                 <input type="checkbox" checked={false} onChange={selectAll} />{" "}
+                                <FaCheckSquare size={14} aria-hidden="true" />
                                 Seleccionar Todo
                             </label>
-                            <label style={{ color: "var(--pf-muted)", cursor: "pointer" }}>
+                            <label style={{ color: "var(--pf-muted)", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}>
                                 <input type="checkbox" checked={false} onChange={clearAll} />{" "}
+                                <FaBroom size={14} aria-hidden="true" />
                                 Limpiar Todo
                             </label>
                             <span className="pf-subtitle">Marcados: {totalSeleccionadas}</span>
                         </div>
 
-                        <button className="pf-btn pf-btn--primary" onClick={guardarDisponibilidad}>
+                        <button className="pf-btn pf-btn--primary" onClick={guardarDisponibilidad} style={{ display: "inline-flex", alignItems: "center", gap: 8 }} title="Guardar disponibilidad">
+                            <FaSave aria-hidden="true" />
                             Guardar Disponibilidad
                         </button>
                     </div>
@@ -304,7 +324,10 @@ export default function Disponibilidad() {
 
                 {/* Preferencias adicionales */}
                 <div className="pf-card">
-                    <div className="pf-title" style={{ marginBottom: 12 }}>Preferencias Adicionales</div>
+                    <div className="pf-title" style={{ marginBottom: 12, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <FaClipboardList size={18} aria-hidden="true" />
+                        Preferencias Adicionales
+                    </div>
 
                     <form onSubmit={guardarPreferencias}>
                         <div className="grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
@@ -347,7 +370,8 @@ export default function Disponibilidad() {
                         </div>
 
                         <div style={{ marginTop: 12 }}>
-                            <label style={{ display: "block", fontSize: 13, color: "var(--pf-muted)", marginBottom: 6 }}>
+                            <label style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--pf-muted)", marginBottom: 6 }}>
+                                <FaCommentDots size={14} aria-hidden="true" />
                                 Comentarios adicionales
                             </label>
                             <textarea
@@ -359,7 +383,8 @@ export default function Disponibilidad() {
                             />
                         </div>
 
-                        <button type="submit" className="pf-btn pf-btn--primary" style={{ marginTop: 12 }}>
+                        <button type="submit" className="pf-btn pf-btn--primary" style={{ marginTop: 12, display: "inline-flex", alignItems: "center", gap: 8 }} title="Guardar preferencias">
+                            <FaSave aria-hidden="true" />
                             Guardar Preferencias
                         </button>
                     </form>

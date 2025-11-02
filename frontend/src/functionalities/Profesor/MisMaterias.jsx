@@ -9,6 +9,10 @@ import AutocompleteInput from "../../components/admin/AutocompleteInput";
 import { useToast } from "../../components/ui/NotificacionFlotante";
 import usePageTitle from "../../hooks/usePageTitle";
 
+import { MdDashboard } from "react-icons/md";
+import { FiLogOut, FiSearch } from "react-icons/fi";
+import { FaBookOpen, FaTrashAlt, FaCheckCircle } from "react-icons/fa";
+
 export default function MisMaterias() {
     usePageTitle("Mis materias");
     const navigate = useNavigate();
@@ -40,7 +44,7 @@ export default function MisMaterias() {
                 obtenerNombreProfesor(profesorId)
             ]);
             setMisMaterias(dataProfesor.materias || []);
-            
+
             if (dataNombre.profesor) {
                 setNombreProfesor(`${dataNombre.profesor.nombres} ${dataNombre.profesor.apellidos}`);
             }
@@ -108,12 +112,16 @@ export default function MisMaterias() {
                 {/* Header simple */}
                 <div className="pf-header">
                     <div className="pf-header__left">
-                        <span className="pf-header__title">Panel del Profesor</span>
+                        <span className="pf-header__title" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                            <MdDashboard size={22} aria-hidden="true" />
+                            Panel del Profesor
+                        </span>
                         <span className="pf-header__caption">
                             Bienvenido, Prof. {nombreProfesor || "Cargando..."}
                         </span>
                     </div>
-                    <button className="pf-btn" onClick={handleLogout}>
+                    <button className="pf-logout" onClick={handleLogout}>
+                        <FiLogOut aria-hidden="true" />
                         Cerrar Sesión
                     </button>
                 </div>
@@ -125,12 +133,14 @@ export default function MisMaterias() {
                 <div className="grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                     {/* Formulario */}
                     <div className="pf-card">
-                        <div className="pf-title" style={{ marginBottom: 8 }}>
+                        <div className="pf-title" style={{ marginBottom: 8, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                            <FaBookOpen size={18} aria-hidden="true" />
                             Agregar Materia que Puedo Impartir
                         </div>
 
                         <div style={{ marginBottom: 12 }}>
-                            <label style={{ display: "block", fontSize: 13, color: "var(--pf-muted)", marginBottom: 6 }}>
+                            <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "var(--pf-muted)", marginBottom: 6 }}>
+                                <FiSearch size={14} aria-hidden="true" />
                                 Buscar Materia del Catálogo (min. 2 caracteres)
                             </label>
                             <AutocompleteInput
@@ -163,28 +173,36 @@ export default function MisMaterias() {
                             ) : (
                                 misMaterias.map((m) => (
                                     <div key={m.materia_id} className="pf-card" style={{ padding: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                        <div>
-                                            <div style={{ fontWeight: 700 }}>{m.nombre_materia}</div>
-                                            <span
-                                                style={{
-                                                    display: "inline-block",
-                                                    marginTop: 6,
-                                                    fontSize: 12,
-                                                    padding: "3px 8px",
-                                                    borderRadius: 999,
-                                                    background: "#e8faef",
-                                                    color: "#15803d",
-                                                    fontWeight: 700,
-                                                }}
-                                            >
-                                                Activa
-                                            </span>
+                                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                            <FaBookOpen aria-hidden="true" />
+                                            <div>
+                                                <div style={{ fontWeight: 700 }}>{m.nombre_materia}</div>
+                                                <span
+                                                    style={{
+                                                        display: "inline-flex",
+                                                        alignItems: "center",
+                                                        gap: 6,
+                                                        marginTop: 6,
+                                                        fontSize: 12,
+                                                        padding: "3px 8px",
+                                                        borderRadius: 999,
+                                                        background: "#e8faef",
+                                                        color: "#15803d",
+                                                        fontWeight: 700,
+                                                    }}
+                                                >
+                                                    <FaCheckCircle size={12} aria-hidden="true" />
+                                                    Activa
+                                                </span>
+                                            </div>
                                         </div>
                                         <button
                                             className="pf-btn"
-                                            style={{ borderColor: "#fecaca", color: "#b91c1c" }}
+                                            style={{ borderColor: "#fecaca", color: "#b91c1c", display: "inline-flex", alignItems: "center", gap: 8 }}
                                             onClick={() => eliminar(m.materia_id)}
+                                            title="Eliminar materia"
                                         >
+                                            <FaTrashAlt aria-hidden="true" />
                                             Eliminar
                                         </button>
                                     </div>

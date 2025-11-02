@@ -10,6 +10,10 @@ import { useToast } from "../../components/ui/NotificacionFlotante";
 const DAYS = ["lunes", "martes", "miercoles", "jueves", "viernes"];
 import usePageTitle from "../../hooks/usePageTitle";
 
+import { MdSchedule } from "react-icons/md";
+import { FiLogOut } from "react-icons/fi";
+import { FaFilePdf, FaFileExcel, FaRegClock } from "react-icons/fa";
+
 const normalize = (s) =>
   String(s || "")
     .normalize("NFD")
@@ -205,10 +209,19 @@ export default function MiHorario() {
         {/* Header */}
         <div className="pf-header">
           <div className="pf-header__left">
-            <span className="pf-header__title">Mi Horario</span>
+            <span className="pf-header__title" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+              <MdSchedule size={22} aria-hidden="true" />
+              Mi Horario
+            </span>
             <span className="pf-header__caption">Bienvenido, Prof. {nombreProfesor || "Cargando..."}</span>
           </div>
-          <button className="pf-logout" onClick={handleLogout}>
+          <button
+            className="pf-logout"
+            onClick={handleLogout}
+            style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
+            title="Cerrar sesión"
+          >
+            <FiLogOut aria-hidden="true" />
             Cerrar Sesión
           </button>
         </div>
@@ -220,18 +233,40 @@ export default function MiHorario() {
         <div className="pf-card">
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
             <div>
-              <div className="pf-title">Mi Horario Semanal Asignado</div>
+              <div className="pf-title" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                <MdSchedule size={20} aria-hidden="true" />
+                Mi Horario Semanal Asignado
+              </div>
             </div>
 
             <div className="pf-schedule-actions">
-              <label style={{ fontSize: 12, color: "var(--pf-muted)" }}>Tipo de Horario</label>
+              <label style={{ fontSize: 12, color: "var(--pf-muted)", display: "inline-flex", alignItems: "center", gap: 6 }}>
+                <FaRegClock size={14} aria-hidden="true" />
+                Tipo de Horario
+              </label>
               <select className="pf-select" value={tipo} onChange={(e) => setTipo(e.target.value)}>
                 <option value="matutino">Matutino (07:00 - 14:00)</option>
                 <option value="vespertino">Vespertino (15:00 - 22:00)</option>
               </select>
 
-              <button className="pf-btn pf-btn--primary" onClick={exportPDF}>PDF</button>
-              <button className="pf-btn pf-btn--primary" onClick={exportExcel}>Excel</button>
+              <button
+                className="pf-btn pf-btn--primary"
+                onClick={exportPDF}
+                style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
+                title={`Exportar ${titleTipo} a PDF`}
+              >
+                <FaFilePdf aria-hidden="true" />
+                PDF
+              </button>
+              <button
+                className="pf-btn pf-btn--primary"
+                onClick={exportExcel}
+                style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
+                title={`Exportar ${titleTipo} a Excel`}
+              >
+                <FaFileExcel aria-hidden="true" />
+                Excel
+              </button>
             </div>
           </div>
 
