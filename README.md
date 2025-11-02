@@ -186,3 +186,7 @@ ALTER TABLE profesores
 ADD CONSTRAINT fk_profesor_tipo_contrato
 FOREIGN KEY (tipo_contrato_id)
 REFERENCES tipos_contrato(tipo_contrato_id);
+
+01/11/2025
+# Se cambio en formato de excel, instalar esto en frontend
+npm i exceljs@4.4.0
