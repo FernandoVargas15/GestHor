@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { useToast } from "../../components/ui/NotificacionFlotante";
-import { 
+import {
     obtenerSolicitudesPendientes,
     obtenerEstadisticasSolicitudes,
     regenerarPassword,
@@ -8,16 +8,20 @@ import {
 } from "../../services/solicitudRecuperacionService";
 import styles from "./Solicitudes.module.css";
 import usePageTitle from "../../hooks/usePageTitle";
+ 
+import {
+    MdSupportAgent, MdErrorOutline, MdCheckCircle, MdCalendarMonth, MdDoneAll, MdRefresh, MdPassword, MdEmail, MdPerson, MdAccessTime, MdInfo, MdTaskAlt
+} from "react-icons/md";
 
 function calcularTiempoTranscurrido(fechaSolicitud) {
     const ahora = new Date();
     const fecha = new Date(fechaSolicitud);
     const diferencia = ahora - fecha;
-    
+
     const minutos = Math.floor(diferencia / 60000);
     const horas = Math.floor(diferencia / 3600000);
     const dias = Math.floor(diferencia / 86400000);
-    
+
     if (minutos < 1) return 'Ahora mismo';
     if (minutos < 60) return `Hace ${minutos} minuto${minutos !== 1 ? 's' : ''}`;
     if (horas < 24) return `Hace ${horas} hora${horas !== 1 ? 's' : ''}`;
@@ -150,7 +154,7 @@ export default function Solicitudes() {
 
         try {
             const response = await regenerarPassword(req.solicitudId);
-            
+
             if (response.ok) {
                 removeRequest(req.id);
                 setResueltasHoy((n) => n + 1);
@@ -176,7 +180,7 @@ export default function Solicitudes() {
     const markAllAsRead = async () => {
         if (!requests.length) return;
         if (!confirm("¿Marcar todas las solicitudes como leídas sin generar contraseñas?")) return;
-        
+
         try {
             setResueltasHoy((n) => n + requests.length);
             setRequests([]);
@@ -199,7 +203,8 @@ export default function Solicitudes() {
     return (
         <>
             <div className={styles['solicitudes__header']}>
-                <h2 className={`main__title ${styles['solicitudes__title']}`}>
+                <h2 className={`main__title ${styles['solicitudes__title']}`} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                    <MdSupportAgent size={22} aria-hidden="true" />
                     Solicitudes de ayuda
                 </h2>
                 <p className={`main__subtitle ${styles['solicitudes__subtitle']}`}>
@@ -210,19 +215,28 @@ export default function Solicitudes() {
             {/*  Stats */}
             <div className={`grid ${styles['solicitudes__statsGrid']}`}>
                 <div className="card">
-                    <div className={styles['solicitudes__statLabel']}>Solicitudes Pendientes</div>
+                    <div className={styles['solicitudes__statLabel']} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                        <MdErrorOutline aria-hidden="true" />
+                        Solicitudes Pendientes
+                    </div>
                     <div className={`${styles['solicitudes__statValue']} ${styles['solicitudes__statValue--orange']}`}>
                         {stats.pendientes}
                     </div>
                 </div>
                 <div className="card">
-                    <div className={styles['solicitudes__statLabel']}>Resueltas Hoy</div>
+                    <div className={styles['solicitudes__statLabel']} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                        <MdCheckCircle aria-hidden="true" />
+                        Resueltas Hoy
+                    </div>
                     <div className={`${styles['solicitudes__statValue']} ${styles['solicitudes__statValue--green']}`}>
                         {stats.resueltasHoy}
                     </div>
                 </div>
                 <div className="card">
-                    <div className={styles['solicitudes__statLabel']}>Total del Mes</div>
+                    <div className={styles['solicitudes__statLabel']} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                        <MdCalendarMonth aria-hidden="true" />
+                        Total del Mes
+                    </div>
                     <div className={`${styles['solicitudes__statValue']} ${styles['solicitudes__statValue--blue']}`}>
                         {stats.totalMes}
                     </div>
@@ -234,10 +248,12 @@ export default function Solicitudes() {
                 <div className={styles['solicitudes__pendingHeader']}>
                     <h3 className={styles['solicitudes__pendingTitle']}>Solicitudes Pendientes</h3>
                     <div>
-                        <button className="link-btn" onClick={markAllAsRead}>
+                        <button className="link-btn" onClick={markAllAsRead} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                            <MdDoneAll aria-hidden="true" />
                             Marcar todas como leídas
                         </button>
-                        <button className="link-btn" onClick={refresh}>
+                        <button className="link-btn" onClick={refresh} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                            <MdRefresh aria-hidden="true" />
                             Actualizar
                         </button>
                     </div>
@@ -255,8 +271,14 @@ export default function Solicitudes() {
                                 <div className={styles['solicitudes__requestInner']}>
                                     <div className={styles['solicitudes__requestMetaWrap']}>
                                         <div>
-                                            <div className={styles['solicitudes__requestName']}>{req.nombre}</div>
-                                            <div className="form__hint">Recibido: {req.recibido}</div>
+                                            <div className={styles['solicitudes__requestName']} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                                <MdPerson aria-hidden="true" />
+                                                {req.nombre}
+                                            </div>
+                                            <div className="form__hint" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                                <MdAccessTime aria-hidden="true" />
+                                                Recibido: {req.recibido}
+                                            </div>
                                         </div>
                                     </div>
 
@@ -278,10 +300,17 @@ export default function Solicitudes() {
                                     <button
                                         className="btn btn--primary"
                                         onClick={() => generateNewPassword(req)}
+                                        style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
                                     >
+                                        <MdPassword aria-hidden="true" />
                                         Generar Nueva Contraseña
                                     </button>
-                                    <button className="btn" onClick={() => contactUser(req)}>
+                                    <button
+                                        className="btn"
+                                        onClick={() => contactUser(req)}
+                                        style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
+                                    >
+                                        <MdEmail aria-hidden="true" />
                                         Contactar
                                     </button>
                                 </div>
@@ -306,7 +335,10 @@ export default function Solicitudes() {
                             className={`card ${styles['solicitudes__activityCard']} ${a.type === "success" ? styles['solicitudes__activityCard--success'] : styles['solicitudes__activityCard--info']}`}
                         >
                             <div className={styles['solicitudes__activityInner']}>
-                                <div className={styles['solicitudes__activityText']}>{a.text}</div>
+                                <div className={styles['solicitudes__activityText']} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                    {a.type === "success" ? <MdTaskAlt aria-hidden="true" /> : <MdInfo aria-hidden="true" />}
+                                    {a.text}
+                                </div>
                                 <div className="form__hint">{a.when}</div>
                             </div>
                         </div>

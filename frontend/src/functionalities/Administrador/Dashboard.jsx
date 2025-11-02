@@ -7,11 +7,27 @@ import { HorarioPDFExporter } from "../../utils/pdfExportService";
 import { HorarioExcelExporter } from "../../utils/excelExportService";
 import usePageTitle from "../../hooks/usePageTitle";
 
+import { MdDashboardCustomize } from "react-icons/md";
+import { FiSearch } from "react-icons/fi";
+import { FaClock, FaFilePdf, FaFileExcel, FaChalkboardTeacher, FaGraduationCap, FaSchool, FaRegCalendarCheck } from "react-icons/fa";
+
 // Tarjeta de stats
 function StatCard({ label, value, loading = false }) {
+  const renderIcon = () => {
+    const size = 16;
+    if (String(label).toLowerCase().includes("docente")) return <FaChalkboardTeacher size={size} aria-hidden="true" />;
+    if (String(label).toLowerCase().includes("carrera")) return <FaGraduationCap size={size} aria-hidden="true" />;
+    if (String(label).toLowerCase().includes("salon")) return <FaSchool size={size} aria-hidden="true" />;
+    if (String(label).toLowerCase().includes("activo")) return <FaRegCalendarCheck size={size} aria-hidden="true" />;
+    return null;
+  };
+
   return (
     <div className={`card ${styles["dashboard__stat-card"]}`}>
-      <div className={styles["dashboard__stat-card__label"]}>{label}</div>
+      <div className={styles["dashboard__stat-card__label"]} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        {renderIcon()}
+        {label}
+      </div>
       <div className={styles["dashboard__stat-card__value"]}>
         {loading ? <span className={styles["dashboard__muted"]}>...</span> : value}
       </div>
@@ -296,14 +312,16 @@ function ScheduleTable() {
     <div className={`card ${styles["dashboard__card"]}`}>
       {/* Header */}
       <div className={styles["dashboard__header"]}>
-        <div className={styles["dashboard__header__title"]}>
+        <div className={styles["dashboard__header__title"]} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+          <MdDashboardCustomize size={20} aria-hidden="true" />
           Visualización de Horarios
         </div>
 
         {/* Filtros */}
         <div className={styles["dashboard__filters"]}>
           {/* Buscador por nombre */}
-          <div className={styles["dashboard__search"]}>
+          <div className={styles["dashboard__search"]} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <FiSearch aria-hidden="true" />
             <input
               className={`btn ${styles["dashboard__search-input"]}`}
               placeholder="Buscar profesor por nombre…"
@@ -336,10 +354,13 @@ function ScheduleTable() {
           </div>
 
           {/* Turno */}
-          <select className="btn" value={tipo} onChange={(e) => setTipo(e.target.value)}>
-            <option value="matutino">Matutino (07:00 - 14:00)</option>
-            <option value="vespertino">Vespertino (15:00 - 22:00)</option>
-          </select>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+            <FaClock size={14} aria-hidden="true" />
+            <select className="btn" value={tipo} onChange={(e) => setTipo(e.target.value)}>
+              <option value="matutino">Matutino (07:00 - 14:00)</option>
+              <option value="vespertino">Vespertino (15:00 - 22:00)</option>
+            </select>
+          </div>
 
           {/* Filtro por Salón */}
           <select
@@ -370,8 +391,14 @@ function ScheduleTable() {
             ))}
           </select>
 
-          <button className="btn" onClick={exportPDF}>PDF</button>
-          <button className="btn btn--primary" onClick={exportExcel}>Excel</button>
+          <button className="btn" onClick={exportPDF} title="Exportar a PDF" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+            <FaFilePdf aria-hidden="true" />
+            PDF
+          </button>
+          <button className="btn btn--primary" onClick={exportExcel} title="Exportar a Excel" style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+            <FaFileExcel aria-hidden="true" />
+            Excel
+          </button>
         </div>
       </div>
 
@@ -425,7 +452,10 @@ function ScheduleTable() {
           <table className="table">
             <thead>
               <tr>
-                <th>Hora</th>
+                <th style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  <FaClock size={12} aria-hidden="true" />
+                  Hora
+                </th>
                 <th>Lunes</th>
                 <th>Martes</th>
                 <th>Miércoles</th>
@@ -536,7 +566,10 @@ function ScheduleTable() {
           <table className="table">
             <thead>
               <tr>
-                <th>Hora</th>
+                <th style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  <FaClock size={12} aria-hidden="true" />
+                  Hora
+                </th>
                 <th>Lunes</th>
                 <th>Martes</th>
                 <th>Miércoles</th>
@@ -622,7 +655,10 @@ export default function Dashboard() {
     <>
       {/* Título */}
       <div className={styles["dashboard__page-header"]}>
-        <h2 className={`main__title ${styles["dashboard__main-title"]}`}> Dashboard Principal </h2>
+        <h2 className={`main__title ${styles["dashboard__main-title"]}`} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+          <MdDashboardCustomize size={22} aria-hidden="true" />
+          Dashboard Principal
+        </h2>
         <p className={`main__subtitle ${styles["dashboard__main-subtitle"]}`}> Vista general del sistema de horarios </p>
       </div>
 

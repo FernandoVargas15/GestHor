@@ -3,6 +3,10 @@ import * as lugaresService from "../../services/lugaresService";
 import { useToast } from "../../components/ui/NotificacionFlotante";
 import usePageTitle from "../../hooks/usePageTitle";
 
+import {
+    MdPlace, MdDomain, MdMeetingRoom, MdSearch, MdFilterList, MdClear, MdAddBusiness, MdAdd, MdEdit, MdDelete, MdExpandMore, MdExpandLess
+} from "react-icons/md";
+
 const TIPOS_EDIFICIO = ["Académico", "Laboratorio", "Administrativo"];
 const TIPOS_SALON = ["Aula", "Laboratorio", "Salas de usos múltiples", "Taller"];
 
@@ -273,7 +277,8 @@ export default function Lugares() {
     return (
         <>
             <div style={{ marginBottom: 16 }}>
-                <h2 className="main__title" style={{ margin: 0 }}>
+                <h2 className="main__title" style={{ margin: 0, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                    <MdPlace size={22} aria-hidden="true" />
                     Gestión de Lugares
                 </h2>
                 <p className="main__subtitle" style={{ marginTop: 4 }}>
@@ -283,18 +288,41 @@ export default function Lugares() {
 
             {/* Filtros y búsqueda */}
             <div style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center' }}>
-                <input className="input" placeholder="Buscar por nombre (lugar, edificio, salón)..." value={filterText} onChange={(e) => setFilterText(e.target.value)} />
-                <select className="select" value={filterTipoSalon} onChange={(e) => setFilterTipoSalon(e.target.value)}>
-                    <option value="">Filtrar por tipo de salón</option>
-                    {TIPOS_SALON.map((t) => (<option key={t} value={t}>{t}</option>))}
-                </select>
-                <button className="btn" onClick={() => { setFilterText(''); setFilterTipoSalon(''); }}>Limpiar</button>
+                <MdSearch aria-hidden="true" />
+                <input
+                    className="input"
+                    placeholder="Buscar por nombre (lugar, edificio, salón)..."
+                    value={filterText}
+                    onChange={(e) => setFilterText(e.target.value)}
+                />
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                    <MdFilterList aria-hidden="true" />
+                    <select
+                        className="select"
+                        value={filterTipoSalon}
+                        onChange={(e) => setFilterTipoSalon(e.target.value)}
+                    >
+                        <option value="">Filtrar por tipo de salón</option>
+                        {TIPOS_SALON.map((t) => (<option key={t} value={t}>{t}</option>))}
+                    </select>
+                </div>
+                <button
+                    className="btn"
+                    onClick={() => { setFilterText(''); setFilterTipoSalon(''); }}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
+                >
+                    <MdClear aria-hidden="true" />
+                    Limpiar
+                </button>
             </div>
 
             <div className="grid grid--2" style={{ marginBottom: 16 }}>
                 {/* Lugar */}
                 <div className="card">
-                    <h3 style={{ marginTop: 0 }}>{editLugarId ? "Editar Lugar" : "Registrar Lugar"}</h3>
+                    <h3 style={{ marginTop: 0, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <MdPlace aria-hidden="true" />
+                        {editLugarId ? "Editar Lugar" : "Registrar Lugar"}
+                    </h3>
                     <form onSubmit={submitLugar}>
                         <div>
                             <label>Nombre del Lugar</label>
@@ -306,9 +334,14 @@ export default function Lugares() {
                         </div>
 
                         <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
-                            <button type="submit" className="btn btn--primary">{editLugarId ? "Actualizar Lugar" : "Agregar Lugar"}</button>
+                            <button type="submit" className="btn btn--primary" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                {editLugarId ? <MdEdit aria-hidden="true" /> : <MdAddBusiness aria-hidden="true" />}
+                                {editLugarId ? "Actualizar Lugar" : "Agregar Lugar"}
+                            </button>
                             {editLugarId && (
-                                <button type="button" className="btn" onClick={() => { setEditLugarId(null); setFormLugar(emptyLugar()); }}>Cancelar edición</button>
+                                <button type="button" className="btn" onClick={() => { setEditLugarId(null); setFormLugar(emptyLugar()); }}>
+                                    Cancelar edición
+                                </button>
                             )}
                         </div>
                     </form>
@@ -316,7 +349,10 @@ export default function Lugares() {
 
                 {/* Edificio */}
                 <div className="card">
-                    <h3 style={{ marginTop: 0 }}>{editEdificioId ? "Editar Edificio" : "Registrar Edificio"}</h3>
+                    <h3 style={{ marginTop: 0, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <MdDomain aria-hidden="true" />
+                        {editEdificioId ? "Editar Edificio" : "Registrar Edificio"}
+                    </h3>
                     <form onSubmit={submitEdificio}>
                         <div>
                             <label>Lugar</label>
@@ -337,9 +373,14 @@ export default function Lugares() {
                         </div>
 
                         <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
-                            <button type="submit" className="btn btn--primary">{editEdificioId ? "Actualizar Edificio" : "Agregar Edificio"}</button>
+                            <button type="submit" className="btn btn--primary" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                {editEdificioId ? <MdEdit aria-hidden="true" /> : <MdAdd aria-hidden="true" />}
+                                {editEdificioId ? "Actualizar Edificio" : "Agregar Edificio"}
+                            </button>
                             {editEdificioId && (
-                                <button type="button" className="btn" onClick={() => { setEditEdificioId(null); setFormEdificio(emptyEdificio()); }}>Cancelar edición</button>
+                                <button type="button" className="btn" onClick={() => { setEditEdificioId(null); setFormEdificio(emptyEdificio()); }}>
+                                    Cancelar edición
+                                </button>
                             )}
                         </div>
                     </form>
@@ -347,7 +388,10 @@ export default function Lugares() {
 
                 {/* Salon */}
                 <div className="card">
-                    <h3 style={{ marginTop: 0 }}>{editSalonId ? "Editar Salón" : "Registrar Salón"}</h3>
+                    <h3 style={{ marginTop: 0, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <MdMeetingRoom aria-hidden="true" />
+                        {editSalonId ? "Editar Salón" : "Registrar Salón"}
+                    </h3>
                     <form onSubmit={submitSalon}>
                         <div>
                             <label>Edificio</label>
@@ -370,9 +414,14 @@ export default function Lugares() {
                         </div>
 
                         <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
-                            <button type="submit" className="btn btn--primary">{editSalonId ? "Actualizar Salón" : "Agregar Salón"}</button>
+                            <button type="submit" className="btn btn--primary" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                {editSalonId ? <MdEdit aria-hidden="true" /> : <MdAdd aria-hidden="true" />}
+                                {editSalonId ? "Actualizar Salón" : "Agregar Salón"}
+                            </button>
                             {editSalonId && (
-                                <button type="button" className="btn" onClick={() => { setEditSalonId(null); setFormSalon(emptySalon()); }}>Cancelar edición</button>
+                                <button type="button" className="btn" onClick={() => { setEditSalonId(null); setFormSalon(emptySalon()); }}>
+                                    Cancelar edición
+                                </button>
                             )}
                         </div>
                     </form>
@@ -388,18 +437,41 @@ export default function Lugares() {
                     )}
                     {lugares.filter(aplicarFiltro).map((lugar) => (
                         <div key={lugar.lugar_id} className="card" style={{ borderColor: "var(--border)" }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }} onClick={() => toggleLugar(lugar.lugar_id)}>
+                            <div
+                                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+                                onClick={() => toggleLugar(lugar.lugar_id)}
+                            >
                                 <div>
-                                    <div style={{ fontWeight: 700 }}>{lugar.nombre_lugar}</div>
+                                    <div style={{ fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                        <MdPlace aria-hidden="true" />
+                                        {lugar.nombre_lugar}
+                                    </div>
                                     {lugar.tipo_lugar && <div className="form__hint">{lugar.tipo_lugar}</div>}
                                     <div className="form__hint">{(lugar.edificios || []).length} edificio(s) • {(lugar.edificios || []).reduce((acc, e) => acc + ((e.salones || []).length || 0), 0)} salón(es)</div>
                                 </div>
 
-                                <div style={{ display: 'flex', gap: 8 }}>
-                                    <button className="btn" onClick={(e) => { e.stopPropagation(); setFormEdificio((f) => ({ ...f, lugar_id: lugar.lugar_id })); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>Agregar edificio</button>
-                                    <button className="btn" onClick={(e) => { e.stopPropagation(); setFormSalon((f) => ({ ...f, edificio_id: (lugar.edificios && lugar.edificios[0] && lugar.edificios[0].edificio_id) || '' })); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>Agregar salón</button>
-                                    <button className="link-btn" onClick={(e) => { e.stopPropagation(); editarLugar(lugar); }}>Editar</button>
-                                    <button className="link-btn link-btn--danger" onClick={(e) => { e.stopPropagation(); eliminarLugar(lugar.lugar_id); }}>Eliminar</button>
+                                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                    <button
+                                        className="btn"
+                                        onClick={(e) => { e.stopPropagation(); setFormEdificio((f) => ({ ...f, lugar_id: lugar.lugar_id })); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                                        style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
+                                    >
+                                        <MdAdd aria-hidden="true" /> Agregar edificio
+                                    </button>
+                                    <button
+                                        className="btn"
+                                        onClick={(e) => { e.stopPropagation(); setFormSalon((f) => ({ ...f, edificio_id: (lugar.edificios && lugar.edificios[0] && lugar.edificios[0].edificio_id) || '' })); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                                        style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
+                                    >
+                                        <MdAdd aria-hidden="true" /> Agregar salón
+                                    </button>
+                                    <button className="link-btn" onClick={(e) => { e.stopPropagation(); editarLugar(lugar); }} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                        <MdEdit aria-hidden="true" /> Editar
+                                    </button>
+                                    <button className="link-btn link-btn--danger" onClick={(e) => { e.stopPropagation(); eliminarLugar(lugar.lugar_id); }} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                        <MdDelete aria-hidden="true" /> Eliminar
+                                    </button>
+                                    {expandedLugares.has(lugar.lugar_id) ? <MdExpandLess aria-hidden="true" /> : <MdExpandMore aria-hidden="true" />}
                                 </div>
                             </div>
 
@@ -411,16 +483,33 @@ export default function Lugares() {
 
                                     {(lugar.edificios || []).map((ed) => (
                                         <div key={ed.edificio_id} className="card" style={{ marginBottom: 10, padding: 12 }}>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, cursor: 'pointer' }} onClick={() => toggleEdificio(ed.edificio_id)}>
+                                            <div
+                                                style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, cursor: 'pointer' }}
+                                                onClick={() => toggleEdificio(ed.edificio_id)}
+                                            >
                                                 <div>
-                                                    <div style={{ fontWeight: 700 }}>{ed.nombre_edificio}</div>
+                                                    <div style={{ fontWeight: 700, display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                                        <MdDomain aria-hidden="true" />
+                                                        {ed.nombre_edificio}
+                                                    </div>
                                                     {ed.tipo_edificio && <div className="form__hint">{ed.tipo_edificio}</div>}
                                                     <div className="form__hint">{(ed.salones || []).length} salón(es)</div>
                                                 </div>
                                                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                                                    <button className="btn" onClick={(e) => { e.stopPropagation(); setFormSalon((f) => ({ ...f, edificio_id: ed.edificio_id })); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>Agregar salón</button>
-                                                    <button className="link-btn" onClick={(e) => { e.stopPropagation(); editarEdificio(lugar.lugar_id, ed); }}>Editar</button>
-                                                    <button className="link-btn link-btn--danger" onClick={(e) => { e.stopPropagation(); eliminarEdificio(ed.edificio_id); }}>Eliminar</button>
+                                                    <button
+                                                        className="btn"
+                                                        onClick={(e) => { e.stopPropagation(); setFormSalon((f) => ({ ...f, edificio_id: ed.edificio_id })); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                                                        style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
+                                                    >
+                                                        <MdAdd aria-hidden="true" /> Agregar salón
+                                                    </button>
+                                                    <button className="link-btn" onClick={(e) => { e.stopPropagation(); editarEdificio(lugar.lugar_id, ed); }} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                                        <MdEdit aria-hidden="true" /> Editar
+                                                    </button>
+                                                    <button className="link-btn link-btn--danger" onClick={(e) => { e.stopPropagation(); eliminarEdificio(ed.edificio_id); }} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                                        <MdDelete aria-hidden="true" /> Eliminar
+                                                    </button>
+                                                    {expandedEdificios.has(ed.edificio_id) ? <MdExpandLess aria-hidden="true" /> : <MdExpandMore aria-hidden="true" />}
                                                 </div>
                                             </div>
 
@@ -434,12 +523,19 @@ export default function Lugares() {
                                                         <div key={s.salon_id} className="card" style={{ padding: 10 }}>
                                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
                                                                 <div>
-                                                                    <div style={{ fontWeight: 600 }}>{s.nombre_salon}</div>
+                                                                    <div style={{ fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                                                        <MdMeetingRoom aria-hidden="true" />
+                                                                        {s.nombre_salon}
+                                                                    </div>
                                                                     <div className="form__hint">{s.tipo_salon || ''}</div>
                                                                 </div>
                                                                 <div>
-                                                                    <button className="link-btn" onClick={() => editarSalon(ed.edificio_id, s)}>Editar</button>
-                                                                    <button className="link-btn link-btn--danger" onClick={() => eliminarSalon(s.salon_id)}>Eliminar</button>
+                                                                    <button className="link-btn" onClick={() => editarSalon(ed.edificio_id, s)} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                                                        <MdEdit aria-hidden="true" /> Editar
+                                                                    </button>
+                                                                    <button className="link-btn link-btn--danger" onClick={() => eliminarSalon(s.salon_id)} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                                                        <MdDelete aria-hidden="true" /> Eliminar
+                                                                    </button>
                                                                 </div>
                                                             </div>
                                                         </div>

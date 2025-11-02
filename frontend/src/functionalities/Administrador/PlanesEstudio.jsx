@@ -10,6 +10,9 @@ import AutocompleteInput from "../../components/admin/AutocompleteInput";
 import MateriaCard from "../../components/admin/MateriaCard";
 import usePageTitle from "../../hooks/usePageTitle";
 
+import { FaUniversity, FaRegListAlt, FaGraduationCap } from "react-icons/fa";
+import { MdSave, MdArrowBack, MdLibraryAdd } from "react-icons/md";
+
 const emptyCareer = {
     nombre: "",
     semestres: 0
@@ -117,7 +120,13 @@ export default function PlanesEstudio() {
     return (
         <>
             <div style={{ marginBottom: 16 }}>
-                <h2 className="main__title" style={{ margin: 0 }}>Planes de Estudio</h2>
+                <h2
+                    className="main__title"
+                    style={{ margin: 0, display: "inline-flex", alignItems: "center", gap: 8 }}
+                >
+                    <FaUniversity size={22} aria-hidden="true" />
+                    Planes de Estudio
+                </h2>
                 <p className="main__subtitle" style={{ marginTop: 4 }}>
                     Gestionar carreras y asignar materias del catálogo
                 </p>
@@ -131,7 +140,10 @@ export default function PlanesEstudio() {
             />
 
             <div className="card" style={{ marginBottom: 16 }}>
-                <h3 style={{ marginTop: 0 }}>Carreras Registradas ({carreras.length})</h3>
+                <h3 style={{ marginTop: 0, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                    <FaRegListAlt size={18} aria-hidden="true" />
+                    Carreras Registradas ({carreras.length})
+                </h3>
                 <CarreraList
                     carreras={carreras}
                     onSelect={seleccionarCarrera}
@@ -168,7 +180,10 @@ function EditorPlanEstudio({
         <div className="card">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                 <div style={{ flex: 1 }}>
-                    <h3 style={{ margin: 0 }}> {carrera.nombre_carrera}</h3>
+                    <h3 style={{ margin: 0, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <FaGraduationCap size={18} aria-hidden="true" />
+                        {carrera.nombre_carrera}
+                    </h3>
                     <div className="form__hint">Asignar materias del catálogo por semestre</div>
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
@@ -177,13 +192,15 @@ function EditorPlanEstudio({
                         onClick={onSavePlan}
                         disabled={cargando}
                     >
+                        <MdSave aria-hidden="true" />
                         Guardar Plan
                     </button>
                     <button
                         className="btn"
                         onClick={onClose}
                     >
-                        ← Volver
+                        <MdArrowBack aria-hidden="true" />
+                        Volver
                     </button>
                 </div>
             </div>
@@ -197,7 +214,10 @@ function EditorPlanEstudio({
 
             <div className="grid grid--2" style={{ gap: 16 }}>
                 <div className="card" style={{ borderColor: "var(--border)" }}>
-                    <h4 style={{ marginTop: 0 }}>Agregar Materia al {semestreActual}° Semestre</h4>
+                    <h4 style={{ marginTop: 0, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <MdLibraryAdd size={18} aria-hidden="true" />
+                        Agregar Materia al {semestreActual}° Semestre
+                    </h4>
 
                     <div style={{ marginBottom: 12 }}>
                         <label>Buscar y Seleccionar Materia del Catálogo:</label>

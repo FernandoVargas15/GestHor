@@ -1,7 +1,13 @@
+import { MdAddCircle } from "react-icons/md";
+import { FaGraduationCap } from "react-icons/fa";
+
 export default function CarreraForm({ form, onChange, onSubmit, cargando }) {
     return (
         <div className="card" style={{ marginBottom: 16 }}>
-            <h3 style={{ marginTop: 0 }}>Crear Nueva Carrera</h3>
+            <h3 style={{ marginTop: 0, display: "inline-flex", alignItems: "center", gap: 8 }}>
+                <FaGraduationCap size={18} aria-hidden="true" />
+                Crear Nueva Carrera
+            </h3>
 
             <form onSubmit={onSubmit}>
                 <div className="form__row form__row--2">
@@ -36,12 +42,13 @@ export default function CarreraForm({ form, onChange, onSubmit, cargando }) {
                     </div>
                 </div>
 
-                <button 
-                    type="submit" 
+                <button
+                    type="submit"
                     className="btn btn--primary"
                     disabled={cargando}
-                    style={{ marginTop: 12 }}
+                    style={{ marginTop: 12, display: "inline-flex", alignItems: "center", gap: 8 }}
                 >
+                    <MdAddCircle aria-hidden="true" />
                     {cargando ? "Creando..." : "Crear Carrera"}
                 </button>
             </form>

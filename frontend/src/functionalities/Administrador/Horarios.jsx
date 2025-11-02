@@ -14,6 +14,25 @@ import ScheduleGrid from "../../components/admin/ScheduleGrid";
 import styles from "../../styles/AdminHorarios.module.css";
 import usePageTitle from "../../hooks/usePageTitle";
 
+import {
+    MdSchedule,
+    MdInfo,
+    MdPersonSearch,
+    MdClear,
+    MdPriorityHigh,
+    MdEdit,
+    MdEmail,
+    MdEvent,
+    MdAccessTime,
+    MdPlace,
+    MdDomain,
+    MdDoorFront,
+    MdAdd,
+    MdCancel,
+    MdCheckCircle,
+    MdTipsAndUpdates
+} from "react-icons/md";
+
 const DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
 const DAY_KEYS = ["lunes", "martes", "miercoles", "jueves", "viernes"];
 const MATUTINO_SLOTS = [
@@ -240,7 +259,10 @@ export default function Horarios() {
     return (
         <>
             <div className={styles['admin-horarios__header']}>
-                <h2 className={`main__title ${styles['admin-horarios__title']}`}>Gestión de Horarios</h2>
+                <h2 className={`main__title ${styles['admin-horarios__title']}`} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                    <MdSchedule size={22} aria-hidden="true" />
+                    Gestión de Horarios
+                </h2>
                 <p className={`main__subtitle ${styles['admin-horarios__subtitle']}`}>
                     Asigne y visualice los horarios de los docentes
                 </p>
@@ -294,7 +316,10 @@ export default function Horarios() {
 function HorarioProfessorSearch({ profesores, profesorSel, onSelect, onClear, cargando }) {
     return (
         <div className={styles.teacherSelector}>
-            <h3 className={styles.panelTitle}>Docente</h3>
+            <h3 className={styles.panelTitle} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                <MdPersonSearch aria-hidden="true" />
+                Docente
+            </h3>
             {cargando ? (
                 <div className="form__hint">Cargando docentes...</div>
             ) : profesorSel ? (
@@ -302,10 +327,11 @@ function HorarioProfessorSearch({ profesores, profesorSel, onSelect, onClear, ca
                     <span className={styles.selectedTeacherName}>
                         {profesorSel.nombres} {profesorSel.apellidos}
                     </span>
-                    <button onClick={onClear} className={styles.clearButton} title="Limpiar selección">
-                        &times;
+                    <button onClick={onClear} className={styles.clearButton} title="Limpiar selección" aria-label="Limpiar selección">
+                        <MdClear />
                     </button>
-                    <div className={styles.teacherPriority}>
+                    <div className={styles.teacherPriority} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                        <MdPriorityHigh aria-hidden="true" />
                         {profesorSel.nombre_tipo ?
                             `Prioridad: ${profesorSel.nivel_prioridad} (${profesorSel.nombre_tipo})` :
                             'Prioridad: No asignada'
@@ -577,7 +603,10 @@ function HorarioAssignmentForm({ profesorSel, catalogs, itemToEdit, onHorarioUpd
 
     return (
         <div className={styles.assignmentForm}>
-            <h3 className={styles.panelTitle}>{editId ? "Editar Horario" : "Asignar Nuevo Horario"}</h3>
+            <h3 className={styles.panelTitle} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                {editId ? <MdEdit aria-hidden="true" /> : <MdAdd aria-hidden="true" />}
+                {editId ? "Editar Horario" : "Asignar Nuevo Horario"}
+            </h3>
             <form onSubmit={submit}>
                 <div className="form__row form__row--2">
                     {/* Filtros por Carrera y Semestre */}
@@ -626,14 +655,20 @@ function HorarioAssignmentForm({ profesorSel, catalogs, itemToEdit, onHorarioUpd
 
                 <div className={`form__row form__row--3 ${styles['admin-horarios__form-row--spaced']}`}>
                     <div>
-                        <label>Día</label>
+                        <label style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                            <MdEvent aria-hidden="true" />
+                            Día
+                        </label>
                         <select className="select" name="dia" value={form.dia} onChange={onChange} required >
                             <option value="">Seleccionar día...</option>
                             {DIAS.map((d) => (<option key={d} value={d}>{d}</option>))}
                         </select>
                     </div>
                     <div>
-                        <label>Hora Inicio</label>
+                        <label style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                            <MdAccessTime aria-hidden="true" />
+                            Hora Inicio
+                        </label>
                         <select className="select" name="inicio" value={form.inicio} onChange={onChange} required disabled={!form.materiaId
                         } >
                             <option value="">Seleccionar hora...</option>
@@ -641,7 +676,10 @@ function HorarioAssignmentForm({ profesorSel, catalogs, itemToEdit, onHorarioUpd
                         </select>
                     </div>
                     <div>
-                        <label>Hora Fin</label>
+                        <label style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                            <MdAccessTime aria-hidden="true" />
+                            Hora Fin
+                        </label>
                         <select className="select" name="fin" value={form.fin} onChange={onChange} required disabled={!form.inicio} >
                             <option value="">Seleccionar hora...</option>
                             {horas.map((h) => (<option key={h} value={h}>{h}</option>))}
@@ -651,21 +689,30 @@ function HorarioAssignmentForm({ profesorSel, catalogs, itemToEdit, onHorarioUpd
 
                 <div className={`form__row form__row--3 ${styles['admin-horarios__form-row--spaced']}`}>
                     <div>
-                        <label>Lugar</label>
+                        <label style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                            <MdPlace aria-hidden="true" />
+                            Lugar
+                        </label>
                         <select className="select" value={selectedLugarId} onChange={(e) => { setSelectedLugarId(e.target.value); setSelectedEdificioId(""); }} required >
                             <option value="">Seleccionar...</option>
                             {lugares.map((l) => (<option key={l.lugar_id} value={l.lugar_id}>{l.nombre_lugar}</option>))}
                         </select>
                     </div>
                     <div>
-                        <label>Edificio</label>
+                        <label style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                            <MdDomain aria-hidden="true" />
+                            Edificio
+                        </label>
                         <select className="select" value={selectedEdificioId} onChange={(e) => setSelectedEdificioId(e.target.value)} required disabled={!selectedLugarId} >
                             <option value="">Seleccionar...</option>
                             {(lugares.find(l => String(l.lugar_id) === String(selectedLugarId))?.edificios || []).map((ed) => (<option key={ed.edificio_id} value={ed.edificio_id}>{ed.nombre_edificio}</option>))}
                         </select>
                     </div>
                     <div>
-                        <label>Salón</label>
+                        <label style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                            <MdDoorFront aria-hidden="true" />
+                            Salón
+                        </label>
                         <select className="select" name="salonId" value={form.salonId} onChange={onChange} required disabled={!selectedEdificioId} >
                             <option value="">Seleccionar...</option>
                             {salonesFiltrados().map((s) => (<option key={s.salon_id} value={s.salon_id}>{s.nombre_salon} {s.tipo_salon ? ` - ${s.tipo_salon}` : ""}</option>))}
@@ -674,19 +721,26 @@ function HorarioAssignmentForm({ profesorSel, catalogs, itemToEdit, onHorarioUpd
                 </div>
 
                 <div className={styles['admin-horarios__actions']}>
-                    <button type="submit" className="btn btn--primary" disabled={cargandoSubmit || validando || !profesorSel}>
-                        {cargandoSubmit || validando ? "Cargando..." : editId ? "Actualizar Horario" : "Asignar Horario"}
+                    <button type="submit" className="btn btn--primary" disabled={cargandoSubmit || validando || !profesorSel} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                        {cargandoSubmit || validando ? "Cargando..." : (
+                            <>
+                                <MdCheckCircle aria-hidden="true" />
+                                {editId ? "Actualizar Horario" : "Asignar Horario"}
+                            </>
+                        )}
                     </button>
 
                     {/* Botón de sugerencias, deshabilitado si estamos editando */}
                     {!editId && (
-                        <button type="button" className="btn" onClick={handleSugerirDocentes} disabled={cargandoSugerencias}>
+                        <button type="button" className="btn" onClick={handleSugerirDocentes} disabled={cargandoSugerencias} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                            <MdTipsAndUpdates aria-hidden="true" />
                             {cargandoSugerencias ? 'Buscando...' : 'Sugerir docentes'}
                         </button>
                     )}
 
                     {editId && (
-                        <button type="button" className="btn" onClick={handleClearForm} disabled={cargandoSubmit}>
+                        <button type="button" className="btn" onClick={handleClearForm} disabled={cargandoSubmit} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                            <MdCancel aria-hidden="true" />
                             Cancelar edición
                         </button>
                     )}
@@ -713,7 +767,10 @@ const CandidateRow = ({ candidato, onSelect }) => {
     return (
         <div onClick={() => onSelect(candidato)} className={styles['admin-horarios__candidate']}>
             <div>
-                <div className={styles['admin-horarios__candidate__name']}>{candidato.nombres} {candidato.apellidos}</div>
+                <div className={styles['admin-horarios__candidate__name']} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    <MdPersonSearch aria-hidden="true" />
+                    {candidato.nombres} {candidato.apellidos}
+                </div>
                 <div className={styles['admin-horarios__candidate__meta']}>
                     {candidato.nombre_tipo ? `${candidato.nombre_tipo} (prioridad ${candidato.nivel_prioridad})` : 'Sin contrato'}
                     {' — '}
@@ -776,10 +833,12 @@ function HorarioTabsContainer({ profesorSel, scheduleData, infoProfesor, tabProp
     return (
         <div className="fade-in">
             <div className={styles.tabsContainer}>
-                <button className={`${styles.tabButton} ${activeTab === 'horario' ? styles.tabButtonActive : ''}`} onClick={() => setActiveTab('horario')}>
+                <button className={`${styles.tabButton} ${activeTab === 'horario' ? styles.tabButtonActive : ''}`} onClick={() => setActiveTab('horario')} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    <MdSchedule aria-hidden="true" />
                     Horario Semanal
                 </button>
-                <button className={`${styles.tabButton} ${activeTab === 'info' ? styles.tabButtonActive : ''}`} onClick={() => setActiveTab('info')}>
+                <button className={`${styles.tabButton} ${activeTab === 'info' ? styles.tabButtonActive : ''}`} onClick={() => setActiveTab('info')} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    <MdInfo aria-hidden="true" />
                     Información del Docente
                 </button>
             </div>
@@ -787,7 +846,10 @@ function HorarioTabsContainer({ profesorSel, scheduleData, infoProfesor, tabProp
             {activeTab === 'horario' && (
                 <div className="card fade-in">
                     <div className={styles['admin-horarios__tab-header']}>
-                        <h3 className={styles['admin-horarios__tab-title']}>Horario Semanal de {profesorSel.nombres}</h3>
+                        <h3 className={styles['admin-horarios__tab-title']} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                            <MdSchedule aria-hidden="true" />
+                            Horario Semanal de {profesorSel.nombres}
+                        </h3>
                         <div className={styles['admin-horarios__tab-actions']}>
                             <select className="select" value={tipo} onChange={(e) => setTipo(e.target.value)}>
                                 <option value="matutino">Matutino (07:00 - 14:00)</option>
@@ -796,7 +858,9 @@ function HorarioTabsContainer({ profesorSel, scheduleData, infoProfesor, tabProp
                             <button
                                 className="btn"
                                 onClick={handleSendEmail}
-                                disabled={cargandoAccion || cargandoHorario || !schedule.slots.length}>
+                                disabled={cargandoAccion || cargandoHorario || !schedule.slots.length}
+                                style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                <MdEmail aria-hidden="true" />
                                 {cargandoAccion ? 'Enviando...' : 'Enviar por Correo'}
                             </button>
                         </div>

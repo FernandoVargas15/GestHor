@@ -1,15 +1,19 @@
 import { useState, useEffect } from "react";
 import { useToast } from "../../components/ui/NotificacionFlotante";
-import { 
-    obtenerMaterias, 
-    crearMateria, 
-    actualizarMateria, 
-    eliminarMateria 
+import {
+    obtenerMaterias,
+    crearMateria,
+    actualizarMateria,
+    eliminarMateria
 } from "../../services/materiaService";
 import SearchInput from "../../components/ui/SearchInput";
 import { useSearch } from "../../hooks/useSearch";
 import styles from "./Materias.module.css";
 import usePageTitle from "../../hooks/usePageTitle";
+
+import { MdLibraryBooks, MdAddCircle, MdEdit, MdDelete, MdCancel } from "react-icons/md";
+import { FiSearch } from "react-icons/fi";
+import { FaRegQuestionCircle } from "react-icons/fa";
 
 function emptyForm() {
     return {
@@ -25,7 +29,7 @@ export default function Materias() {
     const [busqueda, setBusqueda] = useState("");
     const { notify } = useToast();
     usePageTitle("Materias");
-    
+
     // Usar el hook de búsqueda
     const materiasFiltradas = useSearch(materias, busqueda, ["nombre_materia"]);
 
@@ -113,7 +117,10 @@ export default function Materias() {
     return (
         <>
             <div className={styles['materias__header']}>
-                <h2 className={`main__title ${styles['materias__title']}`}>Catálogo de Materias</h2>
+                <h2 className={`main__title ${styles['materias__title']}`} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                    <MdLibraryBooks size={22} aria-hidden="true" />
+                    Catálogo de Materias
+                </h2>
                 <p className={`main__subtitle ${styles['materias__subtitle']}`}>
                     Gestionar materias globales para asignar a carreras
                 </p>
@@ -122,10 +129,18 @@ export default function Materias() {
             <div className={`grid grid--2 ${styles['materias__grid']}`}>
                 {/* Formulario */}
                 <div className="card">
-                    <h3 className={styles['materias__cardTitle']}>
-                        {editingId ? "Editar Materia" : "Agregar Nueva Materia"}
+                    <h3 className={styles['materias__cardTitle']} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        {editingId ? (
+                            <>
+                                <MdEdit size={18} aria-hidden="true" /> Editar Materia
+                            </>
+                        ) : (
+                            <>
+                                <MdAddCircle size={18} aria-hidden="true" /> Agregar Nueva Materia
+                            </>
+                        )}
                     </h3>
-                    
+
                     <form onSubmit={onSubmit}>
                         <div className={styles['materias__formRow']}>
                             <label>Nombre de la Materia </label>
@@ -141,13 +156,25 @@ export default function Materias() {
                         </div>
 
                         <div className={styles['materias__actions']}>
-                            <button 
-                                type="submit" 
+                            <button
+                                type="submit"
                                 className="btn btn--primary"
                                 disabled={cargando}
+                                style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
                             >
-                                {cargando ? "Guardando..." : editingId ? "Actualizar" : "Agregar"}
+                                {cargando ? (
+                                    "Guardando..."
+                                ) : editingId ? (
+                                    <>
+                                        <MdEdit size={16} aria-hidden="true" /> Actualizar
+                                    </>
+                                ) : (
+                                    <>
+                                        <MdAddCircle size={16} aria-hidden="true" /> Agregar
+                                    </>
+                                )}
                             </button>
+
                             {editingId && (
                                 <button
                                     type="button"
@@ -157,8 +184,9 @@ export default function Materias() {
                                         setForm(emptyForm());
                                     }}
                                     disabled={cargando}
+                                    style={{ display: "inline-flex", alignItems: "center", gap: 8 }}
                                 >
-                                    Cancelar
+                                    <MdCancel size={16} aria-hidden="true" /> Cancelar
                                 </button>
                             )}
                         </div>
@@ -168,11 +196,14 @@ export default function Materias() {
                 {/* Listado */}
                 <div className="card">
                     <div className={styles['materias__listHeader']}>
-                        <h3 className={styles['materias__listTitle']}>Materias Registradas ({materias.length})</h3>
+                        <h3 className={styles['materias__listTitle']} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                            <MdLibraryBooks size={18} aria-hidden="true" /> Materias Registradas ({materias.length})
+                        </h3>
                     </div>
 
                     {/* Buscador */}
-                    <div className={styles['materias__search']}> 
+                    <div className={styles['materias__search']} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <FiSearch aria-hidden="true" />
                         <SearchInput
                             value={busqueda}
                             onChange={setBusqueda}
@@ -202,19 +233,21 @@ export default function Materias() {
                                                 )}
                                             </div>
                                             <div className={styles['materias__itemActions']}>
-                                                <button 
-                                                    className="link-btn" 
+                                                <button
+                                                    className="link-btn"
                                                     onClick={() => onEdit(m)}
                                                     disabled={cargando}
+                                                    style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
                                                 >
-                                                    Editar
+                                                    <MdEdit aria-hidden="true" /> Editar
                                                 </button>
                                                 <button
                                                     className="link-btn link-btn--danger"
                                                     onClick={() => onDelete(m.materia_id)}
                                                     disabled={cargando}
+                                                    style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
                                                 >
-                                                    Eliminar
+                                                    <MdDelete aria-hidden="true" /> Eliminar
                                                 </button>
                                             </div>
                                         </div>
@@ -228,7 +261,9 @@ export default function Materias() {
 
             {/* Información adicional */}
             <div className="card">
-                <h3 className={styles['materias__cardTitle']}>¿Cómo funciona?</h3>
+                <h3 className={styles['materias__cardTitle']} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                    <FaRegQuestionCircle size={18} aria-hidden="true" /> ¿Cómo funciona?
+                </h3>
                 <ul className={styles['materias__howList']}>
                     <li>Agrega materias aquí una sola vez al catálogo global</li>
                     <li>Luego, al crear o editar una carrera, selecciona las materias del catálogo</li>

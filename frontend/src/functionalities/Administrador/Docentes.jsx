@@ -8,6 +8,10 @@ import { useSearch } from "../../hooks/useSearch";
 import TiposContrato from "./TiposContrato"; // Importamos el componente de gestión
 import usePageTitle from "../../hooks/usePageTitle";
 
+import { MdPeopleAlt, MdSave, MdCancel } from "react-icons/md";
+import { FaUserTie, FaEdit, FaTrashAlt } from "react-icons/fa";
+import { FiSearch } from "react-icons/fi";
+
 function emptyForm() {
     return {
         nombres: "",
@@ -31,7 +35,7 @@ export default function Docentes() {
     const [tiposContrato, setTiposContrato] = useState([]);
     const { notify } = useToast();
     usePageTitle("Docentes");
-    
+
     // Buscar en nombres, apellidos, matricula y email
     const docentesFiltrados = useSearch(docentes, busqueda, ["nombres", "apellidos", "matricula", "email"]);
 
@@ -74,11 +78,11 @@ export default function Docentes() {
         try {
             if (editingId) {
                 await actualizarDocente(editingId, payload);
-                    notify({ type: 'success', message: 'Docente actualizado' });
+                notify({ type: 'success', message: 'Docente actualizado' });
                 setEditingId(null);
             } else {
                 await crearDocente(payload);
-                    notify({ type: 'success', message: 'Docente creado' });
+                notify({ type: 'success', message: 'Docente creado' });
             }
             setForm(emptyForm());
             // Recargamos ambos para mantener la consistencia
@@ -117,14 +121,22 @@ export default function Docentes() {
     return (
         <>
             <div className={styles["docentes__page-header"]}>
-                <h2 className={`main__title ${styles["docentes__main-title"]}`}>Gestión de Docentes</h2>
+                <h2 className={`main__title ${styles["docentes__main-title"]}`} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                    <MdPeopleAlt size={22} aria-hidden="true" />
+                    Gestión de Docentes
+                </h2>
                 <p className={`main__subtitle ${styles["docentes__main-subtitle"]}`}>
                     Administra los docentes y sus niveles de prioridad de contratación.
                 </p>
             </div>
+
             <div className={`grid grid--2 ${styles["docentes__grid"]}`}>
                 <div className="card">
-                    <h3 className={styles["docentes__form-title"]}>{editingId ? "Editar Docente" : "Registrar Docente"}</h3>
+                    <h3 className={styles["docentes__form-title"]} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <FaUserTie size={16} aria-hidden="true" />
+                        {editingId ? "Editar Docente" : "Registrar Docente"}
+                    </h3>
+
                     <form onSubmit={onSubmit}>
                         <div className="form__row form__row--2">
                             <div>
@@ -136,6 +148,7 @@ export default function Docentes() {
                                 <input className="input" name="apellidos" value={form.apellidos} onChange={onChange} required />
                             </div>
                         </div>
+
                         <div className="form__row form__row--2">
                             <div>
                                 <label>Matrícula</label>
@@ -146,20 +159,44 @@ export default function Docentes() {
                                 <input className="input" type="email" name="email" value={form.email} onChange={onChange} required />
                             </div>
                         </div>
-                        <div><label>Grado Académico</label><input className="input" name="grado_academico" value={form.grado_academico} onChange={onChange} /></div>
-                        <div className="form__row form__row--2">
-                            <div><label>No. Plaza</label><input className="input" name="numero_plaza" value={form.numero_plaza} onChange={onChange} /></div>
-                            <div><label>No. Contrato</label><input className="input" name="numero_contrato" value={form.numero_contrato} onChange={onChange} /></div>
+
+                        <div>
+                            <label>Grado Académico</label>
+                            <input className="input" name="grado_academico" value={form.grado_academico} onChange={onChange} />
                         </div>
-                        <div><label>Dirección</label><textarea className="textarea" name="direccion" value={form.direccion} onChange={onChange} /></div>
-                        <div><label>Teléfono</label><input type="text" className="input" name="telefono" value={form.telefono} onChange={(e) => {
-                            const value = e.target.value;
-                            if (/^\d{0,10}$/.test(value)) {
-                                onChange(e);
-                            }
-                        }}
-                            maxLength={10}
-                        /></div>
+
+                        <div className="form__row form__row--2">
+                            <div>
+                                <label>No. Plaza</label>
+                                <input className="input" name="numero_plaza" value={form.numero_plaza} onChange={onChange} />
+                            </div>
+                            <div>
+                                <label>No. Contrato</label>
+                                <input className="input" name="numero_contrato" value={form.numero_contrato} onChange={onChange} />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label>Dirección</label>
+                            <textarea className="textarea" name="direccion" value={form.direccion} onChange={onChange} />
+                        </div>
+
+                        <div>
+                            <label>Teléfono</label>
+                            <input
+                                type="text"
+                                className="input"
+                                name="telefono"
+                                value={form.telefono}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    if (/^\d{0,10}$/.test(value)) {
+                                        onChange(e);
+                                    }
+                                }}
+                                maxLength={10}
+                            />
+                        </div>
 
                         <div className={styles["docentes__form-section"]}>
                             <label>Tipo de Contrato (Prioridad)</label>
@@ -179,16 +216,34 @@ export default function Docentes() {
                             <div className="form__hint">Define la prioridad del docente para la asignación de horarios.</div>
                         </div>
 
-                        <button type="submit" className={`btn btn--primary ${styles["docentes__submit"]}`}>{editingId ? "Actualizar" : "Guardar"}</button>
-                        {editingId && <button type="button" className={`btn ${styles["docentes__cancel"]}`} onClick={() => { setEditingId(null); setForm(emptyForm()); }}>Cancelar</button>}
+                        <button type="submit" className={`btn btn--primary ${styles["docentes__submit"]}`} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                            <MdSave aria-hidden="true" />
+                            {editingId ? "Actualizar" : "Guardar"}
+                        </button>
+
+                        {editingId && (
+                            <button
+                                type="button"
+                                className={`btn ${styles["docentes__cancel"]}`}
+                                onClick={() => { setEditingId(null); setForm(emptyForm()); }}
+                                style={{ display: "inline-flex", alignItems: "center", gap: 8, marginLeft: 8 }}
+                            >
+                                <MdCancel aria-hidden="true" />
+                                Cancelar
+                            </button>
+                        )}
                     </form>
                 </div>
+
                 <div className="card">
-                    <h3>Registrados ({docentes.length})</h3>
-                    
-                    {/* Buscador */}
+                    <h3 style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                        <MdPeopleAlt size={18} aria-hidden="true" />
+                        Registrados ({docentes.length})
+                    </h3>
+
                     {docentes.length > 0 && (
-                        <div className={styles["docentes__search-wrapper"]}>
+                        <div className={styles["docentes__search-wrapper"]} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <FiSearch aria-hidden="true" />
                             <SearchInput
                                 value={busqueda}
                                 onChange={setBusqueda}
@@ -196,7 +251,7 @@ export default function Docentes() {
                             />
                         </div>
                     )}
-                    
+
                     {docentesFiltrados.length === 0 && busqueda ? (
                         <div className="form__hint">
                             No se encontraron docentes que coincidan con "{busqueda}"
@@ -204,16 +259,30 @@ export default function Docentes() {
                     ) : (
                         docentesFiltrados.map((d) => (
                             <div key={d.profesor_id} className={`card ${styles["docentes__list-item"]}`}>
-                                <div><strong>{d.nombres} {d.apellidos}</strong></div>
-                                <div className="form__hint">Mat: {d.matricula} | Email: {d.email}</div>
-                                {d.nombre_tipo && (
-                                    <div className={`form__hint ${styles["docentes__contract-hint"]}`}>
-                                        Contrato: {d.nombre_tipo} (Prioridad {d.nivel_prioridad})
+                                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                    <div style={{ width: 36, height: 36, borderRadius: "999px", background: "var(--pf-primary-50, #eff6ff)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                        <FaUserTie aria-hidden="true" />
                                     </div>
-                                )}
+                                    <div>
+                                        <div><strong>{d.nombres} {d.apellidos}</strong></div>
+                                        <div className="form__hint">Mat: {d.matricula} | Email: {d.email}</div>
+                                        {d.nombre_tipo && (
+                                            <div className={`form__hint ${styles["docentes__contract-hint"]}`}>
+                                                Contrato: {d.nombre_tipo} (Prioridad {d.nivel_prioridad})
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
                                 <div className={styles["docentes__item-actions"]}>
-                                    <button className="link-btn" onClick={() => onEdit(d)}>Editar</button>
-                                    <button className="link-btn link-btn--danger" onClick={() => onDelete(d.profesor_id)}>Eliminar</button>
+                                    <button className="link-btn" onClick={() => onEdit(d)} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                        <FaEdit aria-hidden="true" />
+                                        Editar
+                                    </button>
+                                    <button className="link-btn link-btn--danger" onClick={() => onDelete(d.profesor_id)} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                                        <FaTrashAlt aria-hidden="true" />
+                                        Eliminar
+                                    </button>
                                 </div>
                             </div>
                         ))
