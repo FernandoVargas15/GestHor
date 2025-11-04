@@ -12,7 +12,7 @@ export default function CarreraForm({ form, onChange, onSubmit, cargando }) {
             <form onSubmit={onSubmit}>
                 <div className="form__row form__row--2">
                     <div>
-                        <label>Nombre de la Carrera *</label>
+                        <label>Nombre de la Carrera</label>
                         <input
                             className="input"
                             name="nombre"

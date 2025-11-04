@@ -282,7 +282,7 @@ function ScheduleTable() {
           ? `${profesorSel.nombres} ${profesorSel.apellidos}`
           : "Profesor"
       );
-      notify({ type: 'success', message: 'Horario guardado correctamente en PDF.', duration: 5000 });
+      notify({ type: 'success', message: 'Horario generado correctamente en PDF.', duration: 5000 });
     } catch (error) {
       console.error("Error al exportar PDF:", error);
       notify({ type: 'error', message: 'Error al generar el PDF. Por favor, intenta nuevamente.' });
@@ -301,7 +301,7 @@ function ScheduleTable() {
           ? `${profesorSel.nombres} ${profesorSel.apellidos}`
           : "Profesor"
       ));
-      notify({ type: 'success', message: 'Horario guardado correctamente en Excel.', duration: 5000 });
+      notify({ type: 'success', message: 'Horario generado correctamente en Excel.', duration: 5000 });
     } catch (error) {
       console.error("Error al exportar a Excel:", error);
       notify({ type: 'error', message: 'Error al exportar el horario. Por favor, intenta nuevamente.' });
