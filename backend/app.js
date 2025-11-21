@@ -2,10 +2,7 @@ import express from "express";
 import cors from "cors";
 import session from "express-session";
 import passport from "./src/config/passport.js";
-import docentes from './docentes.js'
 
-
-// cambio de rutas para que nos funcione a todos (creo)
 import { pruebaConexion } from "./src/config/database.js";
 import authRoutes from "./src/routes/authRout.js";
 import googleAuthRoutes from "./src/routes/googleAuthRoutes.js";
@@ -74,20 +71,11 @@ app.use('/api', sugerenciaRoutes);
 app.use('/api', periodoRoutes);
 // Health-check simple y prueba de conexión
 app.get("/api", async (_req, res) => {
-  await pruebaConexion(); // mostrará el resultado en consola
+  await pruebaConexion();
   res.json({ message: "Conexión a la base de datos: OK" });
 });
 
-app.get('/', (req, res) => {
-    // const docente = JSON.stringify(docentes);
-    const docente = docentes;
-    // console.log(docente);
-    res.json(docente);
 
-
-});
-
-// Levantar servidor
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
 });
